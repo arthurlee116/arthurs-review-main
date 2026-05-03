@@ -48,6 +48,7 @@ uploads/
 *.sqlite
 *.sqlite3
 *.db
+deploy/production.env
 
 # vercel
 .vercel
