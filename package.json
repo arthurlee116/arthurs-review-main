@@ -10,9 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost DATA_DIR=./data SITE_URL=http://127.0.0.1:3000 ADMIN_PASSWORD_HASH='scrypt$16384$8$1$c2FsdA==$aGFzaA==' SESSION_SECRET=0123456789abcdefghijklmnopqrstuvwxyzABCDEF playwright test",
     "db:migrate": "tsx src/lib/db/migrate.ts",
-    "seed": "node scripts/seed.mjs",
+    "seed": "tsx scripts/seed.mjs",
     "hash-password": "node scripts/hash-password.mjs"
   },
   "dependencies": {
