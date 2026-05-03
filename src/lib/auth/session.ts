@@ -23,6 +23,7 @@ export async function createSession() {
     path: "/",
     expires: expiresAt,
   });
+  return token;
 }
 
 export async function destroySession() {
