@@ -1,0 +1,16 @@
+.superpowers/
+node_modules/
+.next/
+out/
+dist/
+build/
+.env
+.env.*
+!.env.example
+data/
+uploads/
+*.sqlite
+*.sqlite3
+*.db
+*.log
+.DS_Store
