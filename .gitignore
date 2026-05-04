@@ -43,6 +43,7 @@ yarn-error.log*
 
 # local app data
 .superpowers/
+.ops-secrets/
 data/
 uploads/
 *.sqlite

@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export DEBIAN_FRONTEND=noninteractive
+
 apt-get update
 apt-get install -y ca-certificates curl ufw rsync git cron
 install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+. /etc/os-release
+case "${ID}" in
+  ubuntu|debian) docker_os="${ID}" ;;
+  *) echo "Unsupported OS for Docker apt repo: ${ID}" >&2; exit 1 ;;
+esac
+curl -fsSL "https://download.docker.com/linux/${docker_os}/gpg" -o /etc/apt/keyrings/docker.asc
 chmod a+r /etc/apt/keyrings/docker.asc
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${docker_os} ${VERSION_CODENAME} stable" > /etc/apt/sources.list.d/docker.list
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 mkdir -p /var/www/arthurs-review/data /var/www/arthurs-review/backups /opt/arthurs-review
@@ -19,4 +26,5 @@ systemctl enable --now cron >/dev/null 2>&1 || service cron start >/dev/null 2>&
 ufw allow OpenSSH
 ufw allow 80/tcp
 ufw allow 443/tcp
+ufw allow 2443/tcp
 ufw --force enable

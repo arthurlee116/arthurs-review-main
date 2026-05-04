@@ -6,6 +6,7 @@ services:
     env_file:
       - path: ./production.env
         required: false
+        format: raw
     volumes:
       - /var/www/arthurs-review/data:/data
     restart: unless-stopped
