@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { requireApiAdmin } from "@/app/studio/api/_helpers";
+import { apiError, requireApiAdmin } from "@/app/studio/api/_helpers";
 import { getSettings, setSetting } from "@/lib/services/settings";
-import { setFeaturedArticle } from "@/lib/services/articles";
+import { clearFeaturedArticle, getArticleById, setFeaturedArticle } from "@/lib/services/articles";
 
 const SettingsSchema = z.object({
   siteName: z.string().min(1),
@@ -20,10 +20,26 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   const unauthorized = await requireApiAdmin(request);
   if (unauthorized) return unauthorized;
-  const input = SettingsSchema.parse(await request.json());
-  for (const [key, value] of Object.entries(input)) {
-    setSetting(key as keyof typeof input, value);
+  try {
+    const input = SettingsSchema.parse(await request.json());
+    const featuredId = input.featuredArticleId.trim();
+    if (featuredId) {
+      const id = Number(featuredId);
+      const article = Number.isInteger(id) ? getArticleById(id, { includeDraft: true }) : null;
+      if (!article || article.status !== "published") {
+        return Response.json({ error: "Featured article must be published." }, { status: 400 });
+      }
+    }
+    for (const [key, value] of Object.entries({ ...input, featuredArticleId: featuredId })) {
+      setSetting(key as keyof typeof input, value);
+    }
+    if (featuredId) {
+      setFeaturedArticle(Number(featuredId));
+    } else {
+      clearFeaturedArticle();
+    }
+    return Response.json({ settings: getSettings() });
+  } catch (error) {
+    return apiError(error);
   }
-  if (input.featuredArticleId) setFeaturedArticle(Number(input.featuredArticleId));
-  return Response.json({ settings: getSettings() });
 }

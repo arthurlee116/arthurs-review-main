@@ -44,3 +44,17 @@ export async function requireApiAdmin(request: Request, { csrf = true } = {}) {
 
   return null;
 }
+
+export function apiError(error: unknown) {
+  if (error instanceof z.ZodError) {
+    return Response.json({ error: "Invalid request body" }, { status: 400 });
+  }
+  if (typeof error === "object" && error && "code" in error && String((error as { code?: unknown }).code).startsWith("SQLITE_CONSTRAINT")) {
+    return Response.json({ error: "A record with those unique fields already exists." }, { status: 409 });
+  }
+  if (error instanceof Error) {
+    const status = /not found/i.test(error.message) ? 404 : 400;
+    return Response.json({ error: error.message }, { status });
+  }
+  return Response.json({ error: "Unexpected server error" }, { status: 500 });
+}

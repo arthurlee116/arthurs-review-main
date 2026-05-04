@@ -7,10 +7,20 @@ export function CategoryPage({ category }: { category: CategoryId }) {
   const articles = listPublishedArticles(category);
   return (
     <PublicShell>
-      <main className="container py-10">
-        <h1 className="border-b border-[var(--rule)] pb-4 text-5xl font-bold">{categories[category].label}</h1>
+      <main className="container pb-10">
+        <header className="border-b border-[var(--rule)] py-8">
+          <p className="sans text-xs font-bold uppercase text-[var(--muted)]">Archive</p>
+          <div className="mt-3 flex items-center gap-4">
+            <span className="h-1 w-12 bg-[var(--accent)]" aria-hidden="true" />
+            <h1 className="sans text-3xl font-bold leading-tight md:text-4xl">{categories[category].label}</h1>
+          </div>
+        </header>
         {articles.length ? (
-          articles.map((article) => <ArticleCard key={article.id} article={article} large />)
+          <section>
+            {articles.map((article) => (
+              <ArticleCard key={article.id} article={article} large />
+            ))}
+          </section>
         ) : (
           <p className="sans py-10 text-sm text-[var(--muted)]">No published articles in this archive yet.</p>
         )}

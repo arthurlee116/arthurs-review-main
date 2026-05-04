@@ -6,7 +6,10 @@ import { csrfCookie } from "@/lib/auth/constants";
 import { verifyPassword } from "@/lib/auth/password";
 import { getEnv } from "@/lib/env";
 
-const limiter = createRateLimiter({ max: 8, windowMs: 15 * 60 * 1000 });
+const limiter = createRateLimiter({
+  max: Number(process.env.LOGIN_RATE_LIMIT_MAX ?? 8),
+  windowMs: Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS ?? 15 * 60 * 1000),
+});
 
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";

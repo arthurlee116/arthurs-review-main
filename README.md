@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Arthur's Review
 
-## Getting Started
+Arthur's Review is a single-user Next.js publication app for Arthur's writing. Public content is read from SQLite metadata plus Markdown body files under `DATA_DIR`; editing happens in the private `/studio` backend.
 
-First, run the development server:
+## Local Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+pnpm db:migrate
+pnpm seed
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required environment variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `DATA_DIR`: persistent app data directory, for example `./data`
+- `SITE_URL`: canonical public URL, for example `https://blog.leesaitool.com`
+- `ADMIN_PASSWORD_HASH`: generated with `pnpm hash-password`
+- `SESSION_SECRET`: 32+ random characters
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See `.env.example` and `deploy/production.env.example`.
 
-## Learn More
+## Verification
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:e2e
+pnpm build
+docker compose -f deploy/docker-compose.yml config
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The Playwright suite seeds `DATA_DIR=./data/e2e` before starting the dev server.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+Production is designed for Docker Compose on the VPS behind Caddy:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+ssh root@187.124.247.64 'bash -s' < scripts/server-bootstrap.sh
+REMOTE=root@187.124.247.64 ./scripts/deploy.sh
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Runtime data is mounted at `/var/www/arthurs-review/data` on the host and `/data` in the app container. Caddy serves `blog.leesaitool.com` with automatic HTTPS.
+
+## Backups
+
+`scripts/server-bootstrap.sh` installs a daily cron job named `arthurs-review-backup`.
+
+Manual backup:
+
+```bash
+DATA_DIR=/var/www/arthurs-review/data BACKUP_DIR=/var/www/arthurs-review/backups scripts/backup-data.sh
+```
+
+Backups include SQLite and Markdown files. Uploaded images are intentionally excluded.

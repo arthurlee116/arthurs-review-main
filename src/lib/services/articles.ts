@@ -199,11 +199,16 @@ export function setFeaturedArticle(id: number) {
   const db = getDb();
   const existing = getArticleById(id, { includeDraft: true });
   if (!existing) throw new Error("Article not found.");
+  if (existing.status !== "published") throw new Error("Featured article must be published.");
   const tx = db.transaction(() => {
     db.prepare("update articles set is_featured = 0").run();
     db.prepare("update articles set is_featured = 1 where id = ?").run(id);
   });
   tx();
+}
+
+export function clearFeaturedArticle() {
+  getDb().prepare("update articles set is_featured = 0").run();
 }
 
 function replaceArticleTags(articleId: number, tagIds: number[]) {

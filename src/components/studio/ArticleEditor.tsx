@@ -5,11 +5,13 @@ import { useState } from "react";
 import type { Article } from "@/lib/services/articles";
 import { ImageUploader } from "./ImageUploader";
 import { MarkdownEditor } from "./MarkdownEditor";
-import { PendingButton } from "./PendingButton";
 import { TagPicker } from "./TagPicker";
+
+type TagOption = { id: number; name: string; slug: string };
 
 type FormState = {
   id?: number;
+  status?: "draft" | "published";
   titleZh: string;
   titleEn: string;
   slug: string;
@@ -23,6 +25,8 @@ type FormState = {
   coverImagePath: string;
 };
 
+type ApiError = { error?: string };
+
 function csrfToken() {
   return document.cookie
     .split(";")
@@ -34,6 +38,7 @@ function csrfToken() {
 function initial(article?: Article): FormState {
   return {
     id: article?.id,
+    status: article?.status,
     titleZh: article?.titleZh ?? "",
     titleEn: article?.titleEn ?? "",
     slug: article?.slug ?? "",
@@ -48,7 +53,7 @@ function initial(article?: Article): FormState {
   };
 }
 
-export function ArticleEditor({ article }: { article?: Article }) {
+export function ArticleEditor({ article, availableTags = [] }: { article?: Article; availableTags?: TagOption[] }) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(() => initial(article));
   const [message, setMessage] = useState("");
@@ -78,7 +83,8 @@ export function ArticleEditor({ article }: { article?: Article }) {
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      setMessage("Save failed");
+      const data = (await response.json().catch(() => ({}))) as ApiError;
+      setMessage(data.error ? `Save failed: ${data.error}` : "Save failed");
       return null;
     }
     const data = (await response.json()) as { article: Article };
@@ -89,13 +95,37 @@ export function ArticleEditor({ article }: { article?: Article }) {
   }
 
   async function publish() {
-    const saved = form.id ? ({ id: form.id } as Article) : await save();
+    const saved = await save();
     if (!saved) return;
     const response = await fetch(`/studio/api/articles/${saved.id}/publish`, {
       method: "POST",
       headers: { "x-csrf-token": csrfToken() ?? "" },
     });
-    setMessage(response.ok ? "Published" : "Publish failed");
+    if (response.ok) {
+      const data = (await response.json()) as { article: Article };
+      setForm(initial(data.article));
+      setMessage("Published");
+    } else {
+      const data = (await response.json().catch(() => ({}))) as ApiError;
+      setMessage(data.error ? `Publish failed: ${data.error}` : "Publish failed");
+    }
+    router.refresh();
+  }
+
+  async function unpublish() {
+    if (!form.id) return;
+    setMessage("");
+    const response = await fetch(`/studio/api/articles/${form.id}/unpublish`, {
+      method: "POST",
+      headers: { "x-csrf-token": csrfToken() ?? "" },
+    });
+    if (response.ok) {
+      const data = (await response.json()) as { article: Article };
+      setForm(initial(data.article));
+      setMessage("Unpublished");
+    } else {
+      setMessage("Unpublish failed");
+    }
     router.refresh();
   }
 
@@ -112,6 +142,9 @@ export function ArticleEditor({ article }: { article?: Article }) {
       <label className="grid gap-2">
         Slug
         <input className="border border-[var(--rule)] bg-white p-3" value={form.slug} onChange={(event) => set("slug", event.target.value)} />
+        <span className="text-xs text-[var(--muted)]">
+          Required: use lowercase English letters, numbers, and single hyphens only. Good: test-draft-1. Bad: 中文、spaces、UPPERCASE、under_scores.
+        </span>
       </label>
       <label className="grid gap-2">
         Category
@@ -130,7 +163,8 @@ export function ArticleEditor({ article }: { article?: Article }) {
         <input className="border border-[var(--rule)] bg-white p-3" value={form.seoDescription} onChange={(event) => set("seoDescription", event.target.value)} />
       </label>
       <ImageUploader onUploaded={(relativePath) => set("coverImagePath", relativePath)} />
-      <TagPicker tagIds={form.tagIds} onChange={(tagIds) => set("tagIds", tagIds)} />
+      <TagPicker tags={availableTags} tagIds={form.tagIds} onChange={(tagIds) => set("tagIds", tagIds)} />
+      <p className="text-xs text-[var(--muted)]">Required before publishing: Chinese title, valid slug, and Chinese body.</p>
       <MarkdownEditor label="Chinese body" value={form.bodyZh} onChange={(value) => set("bodyZh", value)} />
       <MarkdownEditor label="English body" value={form.bodyEn} onChange={(value) => set("bodyEn", value)} />
       <div className="flex flex-wrap gap-3">
@@ -145,9 +179,13 @@ export function ArticleEditor({ article }: { article?: Article }) {
         <button onClick={publish} className="border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]">
           Publish
         </button>
+        {form.status === "published" ? (
+          <button onClick={unpublish} className="border border-[var(--rule)] px-4 py-2">
+            Unpublish
+          </button>
+        ) : null}
       </div>
       {message ? <p>{message}</p> : null}
-      <PendingButton>Ready</PendingButton>
     </div>
   );
 }

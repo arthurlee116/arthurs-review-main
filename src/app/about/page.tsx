@@ -1,7 +1,17 @@
 import { PublicShell } from "@/app/_publicShell";
+import { publicPageMetadata } from "@/lib/metadata";
 import { getSettings } from "@/lib/services/settings";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  const settings = getSettings();
+  return publicPageMetadata({
+    title: "About",
+    description: settings.about,
+    path: "/about",
+  });
+}
 
 export default function AboutPage() {
   const settings = getSettings();

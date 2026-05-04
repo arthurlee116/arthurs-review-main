@@ -1,10 +1,18 @@
 import { ArticleCard } from "@/components/ArticleCard";
 import { Masthead } from "@/components/Masthead";
 import { PublicNav } from "@/components/PublicNav";
-import { SearchBox } from "@/components/SearchBox";
+import { publicPageMetadata } from "@/lib/metadata";
 import { listPublishedArticles } from "@/lib/services/articles";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  return publicPageMetadata({
+    title: "Arthur's Review",
+    description: "Arthur's Review, a personal intellectual publication.",
+    path: "/",
+  });
+}
 
 export default function HomePage() {
   const articles = listPublishedArticles();
@@ -16,9 +24,6 @@ export default function HomePage() {
       <Masthead />
       <PublicNav />
       <main className="container py-10">
-        <div className="mb-8 flex justify-end">
-          <SearchBox />
-        </div>
         {featured ? (
           <section className="grid gap-8 border-b-2 border-[var(--rule)] pb-8 md:grid-cols-[1.35fr_1fr]">
             <ArticleCard article={featured} large />

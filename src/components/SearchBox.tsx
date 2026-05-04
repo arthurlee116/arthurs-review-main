@@ -1,6 +1,6 @@
-export function SearchBox({ defaultValue = "" }: { defaultValue?: string }) {
+export function SearchBox({ defaultValue = "", className = "" }: { defaultValue?: string; className?: string }) {
   return (
-    <form action="/search" className="sans flex max-w-xl gap-3">
+    <form action="/search" className={`sans flex max-w-xl gap-3 ${className}`}>
       <input
         name="q"
         defaultValue={defaultValue}
