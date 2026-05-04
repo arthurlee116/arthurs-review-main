@@ -24,7 +24,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center p-6">
+    <main className="studio-shell mx-auto flex min-h-screen max-w-sm flex-col justify-center p-6">
       <h1 className="mb-6 text-4xl font-bold">Studio</h1>
       <form onSubmit={submit} className="sans grid gap-4">
         <label className="grid gap-2 text-sm">
@@ -32,7 +32,9 @@ export default function LoginPage() {
           <input className="border border-[var(--rule)] bg-white p-3" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
         </label>
         {error ? <p className="text-sm text-[var(--accent)]">{error}</p> : null}
-        <button className="border border-[var(--rule)] bg-[var(--ink)] p-3 text-white">Log in</button>
+        <button type="submit" className="border border-[var(--rule)] bg-[var(--ink)] p-3 text-white">
+          Log in
+        </button>
       </form>
     </main>
   );

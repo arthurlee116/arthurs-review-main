@@ -35,7 +35,9 @@ export function TagsManager({ initialTags }: { initialTags: Tag[] }) {
       <h1 className="font-serif text-4xl font-bold">Tags</h1>
       <form onSubmit={create} className="mt-6 flex gap-3">
         <input className="border border-[var(--rule)] bg-white p-3" value={name} onChange={(event) => setName(event.target.value)} aria-label="Tag name" />
-        <button className="border border-[var(--rule)] px-4">Create tag</button>
+        <button type="submit" className="border border-[var(--rule)] px-4">
+          Create tag
+        </button>
       </form>
       <ul className="mt-6 grid gap-2">
         {tags.map((tag) => (

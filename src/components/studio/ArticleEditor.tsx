@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Article } from "@/lib/services/articles";
 import { ImageUploader } from "./ImageUploader";
 import { MarkdownEditor } from "./MarkdownEditor";
@@ -26,6 +26,7 @@ type FormState = {
 };
 
 type ApiError = { error?: string };
+type PublishFeedback = "idle" | "success" | "error";
 
 function csrfToken() {
   return document.cookie
@@ -57,9 +58,34 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
   const router = useRouter();
   const [form, setForm] = useState<FormState>(() => initial(article));
   const [message, setMessage] = useState("");
+  const [publishFeedback, setPublishFeedback] = useState<PublishFeedback>("idle");
+  const publishFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (publishFeedbackTimeout.current) clearTimeout(publishFeedbackTimeout.current);
+    };
+  }, []);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function clearPublishFeedback() {
+    if (publishFeedbackTimeout.current) {
+      clearTimeout(publishFeedbackTimeout.current);
+      publishFeedbackTimeout.current = null;
+    }
+    setPublishFeedback("idle");
+  }
+
+  function flashPublishFeedback(feedback: Exclude<PublishFeedback, "idle">) {
+    clearPublishFeedback();
+    setPublishFeedback(feedback);
+    publishFeedbackTimeout.current = setTimeout(() => {
+      setPublishFeedback("idle");
+      publishFeedbackTimeout.current = null;
+    }, 2000);
   }
 
   async function save() {
@@ -95,21 +121,32 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
   }
 
   async function publish() {
-    const saved = await save();
-    if (!saved) return;
-    const response = await fetch(`/studio/api/articles/${saved.id}/publish`, {
-      method: "POST",
-      headers: { "x-csrf-token": csrfToken() ?? "" },
-    });
-    if (response.ok) {
-      const data = (await response.json()) as { article: Article };
-      setForm(initial(data.article));
-      setMessage("Published");
-    } else {
-      const data = (await response.json().catch(() => ({}))) as ApiError;
-      setMessage(data.error ? `Publish failed: ${data.error}` : "Publish failed");
+    clearPublishFeedback();
+    try {
+      const saved = await save();
+      if (!saved) {
+        flashPublishFeedback("error");
+        return;
+      }
+      const response = await fetch(`/studio/api/articles/${saved.id}/publish`, {
+        method: "POST",
+        headers: { "x-csrf-token": csrfToken() ?? "" },
+      });
+      if (response.ok) {
+        const data = (await response.json()) as { article: Article };
+        setForm(initial(data.article));
+        setMessage("Published");
+        flashPublishFeedback("success");
+      } else {
+        const data = (await response.json().catch(() => ({}))) as ApiError;
+        setMessage(data.error ? `Publish failed: ${data.error}` : "Publish failed");
+        flashPublishFeedback("error");
+      }
+      router.refresh();
+    } catch {
+      setMessage("Publish failed");
+      flashPublishFeedback("error");
     }
-    router.refresh();
   }
 
   async function unpublish() {
@@ -128,6 +165,14 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
     }
     router.refresh();
   }
+
+  const publishButtonClass = [
+    "studio-button border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]",
+    publishFeedback === "success" ? "studio-button-success" : "",
+    publishFeedback === "error" ? "studio-button-error" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="sans grid gap-5 text-sm">
@@ -168,19 +213,19 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
       <MarkdownEditor label="Chinese body" value={form.bodyZh} onChange={(value) => set("bodyZh", value)} />
       <MarkdownEditor label="English body" value={form.bodyEn} onChange={(value) => set("bodyEn", value)} />
       <div className="flex flex-wrap gap-3">
-        <button onClick={save} className="border border-[var(--rule)] px-4 py-2">
+        <button type="button" onClick={save} className="border border-[var(--rule)] px-4 py-2">
           Save draft
         </button>
         {form.id ? (
-          <a className="border border-[var(--rule)] px-4 py-2" href={`/studio/preview/${form.id}`} target="_blank">
+          <a className="studio-button border border-[var(--rule)] px-4 py-2" href={`/studio/preview/${form.id}`} target="_blank">
             Preview
           </a>
         ) : null}
-        <button onClick={publish} className="border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]">
+        <button type="button" onClick={publish} className={publishButtonClass}>
           Publish
         </button>
         {form.status === "published" ? (
-          <button onClick={unpublish} className="border border-[var(--rule)] px-4 py-2">
+          <button type="button" onClick={unpublish} className="border border-[var(--rule)] px-4 py-2">
             Unpublish
           </button>
         ) : null}

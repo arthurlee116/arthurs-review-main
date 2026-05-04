@@ -55,7 +55,9 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
           Search
           <input className="border border-[var(--rule)] bg-white p-2" name="q" defaultValue={query} />
         </label>
-        <button className="self-end border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]">Apply filters</button>
+        <button type="submit" className="self-end border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]">
+          Apply filters
+        </button>
       </form>
       <div className="sans mt-6 grid gap-3">
         {articles.map((article) => (

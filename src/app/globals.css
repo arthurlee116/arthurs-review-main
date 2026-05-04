@@ -27,6 +27,72 @@ button {
   font: inherit;
 }
 
+.studio-shell button,
+.studio-shell .studio-button {
+  cursor: pointer;
+  transition:
+    transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+  transform: translateY(0) scale(1);
+  will-change: transform;
+}
+
+.studio-shell button:not(:disabled):hover,
+.studio-shell .studio-button:hover {
+  box-shadow: 3px 3px 0 var(--rule);
+  transform: translate(-1px, -1px) scale(1.01);
+}
+
+.studio-shell button:not(:disabled):active,
+.studio-shell .studio-button:active {
+  box-shadow: 1px 1px 0 var(--rule);
+  transform: translate(1px, 1px) scale(0.97);
+}
+
+.studio-shell button:focus-visible,
+.studio-shell .studio-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.studio-shell button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.studio-shell .studio-button-success {
+  background-color: #18794e;
+  border-color: #18794e;
+  color: white;
+}
+
+.studio-shell .studio-button-error {
+  background-color: #c9190b;
+  border-color: #c9190b;
+  color: white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-shell button,
+  .studio-shell .studio-button {
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  .studio-shell button:not(:disabled):hover,
+  .studio-shell button:not(:disabled):active,
+  .studio-shell .studio-button:hover,
+  .studio-shell .studio-button:active {
+    transform: none;
+  }
+}
+
 .sans {
   font-family: Arial, "Noto Sans SC", sans-serif;
 }

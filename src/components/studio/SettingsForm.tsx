@@ -62,7 +62,9 @@ export function SettingsForm({ initialSettings, publishedArticles }: { initialSe
           about
           <textarea className="min-h-36 border border-[var(--rule)] bg-white p-3" value={settings.about} onChange={(event) => setSettings({ ...settings, about: event.target.value })} />
         </label>
-        <button className="w-fit border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]">Save settings</button>
+        <button type="submit" className="w-fit border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]">
+          Save settings
+        </button>
         {message ? <p>{message}</p> : null}
       </form>
     </section>
