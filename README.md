@@ -44,6 +44,13 @@ REMOTE=root@187.124.247.64 ./scripts/deploy.sh
 
 Runtime data is mounted at `/var/www/arthurs-review/data` on the host and `/data` in the app container. Caddy serves `blog.leesaitool.com` with automatic HTTPS.
 
+Pushes to `main` deploy through GitHub Actions. Required repository secrets:
+
+- `DEPLOY_SSH_PRIVATE_KEY`: private key allowed to SSH into the VPS
+- `PRODUCTION_ENV`: contents of `deploy/production.env`
+
+Optional repository variables: `DEPLOY_HOST`, `DEPLOY_REMOTE`, `DEPLOY_APP_DIR`.
+
 ## Backups
 
 `scripts/server-bootstrap.sh` installs a daily cron job named `arthurs-review-backup`.
