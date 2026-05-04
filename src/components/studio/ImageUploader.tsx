@@ -12,10 +12,12 @@ function csrfToken() {
 
 export function ImageUploader({ onUploaded }: { onUploaded: (relativePath: string) => void }) {
   const [message, setMessage] = useState("");
+  const [fileName, setFileName] = useState("No file chosen");
 
   async function upload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    setFileName(file.name);
     setMessage("");
     const form = new FormData();
     form.append("file", file);
@@ -34,10 +36,16 @@ export function ImageUploader({ onUploaded }: { onUploaded: (relativePath: strin
   }
 
   return (
-    <label className="grid gap-2">
+    <div className="grid gap-2">
       <span>Cover image</span>
-      <input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} />
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="studio-button w-fit border border-[var(--rule)] px-3 py-2 text-xs">
+          Choose cover image
+          <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} />
+        </label>
+        <span className="text-xs text-[var(--muted)]">{fileName}</span>
+      </div>
       {message ? <span className="text-xs text-[var(--muted)]">{message}</span> : null}
-    </label>
+    </div>
   );
 }

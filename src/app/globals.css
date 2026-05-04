@@ -53,7 +53,8 @@ button {
 }
 
 .studio-shell button:focus-visible,
-.studio-shell .studio-button:focus-visible {
+.studio-shell .studio-button:focus-visible,
+.studio-shell .studio-button:focus-within {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }

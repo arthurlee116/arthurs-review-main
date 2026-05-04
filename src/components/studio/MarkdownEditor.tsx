@@ -40,7 +40,7 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
         <span>{label}</span>
         <textarea className="min-h-56 border border-[var(--rule)] bg-white p-3" value={value} onChange={(event) => onChange(event.target.value)} />
       </label>
-      <label className="w-fit border border-[var(--rule)] px-3 py-2 text-xs">
+      <label className="studio-button w-fit border border-[var(--rule)] px-3 py-2 text-xs">
         Insert inline image
         <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} />
       </label>

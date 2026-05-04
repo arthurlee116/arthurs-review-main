@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ArticleEditor } from "@/components/studio/ArticleEditor";
+import { ImageUploader } from "@/components/studio/ImageUploader";
 import { MarkdownEditor } from "@/components/studio/MarkdownEditor";
 import type { Article } from "@/lib/services/articles";
 
@@ -67,9 +68,38 @@ describe("MarkdownEditor", () => {
 
     render(<MarkdownEditor label="Chinese body" value="正文" onChange={onChange} />);
 
-    await user.upload(screen.getByLabelText("Insert inline image"), new File(["image"], "inline.png", { type: "image/png" }));
+    const inlineImagePicker = screen.getByLabelText("Insert inline image");
+    expect(inlineImagePicker.closest(".studio-button")).toBeTruthy();
+
+    await user.upload(inlineImagePicker, new File(["image"], "inline.png", { type: "image/png" }));
 
     expect(onChange).toHaveBeenCalledWith("正文\n\n![inline](/media/2026/05/inline.webp)");
+  });
+});
+
+describe("ImageUploader", () => {
+  it("uses the Studio button treatment for cover image uploads", async () => {
+    const user = userEvent.setup();
+    const onUploaded = vi.fn();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          relativePath: "2026/05/cover.webp",
+        }),
+      ),
+    );
+
+    render(<ImageUploader onUploaded={onUploaded} />);
+
+    const coverImagePicker = screen.getByLabelText("Choose cover image");
+    expect(coverImagePicker.closest(".studio-button")).toBeTruthy();
+
+    await user.upload(coverImagePicker, new File(["image"], "cover.png", { type: "image/png" }));
+
+    expect(screen.getByText("cover.png")).toBeVisible();
+    expect(screen.getByText("Image uploaded")).toBeVisible();
+    expect(onUploaded).toHaveBeenCalledWith("2026/05/cover.webp");
   });
 });
 
