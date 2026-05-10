@@ -114,6 +114,11 @@ button {
   line-height: 2;
 }
 
+.prose strong,
+.prose b {
+  font-weight: 900;
+}
+
 .prose p,
 .prose ul,
 .prose ol,
