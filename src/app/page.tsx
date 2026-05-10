@@ -1,8 +1,7 @@
 import { ArticleCard } from "@/components/ArticleCard";
-import { Masthead } from "@/components/Masthead";
-import { PublicNav } from "@/components/PublicNav";
 import { publicPageMetadata } from "@/lib/metadata";
 import { listPublishedArticles } from "@/lib/services/articles";
+import { PublicShell } from "./_publicShell";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +19,7 @@ export default function HomePage() {
   const feed = articles.filter((article) => article.id !== featured?.id);
 
   return (
-    <>
-      <Masthead />
-      <PublicNav />
+    <PublicShell>
       <main className="container py-10">
         {featured ? (
           <section className="grid gap-8 border-b-2 border-[var(--rule)] pb-8 md:grid-cols-[1.35fr_1fr]">
@@ -42,6 +39,6 @@ export default function HomePage() {
           ))}
         </section>
       </main>
-    </>
+    </PublicShell>
   );
 }

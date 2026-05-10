@@ -42,6 +42,7 @@ yarn-error.log*
 !.env.example
 
 # local app data
+.font-cache/
 .superpowers/
 .ops-secrets/
 data/
