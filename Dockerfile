@@ -1,11 +1,13 @@
 FROM node:24-alpine AS deps
 WORKDIR /app
+ENV CI=true
 RUN apk add --no-cache python3 make g++ && corepack enable
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM node:24-alpine AS builder
 WORKDIR /app
+ENV CI=true
 RUN corepack enable
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -13,6 +15,7 @@ RUN pnpm build
 
 FROM node:24-alpine AS runner
 WORKDIR /app
+ENV CI=true
 ENV NODE_ENV=production
 RUN apk add --no-cache python3 make g++ && corepack enable
 COPY --from=builder /app/package.json ./package.json
