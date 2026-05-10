@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -75,6 +75,30 @@ describe("MarkdownEditor", () => {
 
     expect(onChange).toHaveBeenCalledWith("正文\n\n![inline](/media/2026/05/inline.webp)");
   });
+
+  it("accepts a dropped inline image and inserts the public markdown image link", async () => {
+    const onChange = vi.fn();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          publicPath: "/media/2026/05/dropped.webp",
+        }),
+      ),
+    );
+
+    render(<MarkdownEditor label="Chinese body" value="正文" onChange={onChange} />);
+
+    const file = new File(["image"], "dropped.png", { type: "image/png" });
+    fireEvent.drop(screen.getByLabelText("Chinese body image drop target"), {
+      dataTransfer: {
+        files: [file],
+        items: [{ kind: "file", type: "image/png" }],
+      },
+    });
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith("正文\n\n![dropped](/media/2026/05/dropped.webp)"));
+  });
 });
 
 describe("ImageUploader", () => {
@@ -100,6 +124,32 @@ describe("ImageUploader", () => {
     expect(screen.getByText("cover.png")).toBeVisible();
     expect(screen.getByText("Image uploaded")).toBeVisible();
     expect(onUploaded).toHaveBeenCalledWith("2026/05/cover.webp");
+  });
+
+  it("accepts a dropped cover image", async () => {
+    const onUploaded = vi.fn();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          relativePath: "2026/05/dropped-cover.webp",
+        }),
+      ),
+    );
+
+    render(<ImageUploader onUploaded={onUploaded} />);
+
+    const file = new File(["image"], "dropped-cover.png", { type: "image/png" });
+    fireEvent.drop(screen.getByLabelText("Cover image drop target"), {
+      dataTransfer: {
+        files: [file],
+        items: [{ kind: "file", type: "image/png" }],
+      },
+    });
+
+    expect(await screen.findByText("dropped-cover.png")).toBeVisible();
+    expect(screen.getByText("Image uploaded")).toBeVisible();
+    expect(onUploaded).toHaveBeenCalledWith("2026/05/dropped-cover.webp");
   });
 });
 
