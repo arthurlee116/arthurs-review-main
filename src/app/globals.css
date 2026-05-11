@@ -12,7 +12,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-public-serif, Georgia, "Times New Roman", "Noto Serif SC", serif);
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Noto Serif SC", Georgia, "Times New Roman", serif;
 }
 
 a {
