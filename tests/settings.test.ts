@@ -49,4 +49,16 @@ describe("featured article settings", () => {
 
     expect(listPublishedArticles().find((article) => article.isFeatured)?.id).toBe(published.id);
   });
+
+  it("stores the OpenRouter translation model with a sensible default", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { getSetting, setSetting } = await import("@/lib/services/settings");
+    migrate();
+
+    expect(getSetting("openrouterTranslationModel")).toBe("inclusionai/ring-2.6-1t:free");
+
+    setSetting("openrouterTranslationModel", "google/gemma-4-31b-it:free");
+
+    expect(getSetting("openrouterTranslationModel")).toBe("google/gemma-4-31b-it:free");
+  });
 });

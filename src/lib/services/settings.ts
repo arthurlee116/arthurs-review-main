@@ -7,6 +7,7 @@ const defaults = {
     "Arthur's Review is a personal publication for current-affairs notes, social analysis, poems, travel writing, and other things worth keeping.",
   featuredArticleId: "",
   rssDescription: "Arthur's Review, a personal intellectual publication.",
+  openrouterTranslationModel: "inclusionai/ring-2.6-1t:free",
 };
 
 export type SettingKey = keyof typeof defaults;

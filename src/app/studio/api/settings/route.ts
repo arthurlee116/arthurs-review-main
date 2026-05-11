@@ -9,6 +9,7 @@ const SettingsSchema = z.object({
   about: z.string(),
   featuredArticleId: z.string(),
   rssDescription: z.string(),
+  openrouterTranslationModel: z.string().min(1),
 });
 
 export async function GET(request: Request) {

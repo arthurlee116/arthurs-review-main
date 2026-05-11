@@ -8,6 +8,7 @@ type Settings = {
   about: string;
   featuredArticleId: string;
   rssDescription: string;
+  openrouterTranslationModel: string;
 };
 
 type ArticleOption = {
@@ -47,6 +48,14 @@ export function SettingsForm({ initialSettings, publishedArticles }: { initialSe
             <input className="border border-[var(--rule)] bg-white p-3" value={settings[key]} onChange={(event) => setSettings({ ...settings, [key]: event.target.value })} />
           </label>
         ))}
+        <label className="grid gap-2">
+          openrouterTranslationModel
+          <input
+            className="border border-[var(--rule)] bg-white p-3"
+            value={settings.openrouterTranslationModel}
+            onChange={(event) => setSettings({ ...settings, openrouterTranslationModel: event.target.value })}
+          />
+        </label>
         <label className="grid gap-2">
           featuredArticleId
           <select className="border border-[var(--rule)] bg-white p-3" value={settings.featuredArticleId} onChange={(event) => setSettings({ ...settings, featuredArticleId: event.target.value })}>
