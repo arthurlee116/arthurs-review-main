@@ -154,6 +154,47 @@ describe("ImageUploader", () => {
 });
 
 describe("ArticleEditor", () => {
+  it("shows and saves the English excerpt field", () => {
+    render(<ArticleEditor article={article({ excerptEn: "English excerpt" })} />);
+
+    expect(screen.getByRole("textbox", { name: "English excerpt" })).toHaveValue("English excerpt");
+  });
+
+  it("translates Chinese fields into English fields without saving", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        translation: {
+          titleEn: "Morality and Reason",
+          excerptEn: "Where do all these villains come from?",
+          bodyEn: "English body.",
+        },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ArticleEditor article={article({ titleZh: "道德与理性", excerptZh: "哪里来那么多坏人", bodyZh: "中文正文" })} />);
+
+    await user.click(screen.getByRole("button", { name: "Translate to English" }));
+
+    expect(await screen.findByText("Translation ready. Review before saving.")).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "English title" })).toHaveValue("Morality and Reason");
+    expect(screen.getByRole("textbox", { name: "English excerpt" })).toHaveValue("Where do all these villains come from?");
+    expect(screen.getByRole("textbox", { name: "English body" })).toHaveValue("English body.");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/studio/api/translations/article",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          titleZh: "道德与理性",
+          excerptZh: "哪里来那么多坏人",
+          bodyZh: "中文正文",
+        }),
+      }),
+    );
+  });
+
   it("flashes the publish button green for two seconds after a successful publish", async () => {
     vi.useFakeTimers();
     const publishedArticle = article({ status: "published", publishedAt: "2026-05-04T00:00:00.000Z" });

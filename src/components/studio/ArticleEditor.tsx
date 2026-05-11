@@ -26,6 +26,14 @@ type FormState = {
 };
 
 type ApiError = { error?: string };
+type TranslationResponse = {
+  translation?: {
+    titleEn: string;
+    excerptEn: string;
+    bodyEn: string;
+  };
+  error?: string;
+};
 type PublishFeedback = "idle" | "success" | "error";
 
 function csrfToken() {
@@ -58,6 +66,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
   const router = useRouter();
   const [form, setForm] = useState<FormState>(() => initial(article));
   const [message, setMessage] = useState("");
+  const [isTranslating, setIsTranslating] = useState(false);
   const [publishFeedback, setPublishFeedback] = useState<PublishFeedback>("idle");
   const publishFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -86,6 +95,38 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
       setPublishFeedback("idle");
       publishFeedbackTimeout.current = null;
     }, 2000);
+  }
+
+  async function translateToEnglish() {
+    setMessage("");
+    setIsTranslating(true);
+    try {
+      const response = await fetch("/studio/api/translations/article", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken() ?? "" },
+        body: JSON.stringify({
+          titleZh: form.titleZh,
+          excerptZh: form.excerptZh,
+          bodyZh: form.bodyZh,
+        }),
+      });
+      const data = (await response.json().catch(() => ({}))) as TranslationResponse;
+      if (!response.ok || !data.translation) {
+        setMessage(data.error ? `Translation failed: ${data.error}` : "Translation failed");
+        return;
+      }
+      setForm((current) => ({
+        ...current,
+        titleEn: data.translation!.titleEn,
+        excerptEn: data.translation!.excerptEn,
+        bodyEn: data.translation!.bodyEn,
+      }));
+      setMessage("Translation ready. Review before saving.");
+    } catch {
+      setMessage("Translation failed");
+    } finally {
+      setIsTranslating(false);
+    }
   }
 
   async function save() {
@@ -185,6 +226,10 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
         <input className="border border-[var(--rule)] bg-white p-3" value={form.titleEn} onChange={(event) => set("titleEn", event.target.value)} />
       </label>
       <label className="grid gap-2">
+        English excerpt
+        <textarea className="min-h-24 border border-[var(--rule)] bg-white p-3" value={form.excerptEn} onChange={(event) => set("excerptEn", event.target.value)} />
+      </label>
+      <label className="grid gap-2">
         Slug
         <input className="border border-[var(--rule)] bg-white p-3" value={form.slug} onChange={(event) => set("slug", event.target.value)} />
         <span className="text-xs text-[var(--muted)]">
@@ -211,6 +256,9 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
       <TagPicker tags={availableTags} tagIds={form.tagIds} onChange={(tagIds) => set("tagIds", tagIds)} />
       <p className="text-xs text-[var(--muted)]">Required before publishing: Chinese title, valid slug, and Chinese body.</p>
       <MarkdownEditor label="Chinese body" value={form.bodyZh} onChange={(value) => set("bodyZh", value)} />
+      <button type="button" onClick={translateToEnglish} disabled={isTranslating} className="w-fit border border-[var(--rule)] px-4 py-2 disabled:opacity-50">
+        {isTranslating ? "Translating..." : "Translate to English"}
+      </button>
       <MarkdownEditor label="English body" value={form.bodyEn} onChange={(value) => set("bodyEn", value)} />
       <div className="flex flex-wrap gap-3">
         <button type="button" onClick={save} className="border border-[var(--rule)] px-4 py-2">
