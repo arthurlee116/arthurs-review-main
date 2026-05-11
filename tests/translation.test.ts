@@ -44,7 +44,12 @@ describe("translation schema and prompt", () => {
     const fullPrompt = messages.map((message) => message.content).join("\n");
 
     expect(fullPrompt).toContain("Arthur's Review");
-    expect(fullPrompt).toContain("Do not soften political judgments");
+    expect(fullPrompt).toContain("Preserve force before elegance");
+    expect(fullPrompt).toContain("Do not choose the statistically laziest English editorial phrase");
+    expect(fullPrompt).toContain("Do not guess first names, affiliations, relationships, or identities");
+    expect(fullPrompt).toContain("A broad essay title may need 'Reason' rather than 'Rationality'");
+    expect(fullPrompt).toContain("Do not add headings, subtitles, 'Excerpt:', summaries, horizontal rules");
+    expect(fullPrompt).toContain("Do not turn it into formal journalism");
     expect(fullPrompt).toContain("道德与理性");
     expect(fullPrompt).toContain("哪里来那么多坏人");
     expect(fullPrompt).toContain("我想从马克思和恩格斯谈起。");
