@@ -44,6 +44,7 @@ yarn-error.log*
 # local app data
 .font-cache/
 .superpowers/
+.worktrees/
 .ops-secrets/
 data/
 uploads/
