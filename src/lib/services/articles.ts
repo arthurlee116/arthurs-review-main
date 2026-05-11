@@ -142,6 +142,16 @@ export function updateArticle(id: number, input: ArticleInput) {
   return getArticleById(id, { includeDraft: true })!;
 }
 
+export function updateArticleEnglishFields(id: number, input: { titleEn: string; excerptEn: string; bodyEn: string }) {
+  const existing = getArticleById(id, { includeDraft: true });
+  if (!existing) throw new Error("Article not found.");
+  const bodyEnPath = writeMarkdownBody(id, "en", input.bodyEn);
+  getDb()
+    .prepare("update articles set title_en = ?, excerpt_en = ?, body_en_path = ?, updated_at = ? where id = ?")
+    .run(input.titleEn, input.excerptEn, bodyEnPath, nowIso(), id);
+  return getArticleById(id, { includeDraft: true })!;
+}
+
 export function deleteArticle(id: number) {
   const article = getArticleById(id, { includeDraft: true });
   if (!article) return false;
@@ -177,6 +187,18 @@ export function listPublishedArticles(category?: CategoryId) {
 
 export function listStudioArticles() {
   return (getDb().prepare("select * from articles order by updated_at desc, id desc").all() as ArticleRow[]).map(mapArticle);
+}
+
+export function listPublishedArticlesMissingEnglish() {
+  const rows = getDb()
+    .prepare(
+      `select * from articles
+       where status = ?
+       and (title_en is null or title_en = '' or excerpt_en is null or excerpt_en = '' or body_en_path is null or body_en_path = '')
+       order by published_at desc, id desc`,
+    )
+    .all("published") as ArticleRow[];
+  return rows.map((row) => withBodies(mapArticle(row)));
 }
 
 export function publishArticle(id: number) {

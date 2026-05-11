@@ -1,4 +1,8 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { articleInput } from "@/test/factories";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -142,5 +146,120 @@ describe("OpenRouter translation client", () => {
         messages: [{ role: "user", content: "Translate." }],
       }),
     ).rejects.toThrow("OpenRouter returned invalid JSON.");
+  });
+});
+
+let tmpDir: string | undefined;
+
+async function setupDb(prefix = "arthurs-review-translation-") {
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  process.env.DATA_DIR = tmpDir;
+  process.env.SITE_URL = "http://localhost:3000";
+  process.env.ADMIN_PASSWORD_HASH = "scrypt$16384$8$1$c2FsdA==$aGFzaA==";
+  process.env.SESSION_SECRET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEF";
+  const { closeDb } = await import("@/lib/db/connection");
+  closeDb();
+  const { migrate } = await import("@/lib/db/migrate");
+  migrate();
+}
+
+afterEach(async () => {
+  const { closeDb } = await import("@/lib/db/connection");
+  closeDb();
+  if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
+  tmpDir = undefined;
+});
+
+describe("translation article service", () => {
+  it("lists only published articles missing any English field", async () => {
+    await setupDb();
+    const { createArticle, listPublishedArticlesMissingEnglish, publishArticle } = await import("@/lib/services/articles");
+
+    const complete = createArticle(
+      articleInput({
+        slug: "complete",
+        titleEn: "Complete",
+        excerptEn: "Complete excerpt",
+        bodyEn: "Complete body",
+      }),
+    );
+    publishArticle(complete.id);
+    const missingTitle = createArticle(
+      articleInput({
+        slug: "missing-title",
+        titleEn: null,
+        excerptEn: "English excerpt",
+        bodyEn: "English body",
+      }),
+    );
+    publishArticle(missingTitle.id);
+    const missingBody = createArticle(
+      articleInput({
+        slug: "missing-body",
+        titleEn: "English title",
+        excerptEn: "English excerpt",
+        bodyEn: null,
+      }),
+    );
+    publishArticle(missingBody.id);
+    createArticle(
+      articleInput({
+        slug: "draft-missing",
+        titleEn: null,
+        excerptEn: null,
+        bodyEn: null,
+      }),
+    );
+
+    expect(listPublishedArticlesMissingEnglish().map((article) => article.slug)).toEqual(["missing-body", "missing-title"]);
+  });
+
+  it("updates English title, excerpt, and body together", async () => {
+    await setupDb();
+    const { createArticle, getArticleById, updateArticleEnglishFields } = await import("@/lib/services/articles");
+    const article = createArticle(articleInput({ slug: "needs-english", titleEn: null, excerptEn: null, bodyEn: null }));
+
+    updateArticleEnglishFields(article.id, {
+      titleEn: "English title",
+      excerptEn: "English excerpt",
+      bodyEn: "English body",
+    });
+
+    expect(getArticleById(article.id, { includeDraft: true })).toMatchObject({
+      titleEn: "English title",
+      excerptEn: "English excerpt",
+      bodyEn: "English body",
+    });
+  });
+
+  it("batch translates published missing-English articles and records a retry failure", async () => {
+    await setupDb();
+    const { createArticle, getArticleById, publishArticle } = await import("@/lib/services/articles");
+    const { translatePublishedMissingEnglish } = await import("@/lib/translation/service");
+    const first = createArticle(articleInput({ slug: "first", titleZh: "第一篇", titleEn: null, excerptEn: null, bodyEn: null }));
+    const second = createArticle(articleInput({ slug: "second", titleZh: "第二篇", titleEn: null, excerptEn: null, bodyEn: null }));
+    publishArticle(first.id);
+    publishArticle(second.id);
+    const calls: string[] = [];
+
+    const result = await translatePublishedMissingEnglish({
+      model: "inclusionai/ring-2.6-1t:free",
+      translate: async (input) => {
+        calls.push(input.titleZh);
+        if (input.titleZh === "第二篇") throw new Error("model exploded");
+        return {
+          titleEn: `${input.titleZh} EN`,
+          excerptEn: `${input.excerptZh} EN`,
+          bodyEn: `${input.bodyZh} EN`,
+        };
+      },
+    });
+
+    expect(result.summary).toEqual({ attempted: 2, succeeded: 1, failed: 1 });
+    expect(result.successes).toEqual([{ id: first.id, titleZh: "第一篇" }]);
+    expect(result.failures).toEqual([{ id: second.id, titleZh: "第二篇", error: "model exploded" }]);
+    expect(calls).toEqual(["第二篇", "第二篇", "第一篇"]);
+    expect(getArticleById(first.id, { includeDraft: true })?.titleEn).toBe("第一篇 EN");
+    expect(getArticleById(second.id, { includeDraft: true })?.titleEn).toBeNull();
   });
 });
