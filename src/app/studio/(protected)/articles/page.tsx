@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TranslateMissingEnglishButton } from "@/components/studio/TranslateMissingEnglishButton";
 import { listStudioArticles } from "@/lib/services/articles";
 import type { CategoryId } from "@/lib/content/categories";
 
@@ -33,6 +34,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
   return (
     <section>
       <h1 className="text-4xl font-bold">Articles</h1>
+      <TranslateMissingEnglishButton />
       <form className="sans mt-6 grid gap-3 border-y border-[var(--rule)] py-4 md:grid-cols-[1fr_1fr_2fr_auto]">
         <label className="grid gap-2">
           Status

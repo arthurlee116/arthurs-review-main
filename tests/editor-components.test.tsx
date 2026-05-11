@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ArticleEditor } from "@/components/studio/ArticleEditor";
 import { ImageUploader } from "@/components/studio/ImageUploader";
 import { MarkdownEditor } from "@/components/studio/MarkdownEditor";
+import { TranslateMissingEnglishButton } from "@/components/studio/TranslateMissingEnglishButton";
 import type { Article } from "@/lib/services/articles";
 
 const router = vi.hoisted(() => ({
@@ -247,5 +248,29 @@ describe("ArticleEditor", () => {
     });
 
     expect(publishButton).not.toHaveClass("studio-button-error");
+  });
+});
+
+describe("TranslateMissingEnglishButton", () => {
+  it("shows saved batch translation results", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          summary: { attempted: 2, succeeded: 1, failed: 1 },
+          successes: [{ id: 1, titleZh: "道德与理性" }],
+          failures: [{ id: 2, titleZh: "反战的人们，醒醒了！", error: "OpenRouter request failed with status 429." }],
+        }),
+      ),
+    );
+
+    render(<TranslateMissingEnglishButton />);
+
+    await user.click(screen.getByRole("button", { name: "Translate missing English" }));
+
+    expect(await screen.findByText("Attempted 2. Saved 1. Failed 1.")).toBeVisible();
+    expect(screen.getByText("Saved: 道德与理性")).toBeVisible();
+    expect(screen.getByText("Failed: 反战的人们，醒醒了！ - OpenRouter request failed with status 429.")).toBeVisible();
   });
 });
