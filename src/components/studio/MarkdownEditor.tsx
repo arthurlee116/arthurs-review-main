@@ -1,17 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { csrfToken } from "@/lib/client/csrf";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
-
-function csrfToken() {
-  return document.cookie
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith("arthurs_review_csrf="))
-    ?.split("=")[1];
-}
 
 function imageAlt(fileName: string) {
   return fileName.replace(/\.[^.]+$/, "") || "image";

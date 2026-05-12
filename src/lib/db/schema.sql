@@ -50,6 +50,5 @@ create virtual table if not exists article_search using fts5(
   body_en,
   category,
   tags,
-  content='',
   tokenize='unicode61'
 );

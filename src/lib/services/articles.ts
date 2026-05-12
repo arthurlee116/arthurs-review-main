@@ -2,6 +2,7 @@ import { readMarkdownBody, writeMarkdownBody, deleteMarkdownBody } from "@/lib/c
 import { assertValidSlug } from "@/lib/content/slugs";
 import type { CategoryId } from "@/lib/content/categories";
 import { getDb } from "@/lib/db/connection";
+import { syncArticleToFts, deleteArticleFromFts } from "./search";
 
 export type ArticleStatus = "draft" | "published";
 
@@ -40,7 +41,7 @@ export type Article = {
   bodyEn?: string | null;
 };
 
-type ArticleRow = {
+export type ArticleRow = {
   id: number;
   title_zh: string;
   title_en: string | null;
@@ -74,7 +75,7 @@ function articleTags(articleId: number) {
     .all(articleId) as Array<{ id: number; name: string; slug: string }>;
 }
 
-function mapArticle(row: ArticleRow): Article {
+export function mapArticleRow(row: ArticleRow): Article {
   return {
     id: row.id,
     titleZh: row.title_zh,
@@ -120,7 +121,10 @@ export function createArticle(input: ArticleInput) {
   const bodyEnPath = input.bodyEn ? writeMarkdownBody(id, "en", input.bodyEn) : null;
   db.prepare("update articles set body_zh_path = ?, body_en_path = ? where id = ?").run(bodyZhPath, bodyEnPath, id);
   replaceArticleTags(id, input.tagIds);
-  return getArticleById(id, { includeDraft: true })!;
+  // Sync to FTS5 if the article was created as published (defensive).
+  const created = getArticleById(id, { includeDraft: true })!;
+  if (created.status === "published") syncArticleToFts(created);
+  return created;
 }
 
 export function updateArticle(id: number, input: ArticleInput) {
@@ -139,7 +143,10 @@ export function updateArticle(id: number, input: ArticleInput) {
     )
     .run({ ...input, id, updatedAt: nowIso(), bodyZhPath, bodyEnPath });
   replaceArticleTags(id, input.tagIds);
-  return getArticleById(id, { includeDraft: true })!;
+  // Re-sync FTS5 if the article is published.
+  const updated = getArticleById(id, { includeDraft: true })!;
+  if (updated.status === "published") syncArticleToFts(updated);
+  return updated;
 }
 
 export function updateArticleEnglishFields(id: number, input: { titleEn: string; excerptEn: string; bodyEn: string }) {
@@ -149,7 +156,10 @@ export function updateArticleEnglishFields(id: number, input: { titleEn: string;
   getDb()
     .prepare("update articles set title_en = ?, excerpt_en = ?, body_en_path = ?, updated_at = ? where id = ?")
     .run(input.titleEn, input.excerptEn, bodyEnPath, nowIso(), id);
-  return getArticleById(id, { includeDraft: true })!;
+  // Re-sync FTS5 if the article is published.
+  const updated = getArticleById(id, { includeDraft: true })!;
+  if (updated.status === "published") syncArticleToFts(updated);
+  return updated;
 }
 
 export function deleteArticle(id: number) {
@@ -157,6 +167,7 @@ export function deleteArticle(id: number) {
   if (!article) return false;
   deleteMarkdownBody(article.bodyZhPath);
   deleteMarkdownBody(article.bodyEnPath);
+  deleteArticleFromFts(id);
   getDb().prepare("delete from articles where id = ?").run(id);
   return true;
 }
@@ -164,7 +175,7 @@ export function deleteArticle(id: number) {
 export function getArticleById(id: number, options: { includeDraft: boolean }) {
   const row = getDb().prepare("select * from articles where id = ?").get(id) as ArticleRow | undefined;
   if (!row) return null;
-  const article = mapArticle(row);
+  const article = mapArticleRow(row);
   if (article.status === "draft" && !options.includeDraft) return null;
   return withBodies(article);
 }
@@ -173,7 +184,7 @@ export function getPublishedArticle(category: CategoryId, slug: string) {
   const row = getDb()
     .prepare("select * from articles where category = ? and slug = ? and status = ?")
     .get(category, slug, "published") as ArticleRow | undefined;
-  return row ? withBodies(mapArticle(row)) : null;
+  return row ? withBodies(mapArticleRow(row)) : null;
 }
 
 export function listPublishedArticles(category?: CategoryId) {
@@ -182,11 +193,11 @@ export function listPublishedArticles(category?: CategoryId) {
         .prepare("select * from articles where status = ? and category = ? order by published_at desc, id desc")
         .all("published", category) as ArticleRow[])
     : (getDb().prepare("select * from articles where status = ? order by published_at desc, id desc").all("published") as ArticleRow[]);
-  return rows.map(mapArticle);
+  return rows.map(mapArticleRow);
 }
 
 export function listStudioArticles() {
-  return (getDb().prepare("select * from articles order by updated_at desc, id desc").all() as ArticleRow[]).map(mapArticle);
+  return (getDb().prepare("select * from articles order by updated_at desc, id desc").all() as ArticleRow[]).map(mapArticleRow);
 }
 
 export function listPublishedArticlesMissingEnglish() {
@@ -198,7 +209,7 @@ export function listPublishedArticlesMissingEnglish() {
        order by published_at desc, id desc`,
     )
     .all("published") as ArticleRow[];
-  return rows.map((row) => withBodies(mapArticle(row)));
+  return rows.map((row) => withBodies(mapArticleRow(row)));
 }
 
 export function publishArticle(id: number) {
@@ -209,11 +220,15 @@ export function publishArticle(id: number) {
   getDb()
     .prepare("update articles set status = 'published', published_at = coalesce(published_at, ?), updated_at = ? where id = ?")
     .run(timestamp, timestamp, id);
-  return getArticleById(id, { includeDraft: true })!;
+  // Sync to FTS5 now that the article is published.
+  const published = getArticleById(id, { includeDraft: true })!;
+  syncArticleToFts(published);
+  return published;
 }
 
 export function unpublishArticle(id: number) {
   getDb().prepare("update articles set status = 'draft', updated_at = ? where id = ?").run(nowIso(), id);
+  deleteArticleFromFts(id);
   return getArticleById(id, { includeDraft: true });
 }
 

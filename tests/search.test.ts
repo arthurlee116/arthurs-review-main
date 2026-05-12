@@ -55,4 +55,68 @@ describe("keyword search", () => {
     const results = searchArticles("旁观者");
     expect(results.map((article) => article.slug)).toEqual(["city-bystander"]);
   });
+
+  it("keeps the FTS index when migrate runs again", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticles } = await import("@/lib/services/search");
+    migrate();
+
+    const published = createArticle(
+      articleInput({
+        titleZh: "迁移后的搜索",
+        slug: "search-after-migrate",
+        category: "society",
+        excerptZh: "索引不应该被清空",
+        seoDescription: "迁移搜索",
+        bodyZh: "二次迁移之后仍然能搜到这篇文章",
+      }),
+    );
+    publishArticle(published.id);
+
+    migrate();
+
+    const results = searchArticles("二次迁移");
+    expect(results.map((article) => article.slug)).toEqual(["search-after-migrate"]);
+  });
+
+  it("migrates the old contentless FTS table and rebuilds published article rows", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticles } = await import("@/lib/services/search");
+    migrate();
+
+    const published = createArticle(
+      articleInput({
+        titleZh: "旧索引迁移",
+        slug: "old-fts-migration",
+        category: "society",
+        excerptZh: "旧表需要重建",
+        seoDescription: "旧索引迁移",
+        bodyZh: "contentless 表迁移后仍然能搜到",
+      }),
+    );
+    publishArticle(published.id);
+
+    getDb().exec(`
+      drop table article_search;
+      create virtual table article_search using fts5(
+        title_zh,
+        title_en,
+        excerpt_zh,
+        excerpt_en,
+        body_zh,
+        body_en,
+        category,
+        tags,
+        content='',
+        tokenize='unicode61'
+      );
+    `);
+    migrate();
+
+    const results = searchArticles("contentless");
+    expect(results.map((article) => article.slug)).toEqual(["old-fts-migration"]);
+  });
 });

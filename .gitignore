@@ -45,6 +45,8 @@ yarn-error.log*
 .font-cache/
 .superpowers/
 .worktrees/
+.local-backups/
+.playwright-mcp/
 .ops-secrets/
 data/
 uploads/

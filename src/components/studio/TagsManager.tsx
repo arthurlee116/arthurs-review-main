@@ -1,16 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { csrfToken } from "@/lib/client/csrf";
 
 type Tag = { id: number; name: string; slug: string };
-
-function csrfToken() {
-  return document.cookie
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith("arthurs_review_csrf="))
-    ?.split("=")[1];
-}
 
 export function TagsManager({ initialTags }: { initialTags: Tag[] }) {
   const [tags, setTags] = useState<Tag[]>(initialTags);

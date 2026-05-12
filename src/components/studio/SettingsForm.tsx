@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { csrfToken } from "@/lib/client/csrf";
 
 type Settings = {
   siteName: string;
@@ -15,14 +16,6 @@ type ArticleOption = {
   id: number;
   titleZh: string;
 };
-
-function csrfToken() {
-  return document.cookie
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith("arthurs_review_csrf="))
-    ?.split("=")[1];
-}
 
 export function SettingsForm({ initialSettings, publishedArticles }: { initialSettings: Settings; publishedArticles: ArticleOption[] }) {
   const [settings, setSettings] = useState<Settings>(initialSettings);

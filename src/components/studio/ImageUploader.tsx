@@ -1,14 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-function csrfToken() {
-  return document.cookie
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith("arthurs_review_csrf="))
-    ?.split("=")[1];
-}
+import { csrfToken } from "@/lib/client/csrf";
 
 function isImageFile(file: File) {
   return file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name);

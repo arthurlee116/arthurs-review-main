@@ -36,13 +36,7 @@ type TranslationResponse = {
 };
 type PublishFeedback = "idle" | "success" | "error";
 
-function csrfToken() {
-  return document.cookie
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith("arthurs_review_csrf="))
-    ?.split("=")[1];
-}
+import { csrfToken } from "@/lib/client/csrf";
 
 function initial(article?: Article): FormState {
   return {
