@@ -1,6 +1,7 @@
-import { ArticleCard } from "@/components/ArticleCard";
 import { SearchBox } from "@/components/SearchBox";
-import { searchArticles } from "@/lib/services/search";
+import { SearchPagination } from "@/components/SearchPagination";
+import { SearchResultCard } from "@/components/SearchResultCard";
+import { searchArticleResults } from "@/lib/services/search";
 import { PublicShell } from "@/app/_publicShell";
 import { publicPageMetadata } from "@/lib/metadata";
 
@@ -14,9 +15,15 @@ export function generateMetadata() {
   });
 }
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q = "" } = await searchParams;
-  const results = searchArticles(q);
+function pageNumber(value: string | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 1;
+}
+
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
+  const { q = "", page } = await searchParams;
+  const resultPage = searchArticleResults(q, { page: pageNumber(page) });
+
   return (
     <PublicShell>
       <main className="container pb-10">
@@ -30,10 +37,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <div className="my-8">
           <SearchBox defaultValue={q} />
         </div>
-        {q && results.length === 0 ? <p className="sans py-10 text-sm text-[var(--muted)]">No matching articles.</p> : null}
-        {results.map((article) => (
-          <ArticleCard key={article.id} article={article} large />
+        {q && resultPage.results.length === 0 ? <p className="sans py-10 text-sm text-[var(--muted)]">No matching articles.</p> : null}
+        {resultPage.results.map((result) => (
+          <SearchResultCard key={result.article.id} result={result} />
         ))}
+        <SearchPagination resultPage={resultPage} />
       </main>
     </PublicShell>
   );
