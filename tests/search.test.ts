@@ -211,5 +211,13 @@ describe("keyword search", () => {
       hasPreviousPage: false,
       hasNextPage: false,
     });
+    expect(searchArticleResults("!!!", { page: 5 })).toMatchObject({
+      page: 1,
+      total: 0,
+      totalPages: 0,
+      results: [],
+      hasPreviousPage: false,
+      hasNextPage: false,
+    });
   });
 });
