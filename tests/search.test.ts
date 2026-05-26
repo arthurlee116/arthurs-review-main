@@ -119,4 +119,97 @@ describe("keyword search", () => {
     const results = searchArticles("contentless");
     expect(results.map((article) => article.slug)).toEqual(["old-fts-migration"]);
   });
+
+  it("returns highlighted snippet parts for public search results", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticleResults } = await import("@/lib/services/search");
+    migrate();
+
+    const published = createArticle(
+      articleInput({
+        titleZh: "城市旁观者",
+        slug: "highlighted-bystander",
+        category: "society",
+        excerptZh: "城市如何塑造沉默",
+        seoDescription: "城市分析",
+        bodyZh: "地铁、租房和旁观者心态，让人学会保持距离。",
+      }),
+    );
+    publishArticle(published.id);
+
+    const page = searchArticleResults("旁观者");
+    expect(page.total).toBe(1);
+    expect(page.page).toBe(1);
+    expect(page.totalPages).toBe(1);
+    expect(page.results[0].article.slug).toBe("highlighted-bystander");
+    expect(page.results[0].excerptParts).toContainEqual({ text: "旁观者", highlighted: true });
+    expect(page.results[0].excerptParts.map((part) => part.text).join("")).toContain("旁观者");
+  });
+
+  it("paginates public search results with stable ordering", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticleResults } = await import("@/lib/services/search");
+    migrate();
+
+    for (let index = 1; index <= 12; index += 1) {
+      const article = createArticle(
+        articleInput({
+          titleZh: `共同词文章 ${index}`,
+          slug: `shared-term-${index}`,
+          category: "society",
+          excerptZh: `共同词摘要 ${index}`,
+          seoDescription: `共同词 SEO ${index}`,
+          bodyZh: `共同词正文 ${index}`,
+        }),
+      );
+      publishArticle(article.id);
+    }
+
+    const page = searchArticleResults("共同词", { page: 2, pageSize: 5 });
+    expect(page.total).toBe(12);
+    expect(page.page).toBe(2);
+    expect(page.pageSize).toBe(5);
+    expect(page.totalPages).toBe(3);
+    expect(page.hasPreviousPage).toBe(true);
+    expect(page.hasNextPage).toBe(true);
+    expect(page.results.map((result) => result.article.slug)).toEqual([
+      "shared-term-7",
+      "shared-term-6",
+      "shared-term-5",
+      "shared-term-4",
+      "shared-term-3",
+    ]);
+  });
+
+  it("clamps invalid and out-of-range public search pages", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticleResults } = await import("@/lib/services/search");
+    migrate();
+
+    const article = createArticle(
+      articleInput({
+        titleZh: "只有一页",
+        slug: "single-search-page",
+        category: "society",
+        excerptZh: "唯一结果",
+        seoDescription: "唯一结果",
+        bodyZh: "唯一结果",
+      }),
+    );
+    publishArticle(article.id);
+
+    expect(searchArticleResults("唯一结果", { page: -3 }).page).toBe(1);
+    expect(searchArticleResults("唯一结果", { page: 99 }).page).toBe(1);
+    expect(searchArticleResults("   ", { page: 5 })).toMatchObject({
+      page: 1,
+      total: 0,
+      totalPages: 0,
+      results: [],
+      hasPreviousPage: false,
+      hasNextPage: false,
+    });
+  });
 });
