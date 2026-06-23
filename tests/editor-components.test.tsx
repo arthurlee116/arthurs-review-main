@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { act } from "react";
+import { act, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ArticleEditor } from "@/components/studio/ArticleEditor";
 import { ImageUploader } from "@/components/studio/ImageUploader";
@@ -40,6 +40,11 @@ function article(overrides: Partial<Article> = {}): Article {
   };
 }
 
+function StatefulMarkdownEditor({ initialValue = "" }: { initialValue?: string }) {
+  const [value, setValue] = useState(initialValue);
+  return <MarkdownEditor label="Chinese body" value={value} onChange={setValue} />;
+}
+
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -48,10 +53,12 @@ afterEach(() => {
 
 describe("MarkdownEditor", () => {
   it("shows a sanitized markdown preview beside the editor", () => {
-    render(<MarkdownEditor label="Chinese body" value={"## 标题\n\n正文"} onChange={() => {}} />);
+    render(<MarkdownEditor label="Chinese body" value={"# 一级标题\n\n## 标题\n\n- 项目\n\n正文"} onChange={() => {}} />);
 
     expect(screen.getByRole("textbox", { name: "Chinese body" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "一级标题" })).toHaveClass("text-2xl");
     expect(screen.getByRole("heading", { name: "标题" })).toBeVisible();
+    expect(screen.getByText("项目").closest("ul")).toHaveClass("list-disc");
     expect(screen.getByText("正文")).toBeVisible();
   });
 
@@ -99,6 +106,49 @@ describe("MarkdownEditor", () => {
     });
 
     await waitFor(() => expect(onChange).toHaveBeenCalledWith("正文\n\n![dropped](/media/2026/05/dropped.webp)"));
+  });
+
+  it("imports a markdown file into an empty editor and updates the preview", async () => {
+    const user = userEvent.setup();
+    render(<StatefulMarkdownEditor />);
+
+    await user.upload(screen.getByLabelText("Import Markdown"), new File(["## Imported\n\nBody"], "draft.md", { type: "text/markdown" }));
+
+    expect(screen.getByRole("textbox", { name: "Chinese body" })).toHaveValue("## Imported\n\nBody");
+    expect(screen.getByRole("heading", { name: "Imported" })).toBeVisible();
+  });
+
+  it("blocks markdown import when the editor already has content", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<MarkdownEditor label="Chinese body" value="Existing body" onChange={onChange} />);
+
+    await user.upload(screen.getByLabelText("Import Markdown"), new File(["## Imported"], "draft.md", { type: "text/markdown" }));
+
+    expect(screen.getByText("Clear this body before importing Markdown.")).toBeVisible();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("reports clean markdown", async () => {
+    const user = userEvent.setup();
+    render(<MarkdownEditor label="Chinese body" value={"## Good\n\nBody with **bold** text."} onChange={() => {}} />);
+
+    await user.click(screen.getByRole("button", { name: "Check Markdown" }));
+
+    expect(screen.getByText("Markdown looks clean.")).toBeVisible();
+  });
+
+  it("reports heading and emphasis leftovers with line numbers", async () => {
+    const user = userEvent.setup();
+    render(<MarkdownEditor label="Chinese body" value={"#Bad\n\nThis has a stray * marker."} onChange={() => {}} />);
+    const editor = screen.getByRole("textbox", { name: "Chinese body" }) as HTMLTextAreaElement;
+
+    await user.click(screen.getByRole("button", { name: "Check Markdown" }));
+
+    expect(screen.getByText("Line 1: Add a space after heading markers.")).toBeVisible();
+    expect(screen.getByText("Line 3: Check unmatched emphasis markers.")).toBeVisible();
+    expect(editor.selectionStart).toBe(0);
+    expect(editor.selectionEnd).toBe(4);
   });
 });
 
