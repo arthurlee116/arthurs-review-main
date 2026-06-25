@@ -7,6 +7,8 @@ import { articlePath } from "@/lib/content/urls";
 import type { CategoryId } from "@/lib/content/categories";
 import { getPublishedArticle } from "@/lib/services/articles";
 import { articleMetadata } from "@/lib/metadata";
+import { uploadPublicPath } from "@/lib/media/paths";
+import { absoluteUrl } from "@/lib/seo";
 import { PublicShell } from "./_publicShell";
 
 export function getArticlePageMetadata(category: CategoryId, slug: string, lang?: string) {
@@ -28,9 +30,32 @@ export async function ArticlePage({
   if (!article) notFound();
   const useEnglish = lang === "en" && article.bodyEn;
   const title = useEnglish ? (article.titleEn ?? article.titleZh) : article.titleZh;
+  const description = (useEnglish ? article.excerptEn : article.seoDescription) || article.seoDescription || article.excerptZh;
+  const url = absoluteUrl(articlePath(article.category, article.slug));
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: title,
+    description,
+    url,
+    mainEntityOfPage: url,
+    datePublished: article.publishedAt ?? article.updatedAt,
+    dateModified: article.updatedAt,
+    author: {
+      "@type": "Person",
+      name: "Arthur",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Arthur's Review",
+      url: absoluteUrl("/"),
+    },
+    image: article.coverImagePath ? [absoluteUrl(uploadPublicPath(article.coverImagePath))] : undefined,
+  };
 
   return (
-    <PublicShell>
+    <PublicShell mastheadHeadingLevel={2}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <main className="container py-12">
         <article className="reading">
           <ArticleMeta category={article.category} publishedAt={article.publishedAt} />
