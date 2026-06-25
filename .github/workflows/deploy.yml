@@ -64,16 +64,20 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
 
           DEPLOY_HOST="${DEPLOY_HOST:-187.124.247.64}"
-          for attempt in 1 2 3 4 5; do
-            if ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts; then
-              break
-            fi
-            if [ "$attempt" = 5 ]; then
-              echo "Failed to scan SSH host key for $DEPLOY_HOST" >&2
-              exit 1
-            fi
-            sleep 5
-          done
+          if [ "$DEPLOY_HOST" = "187.124.247.64" ]; then
+            printf '%s\n' '187.124.247.64 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIACb0pudeVmwWMc6ZyBTidpArexUQHAk4M+A6OTcEZ6b' >> ~/.ssh/known_hosts
+          else
+            for attempt in 1 2 3 4 5; do
+              if ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts; then
+                break
+              fi
+              if [ "$attempt" = 5 ]; then
+                echo "Failed to scan SSH host key for $DEPLOY_HOST" >&2
+                exit 1
+              fi
+              sleep 5
+            done
+          fi
 
           cat > ~/.ssh/config <<EOF
           Host $DEPLOY_HOST
