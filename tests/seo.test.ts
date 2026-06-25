@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { articleInput } from "@/test/factories";
 
@@ -61,6 +62,36 @@ describe("SEO and discovery metadata", () => {
       description: "这是一段专门给搜索和分享使用的描述。",
       url: "https://blog.leesaitool.com/commentary/real-title",
       type: "article",
+    });
+  });
+
+  it("emits site and author JSON-LD from the root layout", async () => {
+    const layout = await import("@/app/layout");
+    const html = renderToStaticMarkup(await layout.default({ children: null }));
+    const match = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+    expect(match?.[1]).toBeTruthy();
+
+    const jsonLd = JSON.parse(match![1]);
+    expect(jsonLd).toMatchObject({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://blog.leesaitool.com/about#arthur",
+          name: "Arthur",
+          url: "https://blog.leesaitool.com/about",
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://blog.leesaitool.com/#website",
+          name: "Arthur's Review",
+          url: "https://blog.leesaitool.com/",
+          inLanguage: "zh-CN",
+          publisher: {
+            "@id": "https://blog.leesaitool.com/about#arthur",
+          },
+        },
+      ],
     });
   });
 });

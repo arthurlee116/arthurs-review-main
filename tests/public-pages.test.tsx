@@ -70,10 +70,9 @@ describe("public article pages", () => {
     expect(headings[0]).toHaveTextContent("真正的页面标题");
     expect(screen.getByRole("heading", { level: 2, name: "正文里不该再抢 H1" })).toBeInTheDocument();
 
-    const script = container.querySelector('script[type="application/ld+json"]');
-    expect(script?.textContent).toBeTruthy();
-    const jsonLd = JSON.parse(script!.textContent!);
-    expect(jsonLd).toMatchObject({
+    const jsonLd = [...container.querySelectorAll('script[type="application/ld+json"]')].map((script) => JSON.parse(script.textContent!));
+    expect(jsonLd).toHaveLength(2);
+    expect(jsonLd.find((item) => item["@type"] === "BlogPosting")).toMatchObject({
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       headline: "真正的页面标题",
@@ -91,6 +90,30 @@ describe("public article pages", () => {
         url: "https://blog.leesaitool.com/",
       },
       image: ["https://blog.leesaitool.com/media/2026/05/cover.webp"],
+    });
+    expect(jsonLd.find((item) => item["@type"] === "BreadcrumbList")).toMatchObject({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Arthur's Review",
+          item: "https://blog.leesaitool.com/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "时事评论",
+          item: "https://blog.leesaitool.com/commentary",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "真正的页面标题",
+          item: "https://blog.leesaitool.com/commentary/structured-article",
+        },
+      ],
     });
   });
 });

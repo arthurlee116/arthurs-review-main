@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { absoluteUrl } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,9 +16,35 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": absoluteUrl("/about#arthur"),
+        name: "Arthur",
+        url: absoluteUrl("/about"),
+      },
+      {
+        "@type": "WebSite",
+        "@id": absoluteUrl("/#website"),
+        name: "Arthur's Review",
+        url: absoluteUrl("/"),
+        description: "Arthur's Review, a personal intellectual publication.",
+        inLanguage: "zh-CN",
+        publisher: {
+          "@id": absoluteUrl("/about#arthur"),
+        },
+      },
+    ],
+  };
+
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+        {children}
+      </body>
     </html>
   );
 }

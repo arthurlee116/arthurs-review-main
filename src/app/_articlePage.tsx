@@ -4,7 +4,7 @@ import { CoverImage, coverImageSizes } from "@/components/CoverImage";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { articlePath } from "@/lib/content/urls";
-import type { CategoryId } from "@/lib/content/categories";
+import { categories, categoryLabel, type CategoryId } from "@/lib/content/categories";
 import { getPublishedArticle } from "@/lib/services/articles";
 import { articleMetadata } from "@/lib/metadata";
 import { uploadPublicPath } from "@/lib/media/paths";
@@ -32,6 +32,7 @@ export async function ArticlePage({
   const title = useEnglish ? (article.titleEn ?? article.titleZh) : article.titleZh;
   const description = (useEnglish ? article.excerptEn : article.seoDescription) || article.seoDescription || article.excerptZh;
   const url = absoluteUrl(articlePath(article.category, article.slug));
+  const categoryUrl = absoluteUrl(categories[article.category].href);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -52,10 +53,35 @@ export async function ArticlePage({
     },
     image: article.coverImagePath ? [absoluteUrl(uploadPublicPath(article.coverImagePath))] : undefined,
   };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Arthur's Review",
+        item: absoluteUrl("/"),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: categoryLabel(article.category),
+        item: categoryUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: title,
+        item: url,
+      },
+    ],
+  };
 
   return (
     <PublicShell mastheadHeadingLevel={2}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
       <main className="container py-12">
         <article className="reading">
           <ArticleMeta category={article.category} publishedAt={article.publishedAt} />
