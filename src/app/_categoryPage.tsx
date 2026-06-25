@@ -17,8 +17,8 @@ export function CategoryPage({ category }: { category: CategoryId }) {
         </header>
         {articles.length ? (
           <section>
-            {articles.map((article) => (
-              <ArticleCard key={article.id} article={article} large />
+            {articles.map((article, index) => (
+              <ArticleCard key={article.id} article={article} large eagerImage={index === 0} />
             ))}
           </section>
         ) : (
