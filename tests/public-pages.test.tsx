@@ -2,6 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ArticlePage } from "@/app/_articlePage";
 import HomePage from "@/app/page";
@@ -11,6 +12,16 @@ let tmpDir: string;
 const contactNotice = "非常欢迎向我的邮箱（laoliarthur@outlook.com）或者微信（bookspiano）留言，说说你的想法，给我提意见！";
 
 beforeEach(async () => {
+  const storage = new Map<string, string>();
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: {
+      clear: () => storage.clear(),
+      getItem: (key: string) => storage.get(key) ?? null,
+      removeItem: (key: string) => storage.delete(key),
+      setItem: (key: string, value: string) => storage.set(key, value),
+    },
+  });
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-public-"));
   process.env.DATA_DIR = tmpDir;
   process.env.SITE_URL = "https://blog.leesaitool.com";
@@ -33,7 +44,64 @@ describe("public article pages", () => {
 
     render(<HomePage />);
 
-    expect(screen.getByText(contactNotice)).toBeInTheDocument();
+    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
+    expect(screen.getAllByText(contactNotice).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("does not reopen the contact notice modal after it is closed", async () => {
+    const user = userEvent.setup();
+    const { migrate } = await import("@/lib/db/migrate");
+    migrate();
+
+    render(<HomePage />);
+
+    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "关闭" }));
+    expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
+    expect(window.localStorage.getItem("arthurs-review.contactPromptSeen")).toBe("1");
+  });
+
+  it("skips the contact notice modal once this browser has seen it", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    migrate();
+    window.localStorage.setItem("arthurs-review.contactPromptSeen", "1");
+
+    render(<HomePage />);
+
+    expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
+  });
+
+  it("still closes the contact notice modal when localStorage is blocked", async () => {
+    const user = userEvent.setup();
+    const { migrate } = await import("@/lib/db/migrate");
+    migrate();
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: {
+        getItem: () => {
+          throw new DOMException("blocked", "SecurityError");
+        },
+        setItem: () => {
+          throw new DOMException("blocked", "SecurityError");
+        },
+      },
+    });
+
+    render(<HomePage />);
+
+    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "关闭" }));
+    expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
+  });
+
+  it("uses a native dialog for the contact notice prompt", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    migrate();
+
+    const { container } = render(<HomePage />);
+
+    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
+    expect(container.querySelector("dialog.contact-modal-panel")).toBeInTheDocument();
   });
 
   it("renders an article cover image when one is configured", async () => {
@@ -79,7 +147,8 @@ describe("public article pages", () => {
     const headings = screen.getAllByRole("heading", { level: 1 });
     expect(headings).toHaveLength(1);
     expect(headings[0]).toHaveTextContent("真正的页面标题");
-    expect(screen.getByText(contactNotice)).toBeInTheDocument();
+    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
+    expect(screen.getAllByText(contactNotice).length).toBeGreaterThanOrEqual(2);
     expect(screen.getByRole("heading", { level: 2, name: "正文里不该再抢 H1" })).toBeInTheDocument();
 
     const jsonLd = [...container.querySelectorAll('script[type="application/ld+json"]')].map((script) => JSON.parse(script.textContent!));

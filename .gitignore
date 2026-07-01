@@ -47,6 +47,7 @@ yarn-error.log*
 .worktrees/
 .local-backups/
 .playwright-mcp/
+.codegraph/
 .ops-secrets/
 data/
 uploads/

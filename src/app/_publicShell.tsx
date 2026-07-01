@@ -1,5 +1,6 @@
 import { Masthead } from "@/components/Masthead";
 import { ContactNotice } from "@/components/ContactNotice";
+import { ContactPromptModal } from "@/components/ContactPromptModal";
 import { PublicNav } from "@/components/PublicNav";
 
 export function PublicShell({
@@ -13,8 +14,9 @@ export function PublicShell({
 }) {
   return (
     <div>
+      <ContactPromptModal />
       <Masthead headingLevel={mastheadHeadingLevel} />
-      {noticePlacement === "beforeNav" ? <ContactNotice className="container mt-4" /> : null}
+      {noticePlacement === "beforeNav" ? <ContactNotice className="container mt-7" /> : null}
       <PublicNav />
       {children}
     </div>

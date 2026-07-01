@@ -104,6 +104,72 @@ button {
   padding-inline: 24px;
 }
 
+.contact-notice {
+  color: var(--ink);
+  font-size: clamp(0.95rem, 0.95vw, 1rem);
+  font-weight: 700;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  padding-block: 14px;
+  text-wrap: balance;
+  white-space: nowrap;
+}
+
+.contact-modal-panel {
+  box-sizing: border-box;
+  width: min(720px, calc(100vw - 40px));
+  max-width: calc(100vw - 40px);
+  border: 2px solid var(--rule);
+  background: var(--paper);
+  box-shadow: 14px 14px 0 var(--rule);
+  color: var(--ink);
+  padding: clamp(26px, 4vw, 44px);
+}
+
+.contact-modal-panel::backdrop {
+  background: rgb(17 17 17 / 0.72);
+}
+
+.contact-modal-accent {
+  width: 112px;
+  height: 8px;
+  margin-bottom: 28px;
+  background: var(--accent);
+}
+
+.contact-modal-kicker {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.contact-modal-copy {
+  margin: 0;
+  font-size: clamp(1.65rem, 3.2vw, 2.65rem);
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.contact-modal-close {
+  margin-top: 32px;
+  border: 2px solid var(--rule);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 10px 22px;
+}
+
+.contact-modal-close:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
 .reading {
   max-width: 760px;
   margin: 0 auto;
@@ -145,5 +211,14 @@ button {
 
   .prose {
     font-size: 18px;
+  }
+
+  .contact-notice {
+    font-size: 1rem;
+    white-space: normal;
+  }
+
+  .contact-modal-panel {
+    box-shadow: 8px 8px 0 var(--rule);
   }
 }
