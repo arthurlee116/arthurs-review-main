@@ -4,9 +4,11 @@ import path from "node:path";
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ArticlePage } from "@/app/_articlePage";
+import HomePage from "@/app/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
+const contactNotice = "非常欢迎向我的邮箱（laoliarthur@outlook.com）或者微信（bookspiano）留言，说说你的想法，给我提意见！";
 
 beforeEach(async () => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-public-"));
@@ -25,6 +27,15 @@ afterEach(async () => {
 });
 
 describe("public article pages", () => {
+  it("shows the contact notice on the homepage", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    migrate();
+
+    render(<HomePage />);
+
+    expect(screen.getByText(contactNotice)).toBeInTheDocument();
+  });
+
   it("renders an article cover image when one is configured", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
@@ -68,6 +79,7 @@ describe("public article pages", () => {
     const headings = screen.getAllByRole("heading", { level: 1 });
     expect(headings).toHaveLength(1);
     expect(headings[0]).toHaveTextContent("真正的页面标题");
+    expect(screen.getByText(contactNotice)).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "正文里不该再抢 H1" })).toBeInTheDocument();
 
     const jsonLd = [...container.querySelectorAll('script[type="application/ld+json"]')].map((script) => JSON.parse(script.textContent!));

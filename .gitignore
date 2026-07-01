@@ -61,3 +61,6 @@ deploy/production.env
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+docs/

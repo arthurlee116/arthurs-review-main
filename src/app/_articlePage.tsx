@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ArticleMeta } from "@/components/ArticleMeta";
+import { ContactNotice } from "@/components/ContactNotice";
 import { CoverImage, coverImageSizes } from "@/components/CoverImage";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
@@ -84,6 +85,7 @@ export async function ArticlePage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
       <main className="container py-12">
         <article className="reading">
+          <ContactNotice className="mb-8" />
           <ArticleMeta category={article.category} publishedAt={article.publishedAt} />
           <LanguageSwitch hasEnglish={Boolean(article.bodyEn)} currentPath={articlePath(article.category, article.slug)} />
           <h1 className="mt-5 text-5xl font-bold leading-none md:text-7xl">{title}</h1>
