@@ -36,6 +36,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('package.json', 'next.config.*', 'postcss.config.*', 'tsconfig.json', 'src/**/*', 'public/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-next-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: Lint
         run: pnpm lint
 
@@ -52,6 +60,7 @@ jobs:
         env:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_SSH_PASSPHRASE: ${{ secrets.DEPLOY_SSH_PASSPHRASE }}
           PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
         run: |
           test -n "$DEPLOY_SSH_PRIVATE_KEY"
@@ -63,9 +72,23 @@ jobs:
           printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-          DEPLOY_HOST="${DEPLOY_HOST:-187.124.247.64}"
-          if [ "$DEPLOY_HOST" = "187.124.247.64" ]; then
-            printf '%s\n' '187.124.247.64 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIACb0pudeVmwWMc6ZyBTidpArexUQHAk4M+A6OTcEZ6b' >> ~/.ssh/known_hosts
+          eval "$(ssh-agent -s)"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+          if [ -n "${DEPLOY_SSH_PASSPHRASE:-}" ]; then
+            cat > "$RUNNER_TEMP/ssh-askpass" <<'EOF'
+          #!/usr/bin/env sh
+          printf '%s\n' "$DEPLOY_SSH_PASSPHRASE"
+          EOF
+            chmod 700 "$RUNNER_TEMP/ssh-askpass"
+            DISPLAY=none SSH_ASKPASS="$RUNNER_TEMP/ssh-askpass" SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key </dev/null
+          else
+            ssh-add ~/.ssh/deploy_key
+          fi
+
+          DEPLOY_HOST="${DEPLOY_HOST:-72.60.195.46}"
+          if [ "$DEPLOY_HOST" = "72.60.195.46" ]; then
+            printf '%s\n' '72.60.195.46 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPW6DVc3HbWdUhmPpQxR2De5SrdmSsmYyxm+RrHgedSl' >> ~/.ssh/known_hosts
           else
             for attempt in 1 2 3 4 5; do
               if ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts; then
@@ -82,6 +105,7 @@ jobs:
           cat > ~/.ssh/config <<EOF
           Host $DEPLOY_HOST
             IdentityFile ~/.ssh/deploy_key
+            IdentityAgent $SSH_AUTH_SOCK
             IdentitiesOnly yes
             StrictHostKeyChecking yes
           EOF
@@ -95,6 +119,6 @@ jobs:
           APP_DIR: ${{ vars.DEPLOY_APP_DIR }}
           REMOTE: ${{ vars.DEPLOY_REMOTE }}
         run: |
-          REMOTE="${REMOTE:-root@187.124.247.64}" \
+          REMOTE="${REMOTE:-root@72.60.195.46}" \
           APP_DIR="${APP_DIR:-/opt/arthurs-review}" \
           ./scripts/deploy.sh

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REMOTE="${REMOTE:-root@187.124.247.64}"
+REMOTE="${REMOTE:-root@72.60.195.46}"
 APP_DIR="${APP_DIR:-/opt/arthurs-review}"
 CHECK_ONLY="${CHECK_ONLY:-0}"
 REMOTE_SCRIPT="/root/arthurs-review-switch-xray-caddy.sh"

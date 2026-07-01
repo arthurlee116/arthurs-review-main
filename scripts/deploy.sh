@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REMOTE="${REMOTE:-root@187.124.247.64}"
+REMOTE="${REMOTE:-root@72.60.195.46}"
 APP_DIR="${APP_DIR:-/opt/arthurs-review}"
 APP_ONLY="${APP_ONLY:-0}"
 
@@ -12,6 +12,7 @@ fi
 
 rsync -az --delete \
   --exclude .git \
+  --exclude .codegraph \
   --exclude node_modules \
   --exclude .next \
   --exclude .ops-secrets \
