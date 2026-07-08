@@ -5,14 +5,14 @@ import { verifyCsrfToken } from "@/lib/auth/csrf";
 import { verifySessionCookie } from "@/lib/auth/session";
 
 export const ArticleBodySchema = z.object({
-  titleZh: z.string().min(1),
+  titleZh: z.string().min(1, "Chinese title is required"),
   titleEn: z.string().nullable(),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must use lowercase letters, numbers, and single hyphens"),
   category: z.enum(["commentary", "society", "misc"]),
   excerptZh: z.string(),
   excerptEn: z.string().nullable(),
   seoDescription: z.string(),
-  bodyZh: z.string().min(1),
+  bodyZh: z.string().min(1, "Chinese body is required"),
   bodyEn: z.string().nullable(),
   tagIds: z.array(z.number().int().positive()),
   coverImagePath: z.string().nullable(),
@@ -47,7 +47,10 @@ export async function requireApiAdmin(request: Request, { csrf = true } = {}) {
 
 export function apiError(error: unknown) {
   if (error instanceof z.ZodError) {
-    return Response.json({ error: "Invalid request body" }, { status: 400 });
+    const issue = error.issues[0];
+    const field = issue?.path.join(".");
+    const detail = [field, issue?.message].filter(Boolean).join(": ");
+    return Response.json({ error: detail ? `Invalid request body: ${detail}` : "Invalid request body" }, { status: 400 });
   }
   if (typeof error === "object" && error && "code" in error && String((error as { code?: unknown }).code).startsWith("SQLITE_CONSTRAINT")) {
     return Response.json({ error: "A record with those unique fields already exists." }, { status: 409 });
