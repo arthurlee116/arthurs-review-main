@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { ArticleMeta } from "@/components/ArticleMeta";
 import { ContactNotice } from "@/components/ContactNotice";
 import { CoverImage, coverImageSizes } from "@/components/CoverImage";
@@ -13,6 +14,7 @@ import { absoluteUrl } from "@/lib/seo";
 import { PublicShell } from "./_publicShell";
 
 export async function getArticlePageMetadata(category: CategoryId, slug: string, lang?: string) {
+  await connection();
   const article = await getCachedPublishedArticle(category, slug);
   if (!article) return {};
   return articleMetadata(article, lang);
@@ -27,6 +29,7 @@ export async function ArticlePage({
   slug: string;
   lang?: string;
 }) {
+  await connection();
   const article = await getCachedPublishedArticle(category, slug);
   if (!article) notFound();
   const useEnglish = lang === "en" && article.bodyEn;

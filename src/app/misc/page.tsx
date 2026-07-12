@@ -8,3 +8,4 @@ export function generateMetadata() {
 export default function MiscPage() {
   return <CategoryPage category="misc" />;
 }
+export const instant = false;

@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { ArticleMeta } from "@/components/ArticleMeta";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { getArticleById } from "@/lib/services/articles";
 
 export default async function PreviewPage({ params }: { params: Promise<{ id: string }> }) {
+  await connection();
   const { id } = await params;
   const article = getArticleById(Number(id), { includeDraft: true });
   if (!article) notFound();

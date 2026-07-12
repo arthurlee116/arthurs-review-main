@@ -8,3 +8,4 @@ export function generateMetadata() {
 export default function SocietyPage() {
   return <CategoryPage category="society" />;
 }
+export const instant = false;

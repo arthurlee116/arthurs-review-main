@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { TranslateMissingEnglishButton } from "@/components/studio/TranslateMissingEnglishButton";
 import { listStudioArticles } from "@/lib/services/articles";
 import type { CategoryId } from "@/lib/content/categories";
@@ -20,6 +21,7 @@ function matchesQuery(article: ReturnType<typeof listStudioArticles>[number], qu
 }
 
 export default async function ArticlesPage({ searchParams }: { searchParams: Promise<ArticleSearchParams> }) {
+  await connection();
   const params = await searchParams;
   const status = params.status === "draft" || params.status === "published" ? params.status : "all";
   const category = params.category === "commentary" || params.category === "society" || params.category === "misc" ? params.category : "all";

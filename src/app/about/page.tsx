@@ -1,8 +1,12 @@
+import { connection } from "next/server";
 import { PublicShell } from "@/app/_publicShell";
 import { publicPageMetadata } from "@/lib/metadata";
 import { getCachedSettings } from "@/lib/services/public-content";
 
+export const instant = false;
+
 export async function generateMetadata() {
+  await connection();
   const settings = await getCachedSettings();
   return publicPageMetadata({
     title: "About",
@@ -12,6 +16,7 @@ export async function generateMetadata() {
 }
 
 export default async function AboutPage() {
+  await connection();
   const settings = await getCachedSettings();
   return (
     <PublicShell>

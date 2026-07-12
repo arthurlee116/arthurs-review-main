@@ -12,3 +12,8 @@ vi.mock("next/font/local", () => ({
 vi.mock("next/cache", () => ({
   cacheLife: vi.fn(),
 }));
+
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  connection: vi.fn(),
+}));

@@ -1,9 +1,11 @@
+import { connection } from "next/server";
 import { ArticleCard } from "@/components/ArticleCard";
 import { categories, type CategoryId } from "@/lib/content/categories";
 import { listCachedPublishedArticles } from "@/lib/services/public-content";
 import { PublicShell } from "./_publicShell";
 
 export async function CategoryPage({ category }: { category: CategoryId }) {
+  await connection();
   const articles = await listCachedPublishedArticles(category);
   return (
     <PublicShell>
