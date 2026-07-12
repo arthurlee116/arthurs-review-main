@@ -8,3 +8,7 @@ vi.mock("next/font/local", () => ({
     style: { fontFamily: "mock-font" },
   }),
 }));
+
+vi.mock("next/cache", () => ({
+  cacheLife: vi.fn(),
+}));

@@ -5,7 +5,7 @@ import { searchArticleResults } from "@/lib/services/search";
 import { PublicShell } from "@/app/_publicShell";
 import { publicPageMetadata } from "@/lib/metadata";
 
-export const dynamic = "force-dynamic";
+export const instant = false;
 
 export function generateMetadata() {
   return publicPageMetadata({

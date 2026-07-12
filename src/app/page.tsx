@@ -1,9 +1,7 @@
 import { ArticleCard } from "@/components/ArticleCard";
 import { publicPageMetadata } from "@/lib/metadata";
-import { listPublishedArticles } from "@/lib/services/articles";
+import { listCachedPublishedArticles } from "@/lib/services/public-content";
 import { PublicShell } from "./_publicShell";
-
-export const dynamic = "force-dynamic";
 
 export function generateMetadata() {
   return publicPageMetadata({
@@ -13,8 +11,8 @@ export function generateMetadata() {
   });
 }
 
-export default function HomePage() {
-  const articles = listPublishedArticles();
+export default async function HomePage() {
+  const articles = await listCachedPublishedArticles();
   const featured = articles.find((article) => article.isFeatured) ?? articles[0];
   const feed = articles.filter((article) => article.id !== featured?.id);
 

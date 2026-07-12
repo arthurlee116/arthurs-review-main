@@ -1,10 +1,10 @@
 import { ArticleCard } from "@/components/ArticleCard";
 import { categories, type CategoryId } from "@/lib/content/categories";
-import { listPublishedArticles } from "@/lib/services/articles";
+import { listCachedPublishedArticles } from "@/lib/services/public-content";
 import { PublicShell } from "./_publicShell";
 
-export function CategoryPage({ category }: { category: CategoryId }) {
-  const articles = listPublishedArticles(category);
+export async function CategoryPage({ category }: { category: CategoryId }) {
+  const articles = await listCachedPublishedArticles(category);
   return (
     <PublicShell>
       <main className="container pb-10">

@@ -1,6 +1,6 @@
 import { ArticlePage, getArticlePageMetadata } from "@/app/_articlePage";
 
-export const dynamic = "force-dynamic";
+export const instant = false;
 
 export async function generateMetadata({
   params,
@@ -11,7 +11,7 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const { lang } = await searchParams;
-  return getArticlePageMetadata("commentary", slug, lang);
+  return await getArticlePageMetadata("commentary", slug, lang);
 }
 
 export default async function CommentaryArticlePage({

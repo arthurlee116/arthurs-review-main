@@ -1,11 +1,9 @@
 import { PublicShell } from "@/app/_publicShell";
 import { publicPageMetadata } from "@/lib/metadata";
-import { getSettings } from "@/lib/services/settings";
+import { getCachedSettings } from "@/lib/services/public-content";
 
-export const dynamic = "force-dynamic";
-
-export function generateMetadata() {
-  const settings = getSettings();
+export async function generateMetadata() {
+  const settings = await getCachedSettings();
   return publicPageMetadata({
     title: "About",
     description: settings.about,
@@ -13,8 +11,8 @@ export function generateMetadata() {
   });
 }
 
-export default function AboutPage() {
-  const settings = getSettings();
+export default async function AboutPage() {
+  const settings = await getCachedSettings();
   return (
     <PublicShell>
       <main className="container py-12">

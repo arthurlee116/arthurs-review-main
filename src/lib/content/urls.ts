@@ -1,9 +1,10 @@
+import type { Route } from "next";
 import type { CategoryId } from "./categories";
 
-export function articlePath(category: CategoryId, slug: string) {
-  return `/${category}/${slug}`;
+export function articlePath(category: CategoryId, slug: string): Route {
+  return `/${category}/${slug}` as Route;
 }
 
-export function categoryPath(category: CategoryId) {
-  return `/${category}`;
+export function categoryPath(category: CategoryId): Route {
+  return `/${category}` as Route;
 }

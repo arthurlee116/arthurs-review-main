@@ -6,14 +6,14 @@ import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { articlePath } from "@/lib/content/urls";
 import { categories, categoryLabel, type CategoryId } from "@/lib/content/categories";
-import { getPublishedArticle } from "@/lib/services/articles";
+import { getCachedPublishedArticle } from "@/lib/services/public-content";
 import { articleMetadata } from "@/lib/metadata";
 import { uploadPublicPath } from "@/lib/media/paths";
 import { absoluteUrl } from "@/lib/seo";
 import { PublicShell } from "./_publicShell";
 
-export function getArticlePageMetadata(category: CategoryId, slug: string, lang?: string) {
-  const article = getPublishedArticle(category, slug);
+export async function getArticlePageMetadata(category: CategoryId, slug: string, lang?: string) {
+  const article = await getCachedPublishedArticle(category, slug);
   if (!article) return {};
   return articleMetadata(article, lang);
 }
@@ -27,7 +27,7 @@ export async function ArticlePage({
   slug: string;
   lang?: string;
 }) {
-  const article = getPublishedArticle(category, slug);
+  const article = await getCachedPublishedArticle(category, slug);
   if (!article) notFound();
   const useEnglish = lang === "en" && article.bodyEn;
   const title = useEnglish ? (article.titleEn ?? article.titleZh) : article.titleZh;

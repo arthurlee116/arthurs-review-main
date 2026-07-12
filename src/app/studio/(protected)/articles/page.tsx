@@ -3,8 +3,6 @@ import { TranslateMissingEnglishButton } from "@/components/studio/TranslateMiss
 import { listStudioArticles } from "@/lib/services/articles";
 import type { CategoryId } from "@/lib/content/categories";
 
-export const dynamic = "force-dynamic";
-
 type ArticleSearchParams = {
   status?: string;
   category?: string;

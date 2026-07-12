@@ -1,6 +1,8 @@
 import { StudioNav } from "@/components/studio/StudioNav";
 import { requireAdmin } from "@/lib/auth/session";
 
+export const instant = false;
+
 export default async function StudioProtectedLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
   return (

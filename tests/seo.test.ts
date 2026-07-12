@@ -24,10 +24,9 @@ afterEach(async () => {
 });
 
 describe("SEO and discovery metadata", () => {
-  it("keeps robots.txt dynamic so production SITE_URL is not baked as localhost", async () => {
+  it("builds robots.txt from the production SITE_URL", async () => {
     const robots = await import("@/app/robots");
 
-    expect(robots.dynamic).toBe("force-dynamic");
     expect(robots.default().sitemap).toBe("https://blog.leesaitool.com/sitemap.xml");
   });
 

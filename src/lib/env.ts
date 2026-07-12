@@ -10,6 +10,7 @@ const EnvSchema = z.object({
   LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
   LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(8),
 });
+const DataEnvSchema = EnvSchema.pick({ DATA_DIR: true });
 
 export type AppEnv = z.infer<typeof EnvSchema>;
 
@@ -18,7 +19,7 @@ export function getEnv() {
 }
 
 export function getDataPaths() {
-  const env = getEnv();
+  const env = DataEnvSchema.parse(process.env);
   const root = path.resolve(env.DATA_DIR);
   return {
     root,

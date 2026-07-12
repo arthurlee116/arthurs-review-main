@@ -42,7 +42,7 @@ describe("public article pages", () => {
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
-    render(<HomePage />);
+    render(await HomePage());
 
     expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
     expect(screen.getAllByText(contactNotice).length).toBeGreaterThanOrEqual(2);
@@ -53,7 +53,7 @@ describe("public article pages", () => {
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
-    render(<HomePage />);
+    render(await HomePage());
 
     expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "关闭" }));
@@ -66,7 +66,7 @@ describe("public article pages", () => {
     migrate();
     window.localStorage.setItem("arthurs-review.contactPromptSeen", "1");
 
-    render(<HomePage />);
+    render(await HomePage());
 
     expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
   });
@@ -87,7 +87,7 @@ describe("public article pages", () => {
       },
     });
 
-    render(<HomePage />);
+    render(await HomePage());
 
     expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "关闭" }));
@@ -98,7 +98,7 @@ describe("public article pages", () => {
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
-    const { container } = render(<HomePage />);
+    const { container } = render(await HomePage());
 
     expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
     expect(container.querySelector("dialog.contact-modal-panel")).toBeInTheDocument();

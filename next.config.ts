@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  typedRoutes: true,
+  cacheComponents: true,
+  reactCompiler: true,
+  cacheLife: {
+    publicContent: {
+      stale: 30,
+      revalidate: 60,
+      expire: 3_600,
+    },
+  },
+  experimental: {
+    useTypeScriptCli: true,
+  },
   allowedDevOrigins: ["127.0.0.1"],
   images: {
     formats: ["image/webp"],

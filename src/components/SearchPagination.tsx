@@ -1,11 +1,12 @@
+import type { Route } from "next";
 import Link from "next/link";
 import type { SearchArticleResultsPage } from "@/lib/services/search";
 
-function searchPageHref(query: string, page: number) {
+function searchPageHref(query: string, page: number): Route {
   const params = new URLSearchParams();
   params.set("q", query);
   if (page > 1) params.set("page", String(page));
-  return `/search?${params.toString()}`;
+  return `/search?${params.toString()}` as Route;
 }
 
 export function SearchPagination({ resultPage }: { resultPage: SearchArticleResultsPage }) {

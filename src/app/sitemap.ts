@@ -1,15 +1,14 @@
 import type { MetadataRoute } from "next";
 import { articlePath } from "@/lib/content/urls";
 import { absoluteUrl } from "@/lib/seo";
-import { listPublishedArticles } from "@/lib/services/articles";
+import { listCachedPublishedArticles } from "@/lib/services/public-content";
 
-export const dynamic = "force-dynamic";
-
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = ["/", "/commentary", "/society", "/misc", "/about", "/search"];
+  const articles = await listCachedPublishedArticles();
   return [
     ...staticPages.map((path) => ({ url: absoluteUrl(path) })),
-    ...listPublishedArticles().map((article) => ({
+    ...articles.map((article) => ({
       url: absoluteUrl(articlePath(article.category, article.slug)),
       lastModified: article.updatedAt,
     })),

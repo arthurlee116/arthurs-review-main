@@ -1,11 +1,9 @@
 import { renderRss } from "@/lib/rss";
-import { listPublishedArticles } from "@/lib/services/articles";
-import { getSetting } from "@/lib/services/settings";
+import { getCachedSetting, listCachedPublishedArticles } from "@/lib/services/public-content";
 
-export const dynamic = "force-dynamic";
-
-export function GET() {
-  return new Response(renderRss(listPublishedArticles(), getSetting("rssDescription")), {
+export async function GET() {
+  const [articles, description] = await Promise.all([listCachedPublishedArticles(), getCachedSetting("rssDescription")]);
+  return new Response(renderRss(articles, description), {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
     },

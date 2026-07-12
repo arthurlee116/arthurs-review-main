@@ -3,8 +3,6 @@ import { ArticleMeta } from "@/components/ArticleMeta";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { getArticleById } from "@/lib/services/articles";
 
-export const dynamic = "force-dynamic";
-
 export default async function PreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const article = getArticleById(Number(id), { includeDraft: true });
