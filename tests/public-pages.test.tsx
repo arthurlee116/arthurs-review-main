@@ -219,6 +219,9 @@ describe("public article pages", () => {
     expect(summary).toHaveClass("text-xs", "text-[var(--muted)]");
     await user.click(summary);
     expect(details).toHaveAttribute("open");
+    expect(
+      screen.getByText("This article may have been published earlier, but this proof shows it existed no later than the date below."),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Wayback snapshot" })).toHaveAttribute("href", proof!.waybackUrl);
     expect(screen.getByText(proof!.documentSha256)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Download source" })).toHaveAttribute("href", `/proofs/${proof!.id}/source`);

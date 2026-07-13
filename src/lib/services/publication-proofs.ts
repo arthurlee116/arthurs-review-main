@@ -137,7 +137,11 @@ export async function captureWithWayback(publicUrl: string) {
         authorization,
         "content-type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams({ url: publicUrl, capture_all: "1" }),
+      body: new URLSearchParams({
+        url: publicUrl,
+        capture_all: "1",
+        if_not_archived_within: "0",
+      }),
     }),
   );
   const jobId = typeof submitted.job_id === "string" ? submitted.job_id : null;

@@ -104,6 +104,7 @@ export async function ArticlePage({
             <details className="sans mt-10 border-t border-[var(--rule)] pt-4 text-xs text-[var(--muted)]">
               <summary className="w-fit cursor-pointer select-none text-xs text-[var(--muted)]">Proof of Publication</summary>
               <div className="mt-4 grid gap-4">
+                <p>This article may have been published earlier, but this proof shows it existed no later than the date below.</p>
                 {proofs.map((proof) => (
                   <div key={proof.id} className="grid gap-1 border-l border-[var(--rule)] pl-3">
                     <time dateTime={proof.createdAt}>{new Date(proof.createdAt).toLocaleString("en-GB")}</time>
@@ -112,17 +113,16 @@ export async function ArticlePage({
                         Wayback snapshot
                       </a>
                     ) : null}
-                        <span>
-                          SHA-256:{" "}
-                          <span className="break-all">{proof.documentSha256}</span>
-                        </span>
-                        <a
-                          className="underline underline-offset-2 hover:text-foreground"
-                          href={`/proofs/${proof.id}/source`}
-                        >
-                          Download source
-                        </a>
-                        {proof.otsPath ? (
+                    <span>
+                      SHA-256: <span className="break-all">{proof.documentSha256}</span>
+                    </span>
+                    <a
+                      className="underline underline-offset-2 hover:text-foreground"
+                      href={`/proofs/${proof.id}/source`}
+                    >
+                      Download source
+                    </a>
+                    {proof.otsPath ? (
                       <a className="underline" href={`/proofs/${proof.id}/ots`}>
                         Download OTS
                       </a>

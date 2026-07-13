@@ -56,6 +56,7 @@ describe("publication proofs", () => {
         }),
       }),
     );
+    expect(String(fetchMock.mock.calls[0]![1]?.body)).toContain("if_not_archived_within=0");
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "https://web.archive.org/save/status/job-1",
