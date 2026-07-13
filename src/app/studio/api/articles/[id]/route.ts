@@ -1,5 +1,6 @@
 import { apiError, ArticleBodySchema, requireApiAdmin } from "@/app/studio/api/_helpers";
 import { deleteArticle, getArticleById, updateArticle } from "@/lib/services/articles";
+import { schedulePublicationProof } from "@/app/studio/api/articles/_publicationProof";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const unauthorized = await requireApiAdmin(request, { csrf: false });
@@ -15,7 +16,9 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   try {
     const { id } = await context.params;
     const input = ArticleBodySchema.parse(await request.json());
-    return Response.json({ article: updateArticle(Number(id), input) });
+    const article = updateArticle(Number(id), input);
+    schedulePublicationProof(article);
+    return Response.json({ article });
   } catch (error) {
     return apiError(error);
   }

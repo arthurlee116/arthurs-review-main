@@ -18,7 +18,7 @@ Each proof version preserves:
 
 - a canonical UTF-8 document containing the public URL and article content at that revision;
 - its SHA-256 digest;
-- an OpenTimestamps `.ots` receipt generated with `@opentimestamps/typescript-opentimestamps`;
+- an OpenTimestamps `.ots` receipt generated with the maintained official `opentimestamps-client`;
 - the Internet Archive Save Page Now capture URL;
 - creation time and independent status/error fields for both services.
 
@@ -37,7 +37,7 @@ Internet Archive credentials are read only from `WAYBACK_ACCESS_KEY` and `WAYBAC
 Published article pages end with a native `<details>` disclosure.
 
 - Collapsed: a small, muted English label, `Proof of Publication`, with the browser's disclosure triangle.
-- Expanded: proof versions newest first, each showing the Wayback snapshot link, SHA-256 digest, and `.ots` download.
+- Expanded: proof versions newest first, each showing the Wayback snapshot link, SHA-256 digest, canonical source download, and `.ots` download.
 - Pending or failed service details remain visible only in Studio; incomplete public records show only evidence that actually exists.
 
 Native `<details>` supplies keyboard interaction and accessibility without client-side JavaScript.

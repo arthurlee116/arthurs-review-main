@@ -197,4 +197,32 @@ describe("public article pages", () => {
       ],
     });
   });
+
+  it("shows publication evidence in a muted native disclosure", async () => {
+    const user = userEvent.setup();
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { createPublicationProof } = await import("@/lib/services/publication-proofs");
+    migrate();
+    const article = publishArticle(createArticle(articleInput()).id);
+    const proof = await createPublicationProof(article, {
+      now: () => new Date("2026-07-13T15:00:00.000Z"),
+      stamp: async () => Uint8Array.of(1, 2, 3),
+      capture: async () => "https://web.archive.org/web/20260713150000/https://blog.leesaitool.com/commentary/short-note-with-warmth",
+    });
+
+    const { container } = render(await ArticlePage({ category: "commentary", slug: article.slug }));
+    const summary = screen.getByText("Proof of Publication");
+    const details = summary.closest("details");
+
+    expect(details).not.toHaveAttribute("open");
+    expect(summary).toHaveClass("text-xs", "text-[var(--muted)]");
+    await user.click(summary);
+    expect(details).toHaveAttribute("open");
+    expect(screen.getByRole("link", { name: "Wayback snapshot" })).toHaveAttribute("href", proof!.waybackUrl);
+    expect(screen.getByText(proof!.documentSha256)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Download source" })).toHaveAttribute("href", `/proofs/${proof!.id}/source`);
+    expect(screen.getByRole("link", { name: "Download OTS" })).toHaveAttribute("href", `/proofs/${proof!.id}/ots`);
+    expect(container.querySelector("details > summary")).toBe(summary);
+  });
 });

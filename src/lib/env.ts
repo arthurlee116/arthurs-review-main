@@ -27,12 +27,13 @@ export function getDataPaths() {
     markdownDir: path.join(root, "markdown"),
     uploadsDir: path.join(root, "uploads"),
     backupsDir: path.join(root, "backups"),
+    proofsDir: path.join(root, "proofs"),
   };
 }
 
 export function ensureDataDirectories() {
   const paths = getDataPaths();
-  for (const dir of [paths.root, paths.markdownDir, paths.uploadsDir, paths.backupsDir]) {
+  for (const dir of [paths.root, paths.markdownDir, paths.uploadsDir, paths.backupsDir, paths.proofsDir]) {
     fs.mkdirSync(dir, { recursive: true });
   }
   return paths;

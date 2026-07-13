@@ -11,6 +11,7 @@ import { getCachedPublishedArticle } from "@/lib/services/public-content";
 import { articleMetadata } from "@/lib/metadata";
 import { uploadPublicPath } from "@/lib/media/paths";
 import { absoluteUrl } from "@/lib/seo";
+import { listPublicationProofs } from "@/lib/services/publication-proofs";
 import { PublicShell } from "./_publicShell";
 
 export async function getArticlePageMetadata(category: CategoryId, slug: string, lang?: string) {
@@ -81,6 +82,7 @@ export async function ArticlePage({
       },
     ],
   };
+  const proofs = listPublicationProofs(article.id).filter((proof) => proof.otsPath || proof.waybackUrl);
 
   return (
     <PublicShell mastheadHeadingLevel={2}>
@@ -98,6 +100,38 @@ export async function ArticlePage({
           <div className="mt-10">
             <ArticleRenderer markdown={(useEnglish ? article.bodyEn : article.bodyZh) ?? ""} />
           </div>
+          {proofs.length ? (
+            <details className="sans mt-10 border-t border-[var(--rule)] pt-4 text-xs text-[var(--muted)]">
+              <summary className="w-fit cursor-pointer select-none text-xs text-[var(--muted)]">Proof of Publication</summary>
+              <div className="mt-4 grid gap-4">
+                {proofs.map((proof) => (
+                  <div key={proof.id} className="grid gap-1 border-l border-[var(--rule)] pl-3">
+                    <time dateTime={proof.createdAt}>{new Date(proof.createdAt).toLocaleString("en-GB")}</time>
+                    {proof.waybackUrl ? (
+                      <a className="underline" href={proof.waybackUrl} rel="noreferrer" target="_blank">
+                        Wayback snapshot
+                      </a>
+                    ) : null}
+                        <span>
+                          SHA-256:{" "}
+                          <span className="break-all">{proof.documentSha256}</span>
+                        </span>
+                        <a
+                          className="underline underline-offset-2 hover:text-foreground"
+                          href={`/proofs/${proof.id}/source`}
+                        >
+                          Download source
+                        </a>
+                        {proof.otsPath ? (
+                      <a className="underline" href={`/proofs/${proof.id}/ots`}>
+                        Download OTS
+                      </a>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : null}
         </article>
       </main>
     </PublicShell>

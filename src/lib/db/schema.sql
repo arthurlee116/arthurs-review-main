@@ -23,6 +23,25 @@ create table if not exists articles (
 create index if not exists articles_status_published_idx on articles(status, published_at desc, id desc);
 create index if not exists articles_category_status_idx on articles(category, status, published_at desc, id desc);
 
+create table if not exists publication_proofs (
+  id integer primary key autoincrement,
+  article_id integer not null,
+  created_at text not null,
+  public_url text not null,
+  content_fingerprint text not null,
+  document_sha256 text not null,
+  document_path text not null,
+  ots_path text,
+  ots_status text not null check (ots_status in ('pending', 'complete', 'failed')),
+  ots_error text,
+  wayback_url text,
+  wayback_status text not null check (wayback_status in ('pending', 'complete', 'failed')),
+  wayback_error text,
+  unique(article_id, content_fingerprint)
+);
+
+create index if not exists publication_proofs_article_idx on publication_proofs(article_id, created_at desc, id desc);
+
 create table if not exists tags (
   id integer primary key autoincrement,
   name text not null unique,
