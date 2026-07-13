@@ -18,6 +18,13 @@ describe("deployment scripts", () => {
     expect(afterDeploymentBranch).toContain("docker compose logs --tail=80 app");
   });
 
+  it("always points production at the persistent article volume", () => {
+    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
+
+    expect(compose).toContain("DATA_DIR: /data");
+    expect(compose).toContain("SITE_URL: https://blog.leesaitool.com");
+  });
+
   it("makes pnpm native-build policy available during the Docker install", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const policyCopy = dockerfile.indexOf("COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./");

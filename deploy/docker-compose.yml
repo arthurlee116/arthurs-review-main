@@ -7,6 +7,9 @@ services:
       - path: ./production.env
         required: false
         format: raw
+    environment:
+      DATA_DIR: /data
+      SITE_URL: https://blog.leesaitool.com
     volumes:
       - /var/www/arthurs-review/data:/data
     restart: unless-stopped
