@@ -141,15 +141,18 @@ export async function captureWithWayback(publicUrl: string) {
         url: publicUrl,
         capture_all: "1",
         if_not_archived_within: "0",
+        skip_first_archive: "1",
+        js_behavior_timeout: "0",
       }),
     }),
   );
   const jobId = typeof submitted.job_id === "string" ? submitted.job_id : null;
   if (!jobId) throw new Error("Wayback did not return a job id");
 
-  for (let attempt = 0; attempt < 40; attempt += 1) {
+  const pollAttempts = Number.parseInt(process.env.WAYBACK_POLL_ATTEMPTS ?? "40", 10);
+  for (let attempt = 0; attempt < pollAttempts; attempt += 1) {
     const result = await retry(() =>
-      waybackRequest(`https://web.archive.org/save/status/${encodeURIComponent(jobId)}`, {
+      waybackRequest(`https://web.archive.org/save/status/${encodeURIComponent(jobId)}?_t=${Date.now()}`, {
         headers: { accept: "application/json", authorization },
       }),
     );

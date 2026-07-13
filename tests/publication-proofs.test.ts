@@ -57,9 +57,11 @@ describe("publication proofs", () => {
       }),
     );
     expect(String(fetchMock.mock.calls[0]![1]?.body)).toContain("if_not_archived_within=0");
+    expect(String(fetchMock.mock.calls[0]![1]?.body)).toContain("skip_first_archive=1");
+    expect(String(fetchMock.mock.calls[0]![1]?.body)).toContain("js_behavior_timeout=0");
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "https://web.archive.org/save/status/job-1",
+        expect.stringMatching(/^https:\/\/web\.archive\.org\/save\/status\/job-1\?_t=\d+$/),
       expect.objectContaining({
         headers: {
           accept: "application/json",
