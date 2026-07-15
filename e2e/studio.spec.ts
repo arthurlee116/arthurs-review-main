@@ -72,6 +72,7 @@ test("admin can create draft, preview, publish, and see public article", async (
   await expect(page.getByRole("cell", { name: "正常" })).toBeVisible();
   await expect(page.getByText("const answer = 42;", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "读完了？来挑错。" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "邮件反馈" })).toHaveCSS("color", "rgb(247, 241, 230)");
 });
 
 test("admin can filter the article list by status category and search", async ({ page }) => {

@@ -30,7 +30,7 @@ export function FeedbackCTA({ articleTitle }: { articleTitle: string }) {
       </h2>
       <p className="mt-3 leading-7">哪一段最站不住脚？有没有事实错误或我忽略的视角？你希望我接着写什么？</p>
       <div className="mt-5 flex flex-wrap gap-3">
-        <a className="border-2 border-[var(--rule)] bg-[var(--ink)] px-4 py-2 font-bold text-[var(--paper)]" href={`mailto:${email}?${params}`}>
+        <a className="border-2 border-[var(--rule)] bg-[var(--ink)] px-4 py-2 font-bold" style={{ color: "var(--paper)" }} href={`mailto:${email}?${params}`}>
           邮件反馈
         </a>
         <button className="border-2 border-[var(--rule)] bg-transparent px-4 py-2 font-bold" type="button" onClick={copyWechat}>
