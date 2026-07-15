@@ -6,7 +6,7 @@ import { listCachedPublishedArticles } from "@/lib/services/public-content";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await connection();
-  const staticPages = ["/", "/commentary", "/society", "/misc", "/about", "/search"];
+  const staticPages = ["/", "/commentary", "/society", "/misc", "/archive", "/proofs", "/about", "/search"];
   const articles = await listCachedPublishedArticles();
   return [
     ...staticPages.map((path) => ({ url: absoluteUrl(path) })),

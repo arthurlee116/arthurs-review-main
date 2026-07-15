@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { socialImageUrl } from "@/lib/metadata";
 import { absoluteUrl } from "@/lib/seo";
 import "./globals.css";
 
@@ -9,6 +10,25 @@ export const metadata: Metadata = {
     template: "%s | Arthur's Review",
   },
   description: "Arthur's Review, a personal intellectual publication.",
+  alternates: {
+    types: {
+      "application/rss+xml": absoluteUrl("/feed.xml"),
+    },
+  },
+  openGraph: {
+    title: "Arthur's Review",
+    description: "Arthur's Review, a personal intellectual publication.",
+    url: absoluteUrl("/"),
+    siteName: "Arthur's Review",
+    type: "website",
+    images: [{ url: socialImageUrl("Arthur's Review", "Independent publication"), alt: "Arthur's Review" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Arthur's Review",
+    description: "Arthur's Review, a personal intellectual publication.",
+    images: [{ url: socialImageUrl("Arthur's Review", "Independent publication"), alt: "Arthur's Review" }],
+  },
 };
 
 export default function RootLayout({

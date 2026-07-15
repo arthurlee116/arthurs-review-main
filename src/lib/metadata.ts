@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { CategoryId } from "@/lib/content/categories";
+import { categoryLabel, type CategoryId } from "@/lib/content/categories";
 import { articlePath } from "@/lib/content/urls";
 import { uploadPublicPath } from "@/lib/media/paths";
 import type { Article } from "@/lib/services/articles";
@@ -8,21 +8,28 @@ import { absoluteUrl } from "@/lib/seo";
 const siteName = "Arthur's Review";
 const defaultDescription = "Arthur's Review, a personal intellectual publication.";
 
+export function socialImageUrl(title: string, kicker = siteName) {
+  const params = new URLSearchParams({ title, kicker });
+  return absoluteUrl(`/og?${params.toString()}`);
+}
+
 export function publicPageMetadata({
   title,
   description = defaultDescription,
   path,
   imagePath,
+  kicker,
   type = "website",
 }: {
   title: string;
   description?: string;
   path: string;
   imagePath?: string | null;
+  kicker?: string;
   type?: "website" | "article";
 }): Metadata {
   const url = absoluteUrl(path);
-  const image = imagePath ? absoluteUrl(uploadPublicPath(imagePath)) : undefined;
+  const image = imagePath ? absoluteUrl(uploadPublicPath(imagePath)) : socialImageUrl(title, kicker);
   return {
     title,
     description,
@@ -35,7 +42,13 @@ export function publicPageMetadata({
       url,
       siteName,
       type,
-      images: image ? [{ url: image, alt: title }] : undefined,
+      images: [{ url: image, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [{ url: image, alt: title }],
     },
   };
 }
@@ -49,6 +62,7 @@ export function articleMetadata(article: Article, lang?: string): Metadata {
     description,
     path: articlePath(article.category, article.slug),
     imagePath: article.coverImagePath,
+    kicker: categoryLabel(article.category),
     type: "article",
   });
 }

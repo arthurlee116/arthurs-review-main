@@ -1,6 +1,7 @@
 import { Masthead } from "@/components/Masthead";
 import { ContactNotice } from "@/components/ContactNotice";
 import { PublicNav } from "@/components/PublicNav";
+import { PublicFooter } from "@/components/PublicFooter";
 
 export function PublicShell({
   children,
@@ -12,11 +13,12 @@ export function PublicShell({
   noticePlacement?: "beforeNav";
 }) {
   return (
-    <div>
+    <div className="flex min-h-[100dvh] flex-col">
       <Masthead headingLevel={mastheadHeadingLevel} />
       {noticePlacement === "beforeNav" ? <ContactNotice className="container mt-7" /> : null}
       <PublicNav />
-      {children}
+      <div className="flex-1">{children}</div>
+      <PublicFooter />
     </div>
   );
 }

@@ -61,7 +61,55 @@ describe("SEO and discovery metadata", () => {
       description: "这是一段专门给搜索和分享使用的描述。",
       url: "https://blog.leesaitool.com/commentary/real-title",
       type: "article",
+      images: [
+        {
+          url: "https://blog.leesaitool.com/og?title=%E4%B8%80%E7%AF%87%E7%9C%9F%E6%AD%A3%E6%9C%89%E6%A0%87%E9%A2%98%E7%9A%84%E6%96%87%E7%AB%A0&kicker=%E6%97%B6%E4%BA%8B%E8%AF%84%E8%AE%BA",
+          alt: "一篇真正有标题的文章",
+        },
+      ],
     });
+    expect(metadata.twitter).toMatchObject({
+      card: "summary_large_image",
+      title: "一篇真正有标题的文章",
+    });
+  });
+
+  it("keeps uploaded cover art as the social image", async () => {
+    const { publicPageMetadata } = await import("@/lib/metadata");
+
+    const metadata = publicPageMetadata({
+      title: "Cover story",
+      path: "/misc/cover-story",
+      imagePath: "uploads/2026/07/cover.webp",
+    });
+
+    expect(metadata.openGraph).toMatchObject({
+      images: [{ url: "https://blog.leesaitool.com/media/2026/07/cover.webp", alt: "Cover story" }],
+    });
+  });
+
+  it("advertises RSS and generates a PNG social card", async () => {
+    const layout = await import("@/app/layout");
+    const og = await import("@/app/og/route");
+
+    expect(layout.metadata.alternates?.types).toEqual({
+      "application/rss+xml": "https://blog.leesaitool.com/feed.xml",
+    });
+
+    const response = og.GET(new Request("https://blog.leesaitool.com/og?title=Proofs&kicker=Arthur%27s%20Review"));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("image/png");
+  });
+
+  it("keeps archive and proof indexes in the sitemap", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const sitemap = await import("@/app/sitemap");
+    migrate();
+
+    const urls = (await sitemap.default()).map((entry) => entry.url);
+
+    expect(urls).toContain("https://blog.leesaitool.com/archive");
+    expect(urls).toContain("https://blog.leesaitool.com/proofs");
   });
 
   it("emits site and author JSON-LD from the root layout", async () => {

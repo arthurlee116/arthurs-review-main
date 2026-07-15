@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ArticlePage } from "@/app/_articlePage";
@@ -47,6 +47,11 @@ describe("public article pages", () => {
     expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
     expect(screen.getAllByText(contactNotice)).toHaveLength(1);
     expect(fs.existsSync("src/components/ContactPromptModal.tsx")).toBe(false);
+    const footer = screen.getByRole("contentinfo");
+    expect(within(footer).getByRole("link", { name: "Archive" })).toHaveAttribute("href", "/archive");
+    expect(within(footer).getByRole("link", { name: "Proofs" })).toHaveAttribute("href", "/proofs");
+    expect(within(footer).getByRole("link", { name: "RSS" })).toHaveAttribute("href", "/feed.xml");
+    expect(within(footer).getByRole("link", { name: "laoliarthur@outlook.com" })).toHaveAttribute("href", "mailto:laoliarthur@outlook.com");
   });
 
   it("offers concrete article feedback by email and copied WeChat id", async () => {
