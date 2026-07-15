@@ -54,10 +54,12 @@ describe("deployment scripts", () => {
 
   it("requires the app to become healthy after every deployment mode", () => {
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const health = fs.readFileSync("src/app/healthz/route.ts", "utf8");
     const afterDeploymentBranch = deploy.slice(deploy.lastIndexOf("fi\n") + 3);
 
     expect(afterDeploymentBranch).toContain("/healthz");
     expect(afterDeploymentBranch).toContain("docker compose logs --tail=80 app");
+    expect(health).toContain("await connection()");
   });
 
   it("always points production at the persistent article volume", () => {

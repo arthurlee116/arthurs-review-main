@@ -21,7 +21,7 @@ describe("GET /healthz", () => {
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
-    const response = GET();
+    const response = await GET();
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
@@ -34,7 +34,7 @@ describe("GET /healthz", () => {
     process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "myblog-health-schema-"));
     vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    const response = GET();
+    const response = await GET();
 
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({
@@ -50,7 +50,7 @@ describe("GET /healthz", () => {
     process.env.DATA_DIR = dataFile;
     vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    const response = GET();
+    const response = await GET();
 
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({

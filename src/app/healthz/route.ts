@@ -1,9 +1,11 @@
 import fs from "node:fs";
+import { connection } from "next/server";
 
 import { getDb } from "@/lib/db/connection";
 import { ensureDataDirectories } from "@/lib/env";
 
-export function GET() {
+export async function GET() {
+  await connection();
   let database: "ok" | "failed" = "failed";
   let storage: "ok" | "failed" = "failed";
 
