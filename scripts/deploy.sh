@@ -48,5 +48,6 @@ if [[ "${APP_ONLY}" == "1" ]]; then
 else
   ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d --build"
 fi
+ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d caddy && docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile"
 ssh "${REMOTE}" "cd ${APP_DIR}/deploy && for i in \$(seq 1 60); do docker compose exec -T app sh -lc 'wget -qO- http://127.0.0.1:3000/healthz' | grep -q '\"ok\":true' && exit 0; sleep 2; done; docker compose logs --tail=80 app; exit 1"
 ssh "${REMOTE}" "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"

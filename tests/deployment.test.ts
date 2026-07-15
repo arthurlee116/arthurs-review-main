@@ -120,12 +120,16 @@ describe("deployment scripts", () => {
 
   it("sets production security headers and removes framework branding", () => {
     const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
+    const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
     const nextConfig = fs.readFileSync("next.config.ts", "utf8");
+    const afterDeploymentBranch = deploy.slice(deploy.lastIndexOf("fi\n") + 3);
 
     expect(caddy).toContain("Strict-Transport-Security");
     expect(caddy).toContain("X-Content-Type-Options nosniff");
     expect(caddy).toContain("Referrer-Policy strict-origin-when-cross-origin");
     expect(caddy).toContain("header_down -X-Powered-By");
+    expect(afterDeploymentBranch).toContain("caddy validate");
+    expect(afterDeploymentBranch).toContain("caddy reload");
     expect(nextConfig).toContain("poweredByHeader: false");
   });
 
