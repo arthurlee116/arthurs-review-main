@@ -1,0 +1,71 @@
+name: Production backup
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Verify and store production backup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install backup verifier
+        run: sudo apt-get update && sudo apt-get install -y sqlite3
+
+      - name: Configure SSH
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_SSH_PASSPHRASE: ${{ secrets.DEPLOY_SSH_PASSPHRASE }}
+        run: |
+          test -n "$DEPLOY_SSH_PRIVATE_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          eval "$(ssh-agent -s)"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+          if [ -n "${DEPLOY_SSH_PASSPHRASE:-}" ]; then
+            cat > "$RUNNER_TEMP/ssh-askpass" <<'EOF'
+          #!/usr/bin/env sh
+          printf '%s\n' "$DEPLOY_SSH_PASSPHRASE"
+          EOF
+            chmod 700 "$RUNNER_TEMP/ssh-askpass"
+            DISPLAY=none SSH_ASKPASS="$RUNNER_TEMP/ssh-askpass" SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key </dev/null
+          else
+            ssh-add ~/.ssh/deploy_key
+          fi
+          DEPLOY_HOST="${DEPLOY_HOST:-72.60.195.46}"
+          if [ "$DEPLOY_HOST" = "72.60.195.46" ]; then
+            printf '%s\n' '72.60.195.46 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPW6DVc3HbWdUhmPpQxR2De5SrdmSsmYyxm+RrHgedSl' >> ~/.ssh/known_hosts
+          else
+            ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          fi
+
+      - name: Create and download backup
+        env:
+          APP_DIR: ${{ vars.DEPLOY_APP_DIR }}
+          REMOTE: ${{ vars.DEPLOY_REMOTE }}
+        run: |
+          APP_DIR="${APP_DIR:-/opt/arthurs-review}"
+          REMOTE="${REMOTE:-root@72.60.195.46}"
+          BACKUP_PATH="$(ssh "$REMOTE" "DATA_DIR=/var/www/arthurs-review/data BACKUP_DIR=/var/www/arthurs-review/backups APP_DIR=$APP_DIR $APP_DIR/scripts/backup-data.sh")"
+          scp "$REMOTE:$BACKUP_PATH" production-backup.tar.gz
+          scripts/verify-backup.sh production-backup.tar.gz
+
+      - name: Store off-site backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: arthurs-review-production-${{ github.run_id }}
+          path: production-backup.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0

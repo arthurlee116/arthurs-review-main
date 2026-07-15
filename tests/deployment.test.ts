@@ -10,6 +10,26 @@ describe("deployment scripts", () => {
     expect(bootstrap).toContain("/etc/cron.d");
   });
 
+  it("creates complete verified backups and copies them off the VPS", () => {
+    const backup = fs.readFileSync("scripts/backup-data.sh", "utf8");
+    const bootstrap = fs.readFileSync("scripts/server-bootstrap.sh", "utf8");
+
+    expect(backup).toContain("backup-database.ts");
+    expect(backup).toContain("markdown uploads proofs");
+    expect(backup).toContain("MANIFEST.sha256");
+    expect(backup).toContain(".partial");
+    expect(backup).toContain("verify-backup.sh");
+    expect(bootstrap).toContain("sqlite3");
+    expect(fs.existsSync("scripts/verify-backup.sh")).toBe(true);
+    expect(fs.existsSync(".github/workflows/backup.yml")).toBe(true);
+
+    const workflow = fs.readFileSync(".github/workflows/backup.yml", "utf8");
+    expect(workflow).toContain("schedule:");
+    expect(workflow).toContain("scripts/verify-backup.sh");
+    expect(workflow).toContain("actions/upload-artifact@v4");
+    expect(workflow).toContain("retention-days: 30");
+  });
+
   it("requires the app to become healthy after every deployment mode", () => {
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
     const afterDeploymentBranch = deploy.slice(deploy.lastIndexOf("fi\n") + 3);

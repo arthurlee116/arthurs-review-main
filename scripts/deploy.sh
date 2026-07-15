@@ -10,6 +10,8 @@ if [[ ! -f deploy/production.env ]]; then
   exit 1
 fi
 
+ssh "${REMOTE}" "command -v sqlite3 >/dev/null || (apt-get update >/dev/null && apt-get install -y sqlite3 >/dev/null)"
+
 rsync -az --delete \
   --exclude .git \
   --exclude .codegraph \

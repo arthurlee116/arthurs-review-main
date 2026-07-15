@@ -58,7 +58,13 @@ Optional repository variables: `DEPLOY_HOST`, `DEPLOY_REMOTE`, `DEPLOY_APP_DIR`.
 Manual backup:
 
 ```bash
-DATA_DIR=/var/www/arthurs-review/data BACKUP_DIR=/var/www/arthurs-review/backups scripts/backup-data.sh
+DATA_DIR=/var/www/arthurs-review/data BACKUP_DIR=/var/www/arthurs-review/backups APP_DIR=/opt/arthurs-review scripts/backup-data.sh
 ```
 
-Backups include SQLite and Markdown files. Uploaded images are intentionally excluded.
+Each archive contains an online SQLite snapshot plus `markdown/`, `uploads/`, `proofs/`, and a SHA-256 manifest. Verify one without restoring it:
+
+```bash
+scripts/verify-backup.sh /var/www/arthurs-review/backups/arthurs-review-YYYYMMDDTHHMMSSZ.tar.gz
+```
+
+The VPS keeps 30 days of daily archives. `.github/workflows/backup.yml` also downloads, verifies, and stores the latest archive as a 30-day GitHub Actions artifact so a server loss does not take the only backup with it.
