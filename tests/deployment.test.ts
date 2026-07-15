@@ -111,6 +111,13 @@ describe("deployment scripts", () => {
     expect(fs.readFileSync(".node-version", "utf8").trim()).toBe("26");
   });
 
+  it("installs Corepack explicitly because Node 26 no longer bundles it", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+
+    expect(dockerfile.match(/npm install --global corepack@0\.35\.0/g)).toHaveLength(3);
+    expect(dockerfile.match(/corepack enable/g)).toHaveLength(3);
+  });
+
   it("sets production security headers and removes framework branding", () => {
     const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
     const nextConfig = fs.readFileSync("next.config.ts", "utf8");
