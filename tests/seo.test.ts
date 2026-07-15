@@ -105,6 +105,14 @@ describe("SEO and discovery metadata", () => {
     expect(response.headers.get("content-type")).toBe("image/png");
   });
 
+  it("balances long Chinese social-card titles without splitting words", async () => {
+    const { splitOgTitle } = await import("@/lib/og-title");
+
+    expect(splitOgTitle("一座城市如何把人训练成旁观者")).toEqual(["一座城市如何把人", "训练成旁观者"]);
+    expect(splitOgTitle("一篇短文")).toEqual(["一篇短文"]);
+    expect(splitOgTitle("A deliberately long English headline")).toEqual(["A deliberately long English headline"]);
+  });
+
   it("keeps archive and proof indexes in the sitemap", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const sitemap = await import("@/app/sitemap");

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { splitOgTitle } from "@/lib/og-title";
 
 const size = { width: 1200, height: 630 };
 
@@ -12,6 +13,7 @@ function copy(request: Request) {
 export function GET(request: Request) {
   const { title, kicker } = copy(request);
   const fontSize = title.length > 56 ? 62 : title.length > 32 ? 74 : 88;
+  const titleLines = splitOgTitle(title);
 
   return new ImageResponse(
     (
@@ -38,7 +40,11 @@ export function GET(request: Request) {
           <span>ARTHUR&apos;S REVIEW</span>
         </div>
 
-        <div style={{ display: "flex", maxWidth: 1040, fontSize, fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.035em" }}>{title}</div>
+        <div style={{ display: "flex", flexDirection: "column", maxWidth: 1040, fontSize, fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.035em" }}>
+          {titleLines.map((line, index) => (
+            <span key={`${line}-${index}`}>{line}</span>
+          ))}
+        </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "3px solid #111111", paddingTop: 24, fontFamily: "Arial", fontSize: 22 }}>
           <span>blog.leesaitool.com</span>
