@@ -30,6 +30,28 @@ describe("deployment scripts", () => {
     expect(workflow).toContain("retention-days: 30");
   });
 
+  it("quiesces article writes while snapshotting SQLite and content files", () => {
+    const backup = fs.readFileSync("scripts/backup-data.sh", "utf8");
+    const stop = backup.indexOf("docker compose stop app");
+    const snapshot = backup.indexOf("docker compose run --rm --no-deps app");
+    const copy = backup.indexOf('for directory in markdown uploads proofs');
+    const restart = backup.indexOf("docker compose up -d app");
+
+    expect(stop).toBeGreaterThanOrEqual(0);
+    expect(stop).toBeLessThan(snapshot);
+    expect(snapshot).toBeLessThan(copy);
+    expect(copy).toBeLessThan(restart);
+    expect(backup).toContain("/healthz");
+  });
+
+  it("serializes GitHub deploy and backup maintenance", () => {
+    const deployWorkflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
+    const backupWorkflow = fs.readFileSync(".github/workflows/backup.yml", "utf8");
+
+    expect(deployWorkflow).toContain("group: production-maintenance");
+    expect(backupWorkflow).toContain("group: production-maintenance");
+  });
+
   it("requires the app to become healthy after every deployment mode", () => {
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
     const afterDeploymentBranch = deploy.slice(deploy.lastIndexOf("fi\n") + 3);
@@ -61,5 +83,28 @@ describe("deployment scripts", () => {
 
     expect(policyCopy).toBeGreaterThanOrEqual(0);
     expect(policyCopy).toBeLessThan(install);
+  });
+
+  it("uses Node 26 everywhere", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
+    const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as { engines?: { node?: string } };
+
+    expect(dockerfile.match(/FROM node:26-alpine/g)).toHaveLength(3);
+    expect(workflow).toContain("node-version: 26");
+    expect(packageJson.engines?.node).toBe(">=26 <27");
+    expect(fs.readFileSync(".nvmrc", "utf8").trim()).toBe("26");
+    expect(fs.readFileSync(".node-version", "utf8").trim()).toBe("26");
+  });
+
+  it("sets production security headers and removes framework branding", () => {
+    const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
+    const nextConfig = fs.readFileSync("next.config.ts", "utf8");
+
+    expect(caddy).toContain("Strict-Transport-Security");
+    expect(caddy).toContain("X-Content-Type-Options nosniff");
+    expect(caddy).toContain("Referrer-Policy strict-origin-when-cross-origin");
+    expect(caddy).toContain("header_down -X-Powered-By");
+    expect(nextConfig).toContain("poweredByHeader: false");
   });
 });

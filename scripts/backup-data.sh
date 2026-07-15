@@ -14,14 +14,35 @@ SNAPSHOT_CONTAINER_PATH="/data/backups/${SNAPSHOT_NAME}"
 
 mkdir -p "${BACKUP_DIR}"
 STAGING_DIR="$(mktemp -d "${BACKUP_DIR}/.arthurs-review-${STAMP}.XXXXXX")"
+APP_STOPPED=0
 cleanup() {
+  exit_code=$?
+  trap - EXIT
+  if [[ "${APP_STOPPED}" == "1" ]]; then
+    (
+      cd "${COMPOSE_DIR}"
+      docker compose start app >/dev/null
+    ) || true
+  fi
   rm -rf "${STAGING_DIR}" "${PARTIAL}" "${SNAPSHOT_HOST_PATH}"
+  return "${exit_code}"
 }
 trap cleanup EXIT
 
+if (
+  cd "${COMPOSE_DIR}"
+  docker compose ps --status running --services | grep -qx app
+); then
+  (
+    cd "${COMPOSE_DIR}"
+    docker compose stop app >/dev/null
+  )
+  APP_STOPPED=1
+fi
+
 (
   cd "${COMPOSE_DIR}"
-  docker compose exec -T app pnpm exec tsx scripts/backup-database.ts "${SNAPSHOT_CONTAINER_PATH}" >/dev/null
+  docker compose run --rm --no-deps app pnpm exec tsx scripts/backup-database.ts "${SNAPSHOT_CONTAINER_PATH}" >/dev/null
 )
 
 cp "${SNAPSHOT_HOST_PATH}" "${STAGING_DIR}/arthurs-review.sqlite3"
@@ -31,6 +52,26 @@ for directory in markdown uploads proofs; do
     rsync -a "${DATA_DIR}/${directory}/" "${STAGING_DIR}/${directory}/"
   fi
 done
+
+if [[ "${APP_STOPPED}" == "1" ]]; then
+  (
+    cd "${COMPOSE_DIR}"
+    docker compose up -d app >/dev/null
+    healthy=0
+    for _attempt in $(seq 1 60); do
+      if docker compose exec -T app sh -lc 'wget -qO- http://127.0.0.1:3000/healthz' | grep -q '"ok":true'; then
+        healthy=1
+        break
+      fi
+      sleep 1
+    done
+    if [[ "${healthy}" != "1" ]]; then
+      docker compose logs --tail=80 app >&2
+      exit 1
+    fi
+  )
+  APP_STOPPED=0
+fi
 
 (
   cd "${STAGING_DIR}"
@@ -42,5 +83,4 @@ tar -czf "${PARTIAL}" -C "${STAGING_DIR}" arthurs-review.sqlite3 markdown upload
 mv "${PARTIAL}" "${DEST}"
 find "${BACKUP_DIR}" -name 'arthurs-review-*.tar.gz' -mtime +30 -delete
 cleanup
-trap - EXIT
 echo "${DEST}"
