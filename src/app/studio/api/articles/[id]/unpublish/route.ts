@@ -1,6 +1,6 @@
 import { apiError, requireApiAdmin } from "@/app/studio/api/_helpers";
 import { unpublishArticle } from "@/lib/services/articles";
-import { invalidatePublicContent } from "@/app/studio/api/articles/_publicationProof";
+import { invalidatePublicContent } from "@/lib/services/public-cache";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const unauthorized = await requireApiAdmin(request);

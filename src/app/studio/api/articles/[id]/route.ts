@@ -1,5 +1,6 @@
 import { apiError, ArticleBodySchema, requireApiAdmin } from "@/app/studio/api/_helpers";
 import { deleteArticle, getArticleById, updateArticle } from "@/lib/services/articles";
+import { invalidatePublicContent } from "@/lib/services/public-cache";
 import { schedulePublicationProof } from "@/app/studio/api/articles/_publicationProof";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -17,6 +18,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     const { id } = await context.params;
     const input = ArticleBodySchema.parse(await request.json());
     const article = updateArticle(Number(id), input);
+    invalidatePublicContent();
     schedulePublicationProof(article);
     return Response.json({ article });
   } catch (error) {
@@ -29,7 +31,9 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   if (unauthorized) return unauthorized;
   try {
     const { id } = await context.params;
-    return Response.json({ ok: deleteArticle(Number(id)) });
+    const ok = deleteArticle(Number(id));
+    invalidatePublicContent();
+    return Response.json({ ok });
   } catch (error) {
     return apiError(error);
   }
