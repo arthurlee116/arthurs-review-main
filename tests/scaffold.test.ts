@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as {
   scripts: Record<string, string>;
+  dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
 };
 const nextConfig = fs.readFileSync("next.config.ts", "utf8");
@@ -21,6 +22,11 @@ describe("project scaffold", () => {
     expect(nextConfig).toContain("cacheComponents: true");
     expect(nextConfig).toContain("reactCompiler: true");
     expect(packageJson.devDependencies).toHaveProperty("babel-plugin-react-compiler");
+  });
+
+  it("uses the CodeMirror 6 Markdown engine in Studio", () => {
+    expect(packageJson.dependencies).toHaveProperty("@uiw/react-codemirror");
+    expect(packageJson.dependencies).toHaveProperty("@codemirror/lang-markdown");
   });
 
   it("defines the accepted short public-content cache window", () => {

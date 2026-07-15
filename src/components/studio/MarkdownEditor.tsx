@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import { EditorView } from "@codemirror/view";
+import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { csrfToken } from "@/lib/client/csrf";
-import ReactMarkdown from "react-markdown";
-import rehypeSanitize from "rehype-sanitize";
-import remarkGfm from "remark-gfm";
 
 function imageAlt(fileName: string) {
   return fileName.replace(/\.[^.]+$/, "") || "image";
@@ -59,7 +60,7 @@ function markdownIssues(markdown: string) {
 }
 
 export function MarkdownEditor({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<ReactCodeMirrorRef>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [message, setMessage] = useState("");
   const [checkResult, setCheckResult] = useState<MarkdownIssue[] | null>(null);
@@ -107,8 +108,12 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
     if (!firstIssue) return;
     const lines = value.split(/\r?\n/);
     const start = lines.slice(0, firstIssue.line - 1).reduce((offset, line) => offset + line.length + 1, 0);
-    textareaRef.current?.focus();
-    textareaRef.current?.setSelectionRange(start, start + (lines[firstIssue.line - 1]?.length ?? 0));
+    const view = editorRef.current?.view;
+    view?.focus();
+    view?.dispatch({
+      selection: { anchor: start, head: start + (lines[firstIssue.line - 1]?.length ?? 0) },
+      scrollIntoView: true,
+    });
   }
 
   return (
@@ -139,10 +144,22 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
       }}
       aria-label={`${label} image drop target`}
     >
-      <label className="grid gap-2">
+      <div className="grid gap-2">
         <span>{label}</span>
-        <textarea ref={textareaRef} className="min-h-56 border border-[var(--rule)] bg-white p-3" value={value} onChange={(event) => onChange(event.target.value)} />
-      </label>
+        <CodeMirror
+          ref={editorRef}
+          aria-label={label}
+          className="markdown-source-editor"
+          value={value}
+          minHeight="14rem"
+          extensions={[
+            markdown({ base: markdownLanguage }),
+            EditorView.contentAttributes.of({ "aria-label": label }),
+          ]}
+          basicSetup={{ foldGutter: false, highlightActiveLine: false, highlightActiveLineGutter: false }}
+          onChange={onChange}
+        />
+      </div>
       <div className="flex flex-wrap gap-2">
         <label className="studio-button w-fit border border-[var(--rule)] px-3 py-2 text-xs">
           Insert inline image
@@ -166,29 +183,7 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
       ) : null}
       {checkResult && checkResult.length === 0 ? <p className="text-xs text-[var(--muted)]">Markdown looks clean.</p> : null}
       <section className="grid gap-3 border border-[var(--rule)] bg-white p-4">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeSanitize]}
-          components={{
-            h1: ({ children }) => <h1 className="text-2xl font-bold leading-tight">{children}</h1>,
-            h2: ({ children }) => <h2 className="text-xl font-bold leading-tight">{children}</h2>,
-            h3: ({ children }) => <h3 className="text-lg font-bold leading-tight">{children}</h3>,
-            p: ({ children }) => <p className="leading-7">{children}</p>,
-            ul: ({ children }) => <ul className="list-disc pl-6">{children}</ul>,
-            ol: ({ children }) => <ol className="list-decimal pl-6">{children}</ol>,
-            li: ({ children }) => <li className="my-1">{children}</li>,
-            a: ({ children, href }) => (
-              <a className="underline underline-offset-2" href={href}>
-                {children}
-              </a>
-            ),
-            code: ({ children }) => <code className="bg-[var(--paper)] px-1">{children}</code>,
-            pre: ({ children }) => <pre className="overflow-auto border border-[var(--rule)] bg-[var(--paper)] p-3">{children}</pre>,
-            blockquote: ({ children }) => <blockquote className="border-l-4 border-[var(--rule)] pl-4 text-[var(--muted)]">{children}</blockquote>,
-          }}
-        >
-          {value || "*No preview yet.*"}
-        </ReactMarkdown>
+        <ArticleRenderer markdown={value || "*No preview yet.*"} />
       </section>
     </div>
   );
