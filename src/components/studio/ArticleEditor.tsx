@@ -210,7 +210,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
     .join(" ");
 
   return (
-    <div className="sans grid gap-5 text-sm">
+    <div className="sans grid min-w-0 gap-5 text-sm">
       <label className="grid gap-2">
         Chinese title
         <input className="border border-[var(--rule)] bg-white p-3" value={form.titleZh} onChange={(event) => set("titleZh", event.target.value)} />

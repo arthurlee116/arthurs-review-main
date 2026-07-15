@@ -128,7 +128,7 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
 
   return (
     <div
-      className={`grid gap-3 border border-transparent p-0 transition ${
+      className={`grid min-w-0 gap-3 border border-transparent p-0 transition ${
         isDraggingImage ? "border-[var(--ink)] bg-white/70 p-3" : ""
       }`}
       onDragEnter={(event) => {
@@ -154,13 +154,13 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
       }}
       aria-label={`${label} image drop target`}
     >
-      <div className="grid gap-2">
+      <div className="grid min-w-0 gap-2">
         <span>{label}</span>
         <CodeMirror
           ref={editorRef}
-          className="markdown-source-editor"
+          className="markdown-source-editor min-w-0 max-w-full overflow-hidden"
           value={value}
-          minHeight="14rem"
+          height="18rem"
           extensions={extensions}
           basicSetup={markdownBasicSetup}
           onChange={onChange}
@@ -188,7 +188,7 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
         </ul>
       ) : null}
       {checkResult && checkResult.length === 0 ? <p className="text-xs text-[var(--muted)]">Markdown looks clean.</p> : null}
-      <section className="grid gap-3 border border-[var(--rule)] bg-white p-4">
+      <section className="grid min-w-0 gap-3 overflow-hidden border border-[var(--rule)] bg-white p-4">
         <ArticleRenderer markdown={value || "*No preview yet.*"} />
       </section>
     </div>

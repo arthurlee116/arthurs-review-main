@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 
 export function ArticleRenderer({ markdown }: { markdown: string }) {
   return (
-    <div className="prose">
+    <div className="prose min-w-0 max-w-full">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize]}

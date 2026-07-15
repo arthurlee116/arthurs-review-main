@@ -121,6 +121,8 @@ button {
 }
 
 .prose {
+  min-width: 0;
+  max-width: 100%;
   font-size: 20px;
   line-height: 2;
 }
@@ -215,6 +217,7 @@ button {
 }
 
 .prose-table-scroll {
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
 }
@@ -252,6 +255,7 @@ button {
 }
 
 .markdown-source-editor .cm-editor {
+  max-width: 100%;
   min-height: 14rem;
   border: 1px solid var(--rule);
   background: white;
@@ -260,7 +264,6 @@ button {
 }
 
 .markdown-source-editor .cm-scroller {
-  min-height: 14rem;
   line-height: 1.65;
 }
 

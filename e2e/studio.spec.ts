@@ -50,7 +50,9 @@ test("admin can create draft, preview, publish, and see public article", async (
   await editor.getByLabel("Chinese excerpt").fill("这是一篇测试摘要");
   await editor.getByLabel("SEO description").fill("测试 SEO 描述");
   await editor.getByRole("textbox", { name: "Chinese body" }).fill(complexMarkdown);
-  await editor.getByRole("button", { name: "Save draft" }).click();
+  const saveDraft = editor.getByRole("button", { name: "Save draft" });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await saveDraft.click();
   await expect(editor.getByText("Draft saved")).toBeVisible();
 
   const previewPromise = page.waitForEvent("popup");

@@ -98,6 +98,7 @@ describe("SEO and discovery metadata", () => {
     expect(layout.metadata.alternates?.types).toEqual({
       "application/rss+xml": "https://blog.leesaitool.com/feed.xml",
     });
+    expect(layout.viewport).toEqual({ width: "device-width", initialScale: 1 });
 
     const response = og.GET(new Request("https://blog.leesaitool.com/og?title=Proofs&kicker=Arthur%27s%20Review"));
     expect(response.status).toBe(200);
