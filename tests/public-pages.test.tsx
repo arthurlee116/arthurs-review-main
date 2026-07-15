@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ArticlePage } from "@/app/_articlePage";
 import HomePage from "@/app/page";
 import { articleInput } from "@/test/factories";
@@ -38,70 +38,37 @@ afterEach(async () => {
 });
 
 describe("public article pages", () => {
-  it("shows the contact notice on the homepage", async () => {
+  it("shows a non-blocking contact notice without mounting a dialog", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
     render(await HomePage());
 
-    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
-    expect(screen.getAllByText(contactNotice).length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
+    expect(screen.getAllByText(contactNotice)).toHaveLength(1);
+    expect(fs.existsSync("src/components/ContactPromptModal.tsx")).toBe(false);
   });
 
-  it("does not reopen the contact notice modal after it is closed", async () => {
+  it("offers concrete article feedback by email and copied WeChat id", async () => {
     const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
     migrate();
+    const article = publishArticle(createArticle(articleInput({ titleZh: "欢迎反驳的文章", slug: "feedback-wanted" })).id);
 
-    render(await HomePage());
+    render(await ArticlePage({ category: article.category, slug: article.slug }));
 
-    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "关闭" }));
-    expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
-    expect(window.localStorage.getItem("arthurs-review.contactPromptSeen")).toBe("1");
-  });
-
-  it("skips the contact notice modal once this browser has seen it", async () => {
-    const { migrate } = await import("@/lib/db/migrate");
-    migrate();
-    window.localStorage.setItem("arthurs-review.contactPromptSeen", "1");
-
-    render(await HomePage());
-
-    expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
-  });
-
-  it("still closes the contact notice modal when localStorage is blocked", async () => {
-    const user = userEvent.setup();
-    const { migrate } = await import("@/lib/db/migrate");
-    migrate();
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      value: {
-        getItem: () => {
-          throw new DOMException("blocked", "SecurityError");
-        },
-        setItem: () => {
-          throw new DOMException("blocked", "SecurityError");
-        },
-      },
-    });
-
-    render(await HomePage());
-
-    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "关闭" }));
-    expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
-  });
-
-  it("uses a native dialog for the contact notice prompt", async () => {
-    const { migrate } = await import("@/lib/db/migrate");
-    migrate();
-
-    const { container } = render(await HomePage());
-
-    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
-    expect(container.querySelector("dialog.contact-modal-panel")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "读完了？来挑错。" })).toBeInTheDocument();
+    expect(screen.getByText("哪一段最站不住脚？有没有事实错误或我忽略的视角？你希望我接着写什么？")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "邮件反馈" })).toHaveAttribute(
+      "href",
+      expect.stringContaining(encodeURIComponent("关于《欢迎反驳的文章》的反馈")),
+    );
+    await user.click(screen.getByRole("button", { name: "复制微信号" }));
+    expect(writeText).toHaveBeenCalledWith("bookspiano");
+    expect(screen.getByRole("status")).toHaveTextContent("微信号已复制");
   });
 
   it("renders an article cover image when one is configured", async () => {
@@ -147,8 +114,8 @@ describe("public article pages", () => {
     const headings = screen.getAllByRole("heading", { level: 1 });
     expect(headings).toHaveLength(1);
     expect(headings[0]).toHaveTextContent("真正的页面标题");
-    expect(await screen.findByRole("dialog", { name: "留言" })).toBeInTheDocument();
-    expect(screen.getAllByText(contactNotice).length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "读完了？来挑错。" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "正文里不该再抢 H1" })).toBeInTheDocument();
 
     const jsonLd = [...container.querySelectorAll('script[type="application/ld+json"]')].map((script) => JSON.parse(script.textContent!));

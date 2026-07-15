@@ -4,6 +4,7 @@ import { ArticleMeta } from "@/components/ArticleMeta";
 import { ContactNotice } from "@/components/ContactNotice";
 import { CoverImage, coverImageSizes } from "@/components/CoverImage";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
+import { FeedbackCTA } from "@/components/FeedbackCTA";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { articlePath } from "@/lib/content/urls";
 import { categories, categoryLabel, type CategoryId } from "@/lib/content/categories";
@@ -132,6 +133,7 @@ export async function ArticlePage({
               </div>
             </details>
           ) : null}
+          <FeedbackCTA articleTitle={title} />
         </article>
       </main>
     </PublicShell>
