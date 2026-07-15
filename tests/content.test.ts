@@ -70,7 +70,7 @@ describe("content helpers", () => {
 
     const relPath = writeMarkdownBody(12, "zh", "# 标题\n\n正文");
 
-    expect(relPath).toBe("markdown/12.zh.md");
+    expect(relPath).toMatch(/^markdown\/12\.zh\.[a-f0-9]{64}\.md$/);
     expect(readMarkdownBody(relPath)).toBe("# 标题\n\n正文");
   });
 });

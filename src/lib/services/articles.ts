@@ -104,23 +104,34 @@ function withBodies(article: Article) {
   };
 }
 
+function deleteSupersededMarkdownBody(previousPath: string | null | undefined, currentPath: string | null | undefined) {
+  if (!previousPath || previousPath === currentPath) return;
+  try {
+    deleteMarkdownBody(previousPath);
+  } catch (error) {
+    console.error("Failed to remove superseded Markdown body", error);
+  }
+}
+
 export function createArticle(input: ArticleInput) {
   assertValidSlug(input.slug);
   const db = getDb();
   const timestamp = nowIso();
-  const result = db
-    .prepare(
-      `insert into articles
-      (title_zh, title_en, slug, category, updated_at, excerpt_zh, excerpt_en, cover_image_path, seo_description, body_zh_path, body_en_path)
-      values (@titleZh, @titleEn, @slug, @category, @updatedAt, @excerptZh, @excerptEn, @coverImagePath, @seoDescription, '', null)`,
-    )
-    .run({ ...input, updatedAt: timestamp });
-
-  const id = Number(result.lastInsertRowid);
-  const bodyZhPath = writeMarkdownBody(id, "zh", input.bodyZh);
-  const bodyEnPath = input.bodyEn ? writeMarkdownBody(id, "en", input.bodyEn) : null;
-  db.prepare("update articles set body_zh_path = ?, body_en_path = ? where id = ?").run(bodyZhPath, bodyEnPath, id);
-  replaceArticleTags(id, input.tagIds);
+  const id = db.transaction(() => {
+    const result = db
+      .prepare(
+        `insert into articles
+        (title_zh, title_en, slug, category, updated_at, excerpt_zh, excerpt_en, cover_image_path, seo_description, body_zh_path, body_en_path)
+        values (@titleZh, @titleEn, @slug, @category, @updatedAt, @excerptZh, @excerptEn, @coverImagePath, @seoDescription, '', null)`,
+      )
+      .run({ ...input, updatedAt: timestamp });
+    const articleId = Number(result.lastInsertRowid);
+    const bodyZhPath = writeMarkdownBody(articleId, "zh", input.bodyZh);
+    const bodyEnPath = input.bodyEn ? writeMarkdownBody(articleId, "en", input.bodyEn) : null;
+    db.prepare("update articles set body_zh_path = ?, body_en_path = ? where id = ?").run(bodyZhPath, bodyEnPath, articleId);
+    replaceArticleTags(articleId, input.tagIds);
+    return articleId;
+  })();
   // Sync to FTS5 if the article was created as published (defensive).
   const created = getArticleById(id, { includeDraft: true })!;
   if (created.status === "published") syncArticleToFts(created);
@@ -133,19 +144,21 @@ export function updateArticle(id: number, input: ArticleInput) {
   if (!existing) throw new Error("Article not found.");
   const bodyZhPath = writeMarkdownBody(id, "zh", input.bodyZh);
   const bodyEnPath = input.bodyEn ? writeMarkdownBody(id, "en", input.bodyEn) : null;
-  if (!bodyEnPath) deleteMarkdownBody(existing.bodyEnPath);
-
-  getDb()
-    .prepare(
-      `update articles set title_zh = @titleZh, title_en = @titleEn, slug = @slug, category = @category,
-      updated_at = @updatedAt, excerpt_zh = @excerptZh, excerpt_en = @excerptEn, cover_image_path = @coverImagePath,
-      seo_description = @seoDescription, body_zh_path = @bodyZhPath, body_en_path = @bodyEnPath where id = @id`,
-    )
-    .run({ ...input, id, updatedAt: nowIso(), bodyZhPath, bodyEnPath });
-  replaceArticleTags(id, input.tagIds);
-  // Re-sync FTS5 if the article is published.
-  const updated = getArticleById(id, { includeDraft: true })!;
-  if (updated.status === "published") syncArticleToFts(updated);
+  const db = getDb();
+  const updated = db.transaction(() => {
+    db.prepare(
+        `update articles set title_zh = @titleZh, title_en = @titleEn, slug = @slug, category = @category,
+        updated_at = @updatedAt, excerpt_zh = @excerptZh, excerpt_en = @excerptEn, cover_image_path = @coverImagePath,
+        seo_description = @seoDescription, body_zh_path = @bodyZhPath, body_en_path = @bodyEnPath where id = @id`,
+      )
+      .run({ ...input, id, updatedAt: nowIso(), bodyZhPath, bodyEnPath });
+    replaceArticleTags(id, input.tagIds);
+    const article = getArticleById(id, { includeDraft: true })!;
+    if (article.status === "published") syncArticleToFts(article);
+    return article;
+  })();
+  deleteSupersededMarkdownBody(existing.bodyZhPath, bodyZhPath);
+  deleteSupersededMarkdownBody(existing.bodyEnPath, bodyEnPath);
   return updated;
 }
 
@@ -153,22 +166,28 @@ export function updateArticleEnglishFields(id: number, input: { titleEn: string;
   const existing = getArticleById(id, { includeDraft: true });
   if (!existing) throw new Error("Article not found.");
   const bodyEnPath = writeMarkdownBody(id, "en", input.bodyEn);
-  getDb()
-    .prepare("update articles set title_en = ?, excerpt_en = ?, body_en_path = ?, updated_at = ? where id = ?")
-    .run(input.titleEn, input.excerptEn, bodyEnPath, nowIso(), id);
-  // Re-sync FTS5 if the article is published.
-  const updated = getArticleById(id, { includeDraft: true })!;
-  if (updated.status === "published") syncArticleToFts(updated);
+  const db = getDb();
+  const updated = db.transaction(() => {
+    db.prepare("update articles set title_en = ?, excerpt_en = ?, body_en_path = ?, updated_at = ? where id = ?")
+      .run(input.titleEn, input.excerptEn, bodyEnPath, nowIso(), id);
+    const article = getArticleById(id, { includeDraft: true })!;
+    if (article.status === "published") syncArticleToFts(article);
+    return article;
+  })();
+  deleteSupersededMarkdownBody(existing.bodyEnPath, bodyEnPath);
   return updated;
 }
 
 export function deleteArticle(id: number) {
   const article = getArticleById(id, { includeDraft: true });
   if (!article) return false;
-  deleteMarkdownBody(article.bodyZhPath);
-  deleteMarkdownBody(article.bodyEnPath);
-  deleteArticleFromFts(id);
-  getDb().prepare("delete from articles where id = ?").run(id);
+  const db = getDb();
+  db.transaction(() => {
+    deleteArticleFromFts(id);
+    db.prepare("delete from articles where id = ?").run(id);
+  })();
+  deleteSupersededMarkdownBody(article.bodyZhPath, null);
+  deleteSupersededMarkdownBody(article.bodyEnPath, null);
   return true;
 }
 
@@ -217,19 +236,23 @@ export function publishArticle(id: number) {
   if (!article) throw new Error("Article not found.");
   if (!article.titleZh || !article.slug || !article.bodyZh) throw new Error("Required fields are missing.");
   const timestamp = nowIso();
-  getDb()
-    .prepare("update articles set status = 'published', published_at = coalesce(published_at, ?), updated_at = ? where id = ?")
-    .run(timestamp, timestamp, id);
-  // Sync to FTS5 now that the article is published.
-  const published = getArticleById(id, { includeDraft: true })!;
-  syncArticleToFts(published);
-  return published;
+  const db = getDb();
+  return db.transaction(() => {
+    db.prepare("update articles set status = 'published', published_at = coalesce(published_at, ?), updated_at = ? where id = ?")
+      .run(timestamp, timestamp, id);
+    const published = getArticleById(id, { includeDraft: true })!;
+    syncArticleToFts(published);
+    return published;
+  })();
 }
 
 export function unpublishArticle(id: number) {
-  getDb().prepare("update articles set status = 'draft', updated_at = ? where id = ?").run(nowIso(), id);
-  deleteArticleFromFts(id);
-  return getArticleById(id, { includeDraft: true });
+  const db = getDb();
+  return db.transaction(() => {
+    db.prepare("update articles set status = 'draft', updated_at = ? where id = ?").run(nowIso(), id);
+    deleteArticleFromFts(id);
+    return getArticleById(id, { includeDraft: true });
+  })();
 }
 
 export function setFeaturedArticle(id: number) {
