@@ -50,4 +50,28 @@ else
 fi
 ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d caddy && docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile"
 ssh "${REMOTE}" "cd ${APP_DIR}/deploy && for i in \$(seq 1 60); do docker compose exec -T app sh -lc 'wget -qO- http://127.0.0.1:3000/healthz' | grep -q '\"ok\":true' && exit 0; sleep 2; done; docker compose logs --tail=80 app; exit 1"
+
+PUBLIC_URL="${PUBLIC_URL:-https://blog.leesaitool.com}"
+PUBLIC_HEADER_FILE="$(mktemp)"
+trap 'rm -f "${PUBLIC_HEADER_FILE}"' EXIT
+PUBLIC_HEADERS_OK=0
+for _ in $(seq 1 30); do
+  if curl -fsS --max-time 15 -D "${PUBLIC_HEADER_FILE}" -o /dev/null "${PUBLIC_URL}/healthz" \
+    && grep -qi '^strict-transport-security:' "${PUBLIC_HEADER_FILE}" \
+    && grep -qi '^x-content-type-options:' "${PUBLIC_HEADER_FILE}" \
+    && grep -qi '^referrer-policy:' "${PUBLIC_HEADER_FILE}" \
+    && ! grep -qi '^x-powered-by:' "${PUBLIC_HEADER_FILE}"; then
+    PUBLIC_HEADERS_OK=1
+    break
+  fi
+  sleep 2
+done
+if [[ "${PUBLIC_HEADERS_OK}" != "1" ]]; then
+  echo "Public security-header probe failed for ${PUBLIC_URL}." >&2
+  cat "${PUBLIC_HEADER_FILE}" >&2
+  exit 1
+fi
+rm -f "${PUBLIC_HEADER_FILE}"
+trap - EXIT
+
 ssh "${REMOTE}" "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"

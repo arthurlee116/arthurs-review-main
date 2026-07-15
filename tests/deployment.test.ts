@@ -55,8 +55,10 @@ describe("deployment scripts", () => {
   it("requires the app to become healthy after every deployment mode", () => {
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
     const health = fs.readFileSync("src/app/healthz/route.ts", "utf8");
-    const afterDeploymentBranch = deploy.slice(deploy.lastIndexOf("fi\n") + 3);
+    const commonDeploymentStart = deploy.indexOf('ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d caddy');
+    const afterDeploymentBranch = deploy.slice(commonDeploymentStart);
 
+    expect(commonDeploymentStart).toBeGreaterThanOrEqual(0);
     expect(afterDeploymentBranch).toContain("/healthz");
     expect(afterDeploymentBranch).toContain("docker compose logs --tail=80 app");
     expect(health).toContain("await connection()");
@@ -122,15 +124,25 @@ describe("deployment scripts", () => {
     const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
     const nextConfig = fs.readFileSync("next.config.ts", "utf8");
-    const afterDeploymentBranch = deploy.slice(deploy.lastIndexOf("fi\n") + 3);
+    const commonDeploymentStart = deploy.indexOf('ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d caddy');
+    const afterDeploymentBranch = deploy.slice(commonDeploymentStart);
 
+    expect(commonDeploymentStart).toBeGreaterThanOrEqual(0);
     expect(caddy).toContain("Strict-Transport-Security");
     expect(caddy).toContain("X-Content-Type-Options nosniff");
     expect(caddy).toContain("Referrer-Policy strict-origin-when-cross-origin");
     expect(caddy).toContain("header_down -X-Powered-By");
     expect(afterDeploymentBranch).toContain("caddy validate");
     expect(afterDeploymentBranch).toContain("caddy reload");
+    expect(afterDeploymentBranch).toContain("PUBLIC_URL");
+    expect(afterDeploymentBranch).toContain("strict-transport-security:");
+    expect(afterDeploymentBranch).toContain("x-content-type-options:");
+    expect(afterDeploymentBranch).toContain("referrer-policy:");
+    expect(afterDeploymentBranch).toContain("x-powered-by:");
     expect(nextConfig).toContain("poweredByHeader: false");
+    expect(nextConfig).toContain('key: "Strict-Transport-Security"');
+    expect(nextConfig).toContain('key: "X-Content-Type-Options"');
+    expect(nextConfig).toContain('key: "Referrer-Policy"');
   });
 
   it("marks database-backed pages as intentionally blocking", () => {
