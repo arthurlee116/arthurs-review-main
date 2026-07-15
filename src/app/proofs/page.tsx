@@ -7,6 +7,8 @@ import { publicPageMetadata } from "@/lib/metadata";
 import { listCachedPublicPublicationProofs } from "@/lib/services/public-content";
 import type { PublicPublicationProof } from "@/lib/services/publication-proofs";
 
+export const instant = false;
+
 export const metadata = publicPageMetadata({
   title: "Proofs",
   description: "Public content fingerprints, OpenTimestamps files, and Wayback snapshots for Arthur's Review.",

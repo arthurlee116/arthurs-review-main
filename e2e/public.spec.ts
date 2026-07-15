@@ -1,16 +1,59 @@
 import { expect, test } from "@playwright/test";
 
-test("home page has classic masthead and five navigation entries", async ({ page }) => {
+test("home page keeps the classic masthead and exposes every public archive", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Arthur's Review" })).toBeVisible();
-  for (const label of ["Home", "时事评论", "社会分析", "杂七杂八", "About"]) {
-    await expect(page.getByRole("link", { name: label })).toBeVisible();
+  const publicNav = page.getByRole("navigation").first();
+  for (const label of ["Home", "时事评论", "社会分析", "杂七杂八", "Archive", "Proofs", "About"]) {
+    await expect(publicNav.getByRole("link", { name: label, exact: true })).toBeVisible();
   }
+});
+
+test("listing caps move the thirteenth article into Archive", async ({ page }) => {
+  const archivedTitle = "E2E 上限文章 13";
+
+  await page.goto("/");
+  await expect(page.getByRole("main").locator("article")).toHaveCount(12);
+  await expect(page.getByRole("main").getByRole("link", { name: archivedTitle })).toHaveCount(0);
+
+  await page.goto("/commentary");
+  await expect(page.getByRole("main").locator("article")).toHaveCount(8);
+  await expect(page.getByRole("main").getByRole("link", { name: archivedTitle })).toHaveCount(0);
+
+  await page.goto("/archive");
+  await expect(page.getByRole("main").getByRole("link", { name: archivedTitle })).toBeVisible();
 });
 
 test("article without English body hides language switch", async ({ page }) => {
   await page.goto("/commentary/short-note");
   await expect(page.getByText("中文 / English")).toHaveCount(0);
+});
+
+test("article feedback stays out of the way and copies the WeChat id", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: "http://127.0.0.1:3100" });
+  await page.goto("/commentary/short-note");
+
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "读完了？来挑错。" })).toBeVisible();
+  await page.getByRole("button", { name: "复制微信号", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("微信号已复制");
+});
+
+test("RSS discovery, Proofs, and the dynamic social card are reachable", async ({ page, request }) => {
+  await page.goto("/");
+  await expect(page.locator('link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute("href", "http://127.0.0.1:3100/feed.xml");
+
+  await page.goto("/proofs");
+  await expect(page.getByRole("heading", { level: 1, name: "Proofs" })).toBeVisible();
+
+  const feed = await request.get("/feed.xml");
+  expect(feed.ok()).toBe(true);
+  expect(feed.headers()["content-type"]).toContain("application/rss+xml");
+
+  const socialCard = await request.get("/og?title=Playwright%20social%20card&kicker=Verification");
+  expect(socialCard.ok()).toBe(true);
+  expect(socialCard.headers()["content-type"]).toContain("image/png");
+  expect((await socialCard.body()).byteLength).toBeGreaterThan(1_000);
 });
 
 test("search returns matching published article", async ({ page }) => {

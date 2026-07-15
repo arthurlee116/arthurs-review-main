@@ -8,6 +8,8 @@ import { publicPageMetadata } from "@/lib/metadata";
 import { listCachedPublishedArticles } from "@/lib/services/public-content";
 import type { Article } from "@/lib/services/articles";
 
+export const instant = false;
+
 export const metadata = publicPageMetadata({
   title: "Archive",
   description: "Every published article from Arthur's Review, grouped by year.",

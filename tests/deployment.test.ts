@@ -107,4 +107,19 @@ describe("deployment scripts", () => {
     expect(caddy).toContain("header_down -X-Powered-By");
     expect(nextConfig).toContain("poweredByHeader: false");
   });
+
+  it("marks database-backed pages as intentionally blocking", () => {
+    for (const page of [
+      "src/app/archive/page.tsx",
+      "src/app/proofs/page.tsx",
+      "src/app/studio/(protected)/articles/page.tsx",
+      "src/app/studio/(protected)/articles/new/page.tsx",
+      "src/app/studio/(protected)/articles/[id]/page.tsx",
+      "src/app/studio/(protected)/preview/[id]/page.tsx",
+      "src/app/studio/(protected)/settings/page.tsx",
+      "src/app/studio/(protected)/tags/page.tsx",
+    ]) {
+      expect(fs.readFileSync(page, "utf8")).toContain("export const instant = false");
+    }
+  });
 });

@@ -1,4 +1,5 @@
 import { migrate } from "@/lib/db/migrate";
+import { getDb } from "@/lib/db/connection";
 import { createArticle, listStudioArticles, publishArticle, setFeaturedArticle } from "@/lib/services/articles";
 import { createTag, listTags } from "@/lib/services/tags";
 
@@ -83,5 +84,30 @@ export function seed() {
       tagIds: [],
       coverImagePath: null,
     });
+  }
+
+  if (process.env.E2E_LISTING_FIXTURES === "1") {
+    for (let index = 1; index <= 13; index += 1) {
+      const slug = `e2e-list-limit-${index}`;
+      if (!articleExists(slug)) {
+        const article = createArticle({
+          titleZh: `E2E 上限文章 ${index}`,
+          titleEn: null,
+          slug,
+          category: "commentary",
+          excerptZh: "只用于验证公开列表上限。",
+          excerptEn: null,
+          seoDescription: "Playwright listing limit fixture.",
+          bodyZh: `这是第 ${index} 篇列表上限测试文章。`,
+          bodyEn: null,
+          tagIds: [],
+          coverImagePath: null,
+        });
+        publishArticle(article.id);
+      }
+
+      const timestamp = `2024-01-${String(14 - index).padStart(2, "0")}T00:00:00.000Z`;
+      getDb().prepare("update articles set published_at = ?, updated_at = ? where slug = ?").run(timestamp, timestamp, slug);
+    }
   }
 }

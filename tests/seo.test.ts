@@ -56,6 +56,9 @@ describe("SEO and discovery metadata", () => {
     expect(metadata.title).toBe("一篇真正有标题的文章");
     expect(metadata.description).toBe("这是一段专门给搜索和分享使用的描述。");
     expect(metadata.alternates?.canonical).toBe("https://blog.leesaitool.com/commentary/real-title");
+    expect(metadata.alternates?.types).toEqual({
+      "application/rss+xml": "https://blog.leesaitool.com/feed.xml",
+    });
     expect(metadata.openGraph).toMatchObject({
       title: "一篇真正有标题的文章",
       description: "这是一段专门给搜索和分享使用的描述。",

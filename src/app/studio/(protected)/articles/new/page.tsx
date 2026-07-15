@@ -2,6 +2,8 @@ import { connection } from "next/server";
 import { ArticleEditor } from "@/components/studio/ArticleEditor";
 import { listTags } from "@/lib/services/tags";
 
+export const instant = false;
+
 export default async function NewArticlePage() {
   await connection();
   return (

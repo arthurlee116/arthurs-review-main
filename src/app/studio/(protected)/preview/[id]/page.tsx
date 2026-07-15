@@ -4,6 +4,8 @@ import { ArticleMeta } from "@/components/ArticleMeta";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { getArticleById } from "@/lib/services/articles";
 
+export const instant = false;
+
 export default async function PreviewPage({ params }: { params: Promise<{ id: string }> }) {
   await connection();
   const { id } = await params;

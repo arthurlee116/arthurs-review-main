@@ -5,6 +5,8 @@ import { getArticleById } from "@/lib/services/articles";
 import { listPublicationProofs } from "@/lib/services/publication-proofs";
 import { listTags } from "@/lib/services/tags";
 
+export const instant = false;
+
 export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
   await connection();
   const { id } = await params;

@@ -158,7 +158,6 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
         <span>{label}</span>
         <CodeMirror
           ref={editorRef}
-          aria-label={label}
           className="markdown-source-editor"
           value={value}
           minHeight="14rem"

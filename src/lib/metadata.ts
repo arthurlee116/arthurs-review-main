@@ -35,6 +35,9 @@ export function publicPageMetadata({
     description,
     alternates: {
       canonical: url,
+      types: {
+        "application/rss+xml": absoluteUrl("/feed.xml"),
+      },
     },
     openGraph: {
       title,
