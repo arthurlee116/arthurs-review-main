@@ -25,6 +25,15 @@ describe("deployment scripts", () => {
     expect(compose).toContain("SITE_URL: https://blog.leesaitool.com");
   });
 
+  it("adds admin credentials from dedicated GitHub secrets", () => {
+    const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
+
+    expect(workflow).toContain("ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}");
+    expect(workflow).toContain("SESSION_SECRET: ${{ secrets.SESSION_SECRET }}");
+    expect(workflow).toContain("printf 'ADMIN_PASSWORD_HASH=%s\\n' \"$ADMIN_PASSWORD_HASH\"");
+    expect(workflow).toContain("printf 'SESSION_SECRET=%s\\n' \"$SESSION_SECRET\"");
+  });
+
   it("makes pnpm native-build policy available during the Docker install", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const policyCopy = dockerfile.indexOf("COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./");
