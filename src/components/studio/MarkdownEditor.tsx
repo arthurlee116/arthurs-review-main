@@ -1,11 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorView } from "@codemirror/view";
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { csrfToken } from "@/lib/client/csrf";
+
+const markdownBasicSetup = {
+  foldGutter: false,
+  highlightActiveLine: false,
+  highlightActiveLineGutter: false,
+};
 
 function imageAlt(fileName: string) {
   return fileName.replace(/\.[^.]+$/, "") || "image";
@@ -61,6 +67,10 @@ function markdownIssues(markdown: string) {
 
 export function MarkdownEditor({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
+  const extensions = useMemo(
+    () => [markdown({ base: markdownLanguage }), EditorView.contentAttributes.of({ "aria-label": label })],
+    [label],
+  );
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [message, setMessage] = useState("");
   const [checkResult, setCheckResult] = useState<MarkdownIssue[] | null>(null);
@@ -152,11 +162,8 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
           className="markdown-source-editor"
           value={value}
           minHeight="14rem"
-          extensions={[
-            markdown({ base: markdownLanguage }),
-            EditorView.contentAttributes.of({ "aria-label": label }),
-          ]}
-          basicSetup={{ foldGutter: false, highlightActiveLine: false, highlightActiveLineGutter: false }}
+          extensions={extensions}
+          basicSetup={markdownBasicSetup}
           onChange={onChange}
         />
       </div>

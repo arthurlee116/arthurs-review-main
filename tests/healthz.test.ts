@@ -18,6 +18,8 @@ afterEach(() => {
 describe("GET /healthz", () => {
   it("checks both SQLite and writable persistent storage", async () => {
     process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "myblog-health-"));
+    const { migrate } = await import("@/lib/db/migrate");
+    migrate();
 
     const response = GET();
 
@@ -25,6 +27,19 @@ describe("GET /healthz", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       checks: { database: "ok", storage: "ok" },
+    });
+  });
+
+  it("fails when SQLite opens but the application schema is unavailable", async () => {
+    process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "myblog-health-schema-"));
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const response = GET();
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      checks: { database: "failed", storage: "ok" },
     });
   });
 

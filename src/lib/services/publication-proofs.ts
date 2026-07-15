@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { CategoryId } from "@/lib/content/categories";
-import type { Article, ArticleStatus } from "./articles";
+import type { Article } from "./articles";
 import { articlePath } from "@/lib/content/urls";
 import { getDb } from "@/lib/db/connection";
 import { getDataPaths } from "@/lib/env";
@@ -35,7 +35,6 @@ export type PublicPublicationProof = {
   articleTitle: string;
   articleSlug: string;
   articleCategory: CategoryId;
-  articleStatus: ArticleStatus;
   createdAt: string;
   publicUrl: string;
   documentSha256: string;
@@ -65,7 +64,6 @@ type PublicProofRow = ProofRow & {
   article_title: string;
   article_slug: string;
   article_category: CategoryId;
-  article_status: ArticleStatus;
 };
 
 type ProofServices = {
@@ -212,10 +210,10 @@ export function listPublicPublicationProofs(): PublicPublicationProof[] {
       `select publication_proofs.*,
               articles.title_zh as article_title,
               articles.slug as article_slug,
-              articles.category as article_category,
-              articles.status as article_status
+              articles.category as article_category
        from publication_proofs
        join articles on articles.id = publication_proofs.article_id
+       where articles.status = 'published'
        order by publication_proofs.created_at desc, publication_proofs.id desc`,
     )
     .all() as PublicProofRow[];
@@ -226,7 +224,6 @@ export function listPublicPublicationProofs(): PublicPublicationProof[] {
     articleTitle: row.article_title,
     articleSlug: row.article_slug,
     articleCategory: row.article_category,
-    articleStatus: row.article_status,
     createdAt: row.created_at,
     publicUrl: row.public_url,
     documentSha256: row.document_sha256,

@@ -37,8 +37,10 @@ export default async function ProofsPage() {
   await connection();
   const proofs = await listCachedPublicPublicationProofs();
   const groups = groupByArticle(proofs);
-  const otsComplete = proofs.filter((proof) => proof.otsStatus === "complete").length;
-  const waybackComplete = proofs.filter((proof) => proof.waybackStatus === "complete").length;
+  const serviceStatuses = proofs.flatMap((proof) => [proof.otsStatus, proof.waybackStatus]);
+  const complete = serviceStatuses.filter((status) => status === "complete").length;
+  const pending = serviceStatuses.filter((status) => status === "pending").length;
+  const failed = serviceStatuses.filter((status) => status === "failed").length;
 
   return (
     <PublicShell mastheadHeadingLevel={2}>
@@ -61,12 +63,15 @@ export default async function ProofsPage() {
             <span className="sans mt-2 block text-xs text-[var(--muted)]">Articles represented</span>
           </div>
           <div className="py-6 md:col-span-7 md:border-r md:border-t md:pr-8">
-            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{otsComplete}</strong>
-            <span className="sans mt-2 block text-xs text-[var(--muted)]">OpenTimestamps complete</span>
+            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{complete} complete</strong>
+            <span className="sans mt-2 block text-xs text-[var(--muted)]">Verification services</span>
           </div>
           <div className="border-t border-[var(--rule)] py-6 md:col-span-5 md:pl-8">
-            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{waybackComplete}</strong>
-            <span className="sans mt-2 block text-xs text-[var(--muted)]">Wayback snapshots complete</span>
+            <div className="sans flex gap-6 text-2xl font-bold tracking-[-0.03em]">
+              <strong>{pending} pending</strong>
+              <strong className={failed ? "text-[var(--accent)]" : undefined}>{failed} failed</strong>
+            </div>
+            <span className="sans mt-2 block text-xs text-[var(--muted)]">OpenTimestamps and Wayback combined</span>
           </div>
         </section>
 
@@ -80,15 +85,10 @@ export default async function ProofsPage() {
                   <div>
                     <p className="sans text-xs text-[var(--muted)]">{countLabel(articleProofs.length, "version")}</p>
                     <h2 id={headingId} className="mt-2 text-3xl font-bold leading-tight">
-                      {article.articleStatus === "published" ? (
-                        <Link className="transition-colors hover:text-[var(--accent)] focus-visible:text-[var(--accent)]" href={articlePath(article.articleCategory, article.articleSlug)}>
-                          {article.articleTitle}
-                        </Link>
-                      ) : (
-                        article.articleTitle
-                      )}
+                      <Link className="transition-colors hover:text-[var(--accent)] focus-visible:text-[var(--accent)]" href={articlePath(article.articleCategory, article.articleSlug)}>
+                        {article.articleTitle}
+                      </Link>
                     </h2>
-                    {article.articleStatus !== "published" ? <p className="sans mt-3 text-xs text-[var(--muted)]">No longer public</p> : null}
                   </div>
 
                   <ol className="grid gap-5 sm:grid-cols-2">

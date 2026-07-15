@@ -39,6 +39,9 @@ afterEach(async () => {
 
 describe("public article pages", () => {
   it("shows a non-blocking contact notice without mounting a dialog", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
@@ -52,6 +55,9 @@ describe("public article pages", () => {
     expect(within(footer).getByRole("link", { name: "Proofs" })).toHaveAttribute("href", "/proofs");
     expect(within(footer).getByRole("link", { name: "RSS" })).toHaveAttribute("href", "/feed.xml");
     expect(within(footer).getByRole("link", { name: "laoliarthur@outlook.com" })).toHaveAttribute("href", "mailto:laoliarthur@outlook.com");
+    await user.click(within(footer).getByRole("button", { name: "复制微信号 bookspiano" }));
+    expect(writeText).toHaveBeenCalledWith("bookspiano");
+    expect(within(footer).getByRole("status")).toHaveTextContent("微信号已复制");
   });
 
   it("offers concrete article feedback by email and copied WeChat id", async () => {

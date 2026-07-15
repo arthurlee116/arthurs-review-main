@@ -67,11 +67,30 @@ describe("public proof archive", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Proofs" })).toBeVisible();
     expect(screen.getByText("1 proof")).toBeVisible();
     expect(screen.getByText("1 article")).toBeVisible();
+    expect(screen.getByText("2 complete")).toBeVisible();
+    expect(screen.getByText("0 pending")).toBeVisible();
+    expect(screen.getByText("0 failed")).toBeVisible();
     const group = screen.getByRole("region", { name: "公开证明文章" });
     expect(within(group).getByRole("link", { name: "公开证明文章" })).toHaveAttribute("href", "/commentary/public-proof");
     expect(within(group).getByRole("link", { name: "Source JSON" })).toHaveAttribute("href", `/proofs/${proof!.id}/source`);
     expect(within(group).getByRole("link", { name: "OpenTimestamps" })).toHaveAttribute("href", `/proofs/${proof!.id}/ots`);
     expect(within(group).getByRole("link", { name: "Wayback snapshot" })).toHaveAttribute("href", proof!.waybackUrl);
     expect(screen.queryByText(/private\/server\/path|secret upstream response|proofs\/\d+\/.*\.json/)).not.toBeInTheDocument();
+  });
+
+  it("does not list proof records for an unpublished article", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle, unpublishArticle } = await import("@/lib/services/articles");
+    const { createPublicationProof } = await import("@/lib/services/publication-proofs");
+    migrate();
+    const article = publishArticle(createArticle(articleInput({ titleZh: "已撤下文章", slug: "withdrawn" })).id);
+    await createPublicationProof(article, {
+      now: () => new Date("2026-07-15T12:00:00.000Z"),
+      stamp: async () => Uint8Array.of(1),
+      capture: async () => "https://web.archive.org/example",
+    });
+    unpublishArticle(article.id);
+
+    expect(listPublicPublicationProofs()).toEqual([]);
   });
 });

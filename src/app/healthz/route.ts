@@ -8,8 +8,10 @@ export function GET() {
   let storage: "ok" | "failed" = "failed";
 
   try {
-    const row = getDb().prepare("select 1 as healthy").get() as { healthy: number } | undefined;
-    if (row?.healthy === 1) database = "ok";
+    const row = getDb()
+      .prepare("select count(*) as published from articles where status = 'published'")
+      .get() as { published: number } | undefined;
+    if (typeof row?.published === "number") database = "ok";
   } catch (error) {
     console.error("Health check database probe failed", error);
   }
