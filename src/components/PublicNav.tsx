@@ -7,6 +7,7 @@ const links = [
   ["社会分析", "/society"],
   ["杂七杂八", "/misc"],
   ["Archive", "/archive"],
+  ["Proofs", "/proofs"],
   ["About", "/about"],
 ] as const;
 

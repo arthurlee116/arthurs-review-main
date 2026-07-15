@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { Article } from "./articles";
+import type { CategoryId } from "@/lib/content/categories";
+import type { Article, ArticleStatus } from "./articles";
 import { articlePath } from "@/lib/content/urls";
 import { getDb } from "@/lib/db/connection";
 import { getDataPaths } from "@/lib/env";
@@ -28,6 +29,22 @@ export type PublicationProof = {
   waybackError: string | null;
 };
 
+export type PublicPublicationProof = {
+  id: number;
+  articleId: number;
+  articleTitle: string;
+  articleSlug: string;
+  articleCategory: CategoryId;
+  articleStatus: ArticleStatus;
+  createdAt: string;
+  publicUrl: string;
+  documentSha256: string;
+  otsStatus: ProofStatus;
+  otsAvailable: boolean;
+  waybackUrl: string | null;
+  waybackStatus: ProofStatus;
+};
+
 type ProofRow = {
   id: number;
   article_id: number;
@@ -42,6 +59,13 @@ type ProofRow = {
   wayback_url: string | null;
   wayback_status: ProofStatus;
   wayback_error: string | null;
+};
+
+type PublicProofRow = ProofRow & {
+  article_title: string;
+  article_slug: string;
+  article_category: CategoryId;
+  article_status: ArticleStatus;
 };
 
 type ProofServices = {
@@ -180,6 +204,37 @@ export function listPublicationProofs(articleId: number) {
   return (getDb()
     .prepare("select * from publication_proofs where article_id = ? order by created_at desc, id desc")
     .all(articleId) as ProofRow[]).map(mapProof);
+}
+
+export function listPublicPublicationProofs(): PublicPublicationProof[] {
+  const rows = getDb()
+    .prepare(
+      `select publication_proofs.*,
+              articles.title_zh as article_title,
+              articles.slug as article_slug,
+              articles.category as article_category,
+              articles.status as article_status
+       from publication_proofs
+       join articles on articles.id = publication_proofs.article_id
+       order by publication_proofs.created_at desc, publication_proofs.id desc`,
+    )
+    .all() as PublicProofRow[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    articleId: row.article_id,
+    articleTitle: row.article_title,
+    articleSlug: row.article_slug,
+    articleCategory: row.article_category,
+    articleStatus: row.article_status,
+    createdAt: row.created_at,
+    publicUrl: row.public_url,
+    documentSha256: row.document_sha256,
+    otsStatus: row.ots_status,
+    otsAvailable: row.ots_status === "complete" && row.ots_path !== null,
+    waybackUrl: row.wayback_url,
+    waybackStatus: row.wayback_status,
+  }));
 }
 
 export function resolveProofPath(relativePath: string) {

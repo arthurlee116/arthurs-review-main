@@ -31,32 +31,30 @@ export default async function ArchivePage() {
 
   return (
     <PublicShell mastheadHeadingLevel={2}>
-      <main className="container pb-14">
-        <header className="border-b border-[var(--rule)] py-8">
-          <p className="sans text-xs font-bold uppercase text-[var(--muted)]">Complete index</p>
-          <div className="mt-3 flex items-center gap-4">
-            <span className="h-1 w-12 bg-[var(--accent)]" aria-hidden="true" />
-            <h1 className="sans text-3xl font-bold leading-tight md:text-4xl">Archive</h1>
-          </div>
+      <main className="container overflow-x-hidden pb-16">
+        <header className="max-w-5xl py-10 md:py-14">
+          <p className="sans text-xs font-bold uppercase tracking-[0.12em] text-[var(--accent)]">Complete index</p>
+          <h1 className="sans mt-4 max-w-5xl text-5xl font-bold leading-[0.95] tracking-[-0.04em] md:text-7xl">Archive</h1>
+          <p className="mt-6 max-w-[55ch] text-lg leading-8 text-[var(--muted)]">Every published article, grouped by year.</p>
         </header>
 
         {groups.length ? (
-          <div className="divide-y divide-[var(--rule)]">
+          <div className="border-t border-[var(--rule)]">
             {groups.map((group) => (
-              <section key={group.year} className="grid gap-5 py-8 md:grid-cols-[8rem_1fr]" aria-labelledby={`archive-${group.year}`}>
-                <h2 id={`archive-${group.year}`} className="sans text-3xl font-bold">
+              <section key={group.year} className="grid gap-6 border-b border-[var(--rule)] py-10 md:grid-cols-[10rem_1fr] md:gap-12" aria-labelledby={`archive-${group.year}`}>
+                <h2 id={`archive-${group.year}`} className="sans text-5xl font-bold leading-none tracking-[-0.04em]">
                   {group.year}
                 </h2>
-                <ol className="grid gap-4">
+                <ol className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
                   {group.articles.map((article) => (
-                    <li key={article.id} className="grid gap-1 border-b border-[var(--rule)] pb-4 sm:grid-cols-[7rem_8rem_1fr] sm:items-baseline">
-                      <time className="sans text-xs text-[var(--muted)]" dateTime={article.publishedAt ?? article.updatedAt}>
-                        {(article.publishedAt ?? article.updatedAt).slice(0, 10)}
-                      </time>
-                      <Link className="sans text-xs text-[var(--muted)] hover:text-[var(--ink)]" href={categoryPath(article.category)}>
-                        {categoryLabel(article.category)}
-                      </Link>
-                      <Link className="text-xl font-bold leading-snug hover:text-[var(--accent)]" href={articlePath(article.category, article.slug)}>
+                    <li key={article.id} className="group grid content-start gap-2">
+                      <p className="sans flex flex-wrap gap-x-4 text-xs text-[var(--muted)]">
+                        <time dateTime={article.publishedAt ?? article.updatedAt}>{(article.publishedAt ?? article.updatedAt).slice(0, 10)}</time>
+                        <Link className="transition-colors hover:text-[var(--ink)] focus-visible:text-[var(--ink)]" href={categoryPath(article.category)}>
+                          {categoryLabel(article.category)}
+                        </Link>
+                      </p>
+                      <Link className="text-xl font-bold leading-snug transition-colors group-hover:text-[var(--accent)] focus-visible:text-[var(--accent)]" href={articlePath(article.category, article.slug)}>
                         {article.titleZh}
                       </Link>
                     </li>
