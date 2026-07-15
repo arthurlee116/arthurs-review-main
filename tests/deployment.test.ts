@@ -26,7 +26,7 @@ describe("deployment scripts", () => {
     const workflow = fs.readFileSync(".github/workflows/backup.yml", "utf8");
     expect(workflow).toContain("schedule:");
     expect(workflow).toContain("scripts/verify-backup.sh");
-    expect(workflow).toContain("actions/upload-artifact@v4");
+    expect(workflow).toContain("actions/upload-artifact@v7");
     expect(workflow).toContain("retention-days: 30");
   });
 

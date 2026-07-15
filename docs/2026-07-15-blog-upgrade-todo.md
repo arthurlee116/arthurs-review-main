@@ -8,7 +8,7 @@
 - [x] 不公开标签体系；不做正式国际化；不删除 OpenRouter 翻译；不引入 CMS、PostgreSQL 或新的搜索系统。
 - [x] 首页最多展示 12 篇文章（包含 featured），每个分类页最多展示 8 篇，全部历史文章由 `/archive` 承接。
 - [x] 统一使用 Node.js 26；保留 Next.js 16.3 canary、React 19、TypeScript 7 与 Cache Components。
-- [ ] 完成标准不是本地能编译：单测、类型检查、构建、E2E、容器配置、浏览器视觉与交互检查、GitHub Actions、线上页面和响应头必须全部有证据。
+- [x] 完成标准不是本地能编译：单测、类型检查、构建、E2E、容器配置、浏览器视觉与交互检查、GitHub Actions、线上页面和响应头必须全部有证据。
 
 ## 1. 可靠备份与恢复验证（第一优先级）
 
@@ -17,7 +17,7 @@
 - [x] 归档先写临时文件，校验成功后再原子重命名；失败不得留下伪装成成功备份的归档。
 - [x] 增加可独立运行的备份验证脚本：解包、核对 manifest、执行 SQLite `integrity_check`、确认三个内容目录存在。
 - [x] 保留 VPS 每日备份与 30 天轮转，并增加定时 GitHub Actions：从 VPS 生成并拉取备份，验证后保存为异地 Artifact。
-- [ ] 更新 bootstrap、README 和部署测试；部署完成后手动触发一次异地备份工作流并确认成功。
+- [x] 更新 bootstrap、README 和部署测试；部署完成后手动触发一次异地备份工作流并确认成功。
 
 ## 2. Markdown 与数据库崩溃安全写入（第一优先级）
 
@@ -69,13 +69,13 @@
 
 - [x] Docker 三个阶段、GitHub Actions、`package.json` engines 与本地版本文件统一 Node.js 26。
 - [x] `next.config.ts` 关闭 `X-Powered-By`；Caddy 再移除上游该响应头作为边界保证。
-- [ ] Caddy 增加 HSTS、`X-Content-Type-Options: nosniff` 与 `Referrer-Policy: strict-origin-when-cross-origin`，并通过官方镜像配置校验。
+- [x] Caddy 增加 HSTS、`X-Content-Type-Options: nosniff` 与 `Referrer-Policy: strict-origin-when-cross-origin`，并通过官方镜像配置校验。
 - [x] 删除 CI 重复类型检查，但保留 TypeScript 7 实际执行一次；不改变 OpenRouter 超时和翻译功能。
 
 ## 10. 最终验收与上线
 
 - [x] `pnpm lint`、`pnpm typecheck`、全部 Vitest、Playwright 桌面/移动端 E2E、`pnpm build` 全绿。
-- [ ] Docker Node 26 镜像能构建，Compose 与 Caddy 配置通过校验；备份生成和恢复验证真实运行一次。
-- [ ] 使用 Codex Browser 检查首页、三个分类、Archive、Proofs、文章反馈、Markdown 复杂样例、RSS metadata、OG 图片和手机布局。
-- [ ] 提交并推送到 `main`，持续观察 GitHub Actions 直到部署成功；失败则定位并修复后重跑。
-- [ ] 线上核对文章数据未丢、首页/分类数量上限、Proofs、Archive、反馈、RSS、OG 图片、healthz 与安全响应头。
+- [x] Docker Node 26 镜像能构建，Compose 与 Caddy 配置通过校验；备份生成和恢复验证真实运行一次。
+- [x] 使用 Codex Browser 检查首页、三个分类、Archive、Proofs、文章反馈、Markdown 复杂样例、RSS metadata、OG 图片和手机布局。
+- [x] 提交并推送到 `main`，持续观察 GitHub Actions 直到部署成功；失败则定位并修复后重跑。
+- [x] 线上核对文章数据未丢、首页/分类数量上限、Proofs、Archive、反馈、RSS、OG 图片、healthz 与安全响应头。
