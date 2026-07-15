@@ -10,7 +10,25 @@ if [[ ! -f deploy/production.env ]]; then
   exit 1
 fi
 
-ssh "${REMOTE}" "command -v sqlite3 >/dev/null || (apt-get update >/dev/null && apt-get install -y sqlite3 >/dev/null)"
+ssh "${REMOTE}" '
+set -eu
+if command -v sqlite3 >/dev/null 2>&1; then
+  exit 0
+elif command -v apt-get >/dev/null 2>&1; then
+  apt-get update >/dev/null
+  DEBIAN_FRONTEND=noninteractive apt-get install -y sqlite3 >/dev/null
+elif command -v apk >/dev/null 2>&1; then
+  apk add --no-cache sqlite >/dev/null
+elif command -v dnf >/dev/null 2>&1; then
+  dnf install -y sqlite >/dev/null
+elif command -v yum >/dev/null 2>&1; then
+  yum install -y sqlite >/dev/null
+else
+  echo "No supported package manager is available to install sqlite3." >&2
+  exit 127
+fi
+command -v sqlite3 >/dev/null
+'
 
 rsync -az --delete \
   --exclude .git \

@@ -62,6 +62,18 @@ describe("deployment scripts", () => {
     expect(health).toContain("await connection()");
   });
 
+  it("installs the SQLite CLI through the VPS package manager", () => {
+    const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+
+    expect(deploy).toContain("command -v apt-get");
+    expect(deploy).toContain("command -v apk");
+    expect(deploy).toContain("command -v dnf");
+    expect(deploy).toContain("command -v yum");
+    expect(deploy).toContain("apk add --no-cache sqlite");
+    expect(deploy).toContain("dnf install -y sqlite");
+    expect(deploy).toContain("yum install -y sqlite");
+  });
+
   it("always points production at the persistent article volume", () => {
     const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
 
