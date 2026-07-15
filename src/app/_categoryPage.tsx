@@ -19,7 +19,7 @@ export async function CategoryPage({ category }: { category: CategoryId }) {
         </header>
         {articles.length ? (
           <section>
-            {articles.map((article, index) => (
+            {articles.slice(0, 8).map((article, index) => (
               <ArticleCard key={article.id} article={article} large eagerImage={index === 0} />
             ))}
           </section>

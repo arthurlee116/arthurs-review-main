@@ -18,7 +18,7 @@ export default async function HomePage() {
   await connection();
   const articles = await listCachedPublishedArticles();
   const featured = articles.find((article) => article.isFeatured) ?? articles[0];
-  const feed = articles.filter((article) => article.id !== featured?.id);
+  const feed = articles.filter((article) => article.id !== featured?.id).slice(0, 11);
 
   return (
     <PublicShell noticePlacement="beforeNav">
@@ -36,7 +36,7 @@ export default async function HomePage() {
           <p className="sans border-y border-[var(--rule)] py-12 text-center text-sm text-[var(--muted)]">No published articles yet.</p>
         )}
         <section className="py-8">
-          {feed.slice(3).map((article) => (
+          {feed.slice(3, 11).map((article) => (
             <ArticleCard key={article.id} article={article} />
           ))}
         </section>
