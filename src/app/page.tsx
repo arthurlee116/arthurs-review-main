@@ -25,7 +25,7 @@ export default async function HomePage() {
       <main className="container py-10">
         {featured ? (
           <section className="grid gap-8 border-b-2 border-[var(--rule)] pb-8 md:grid-cols-[1.35fr_1fr]">
-            <ArticleCard article={featured} large eagerImage />
+            <ArticleCard article={featured} large eagerImage featured />
             <div>
               {feed.slice(0, 3).map((article) => (
                 <ArticleCard key={article.id} article={article} />

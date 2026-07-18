@@ -65,6 +65,7 @@ describe("public listing limits", () => {
 
     const cards = container.querySelectorAll("main article");
     expect(cards[0]).toContainElement(screen.getByRole("link", { name: "文章 1" }));
+    expect(cards[0]).toContainElement(screen.getByText("Featured"));
     expect(cards[0].querySelector("h2")).toHaveClass("text-4xl");
   });
 });

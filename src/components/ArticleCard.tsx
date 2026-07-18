@@ -4,13 +4,28 @@ import { CoverImage, coverImageSizes } from "@/components/CoverImage";
 import { articlePath } from "@/lib/content/urls";
 import type { Article } from "@/lib/services/articles";
 
-export function ArticleCard({ article, large = false, eagerImage = false }: { article: Article; large?: boolean; eagerImage?: boolean }) {
+export function ArticleCard({
+  article,
+  large = false,
+  eagerImage = false,
+  featured = false,
+}: {
+  article: Article;
+  large?: boolean;
+  eagerImage?: boolean;
+  featured?: boolean;
+}) {
   return (
     <article className="border-b border-[var(--rule)] py-7">
       {article.coverImagePath ? (
         <CoverImage className="mb-5" path={article.coverImagePath} alt="" sizes={large ? coverImageSizes.largeCard : coverImageSizes.card} eager={eagerImage} />
       ) : null}
-      <ArticleMeta category={article.category} publishedAt={article.publishedAt} />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <ArticleMeta category={article.category} publishedAt={article.publishedAt} />
+        {featured ? (
+          <span className="sans border-l-2 border-[var(--accent)] pl-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">Featured</span>
+        ) : null}
+      </div>
       <h2 className={large ? "mt-3 text-4xl font-bold leading-none md:text-5xl" : "mt-3 text-2xl font-bold leading-tight md:text-3xl"}>
         <Link href={articlePath(article.category, article.slug)}>{article.titleZh}</Link>
       </h2>
