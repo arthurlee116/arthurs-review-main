@@ -24,6 +24,15 @@ describe("studio API contracts", () => {
     expect(response.status).toBe(401);
   });
 
+  it("rejects unauthenticated featured article changes", async () => {
+    const mod = await import("@/app/studio/api/articles/[id]/featured/route");
+    const response = await mod.POST(new Request("http://localhost/studio/api/articles/1/featured", { method: "POST" }), {
+      params: Promise.resolve({ id: "1" }),
+    });
+
+    expect(response.status).toBe(401);
+  });
+
   it("returns the first invalid article field", async () => {
     const response = apiError(new z.ZodError([{ code: "custom", path: ["slug"], message: "Slug is bad", input: "" }]));
 

@@ -32,7 +32,8 @@ export async function PUT(request: Request) {
         return Response.json({ error: "Featured article must be published." }, { status: 400 });
       }
     }
-    for (const [key, value] of Object.entries({ ...input, featuredArticleId: featuredId })) {
+    for (const [key, value] of Object.entries(input)) {
+      if (key === "featuredArticleId") continue;
       setSetting(key as keyof typeof input, value);
     }
     if (featuredId) {

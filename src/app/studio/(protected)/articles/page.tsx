@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { FeaturedArticleButton } from "@/components/studio/FeaturedArticleButton";
 import { TranslateMissingEnglishButton } from "@/components/studio/TranslateMissingEnglishButton";
 import { listStudioArticles } from "@/lib/services/articles";
 import type { CategoryId } from "@/lib/content/categories";
@@ -63,14 +64,24 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
           Apply filters
         </button>
       </form>
-      <div className="sans mt-6 grid gap-3">
+      <ul className="sans mt-6" aria-label="Articles">
         {articles.map((article) => (
-          <Link key={article.id} className="flex justify-between border-b border-[var(--rule)] py-3" href={`/studio/articles/${article.id}`}>
-            <span>{article.titleZh}</span>
-            <span>{article.status}</span>
-          </Link>
+          <li key={article.id} className="grid min-w-0 gap-2 border-b border-[var(--rule)] py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <Link className="font-medium underline-offset-4 hover:underline" href={`/studio/articles/${article.id}`}>
+                {article.titleZh}
+              </Link>
+              {article.isFeatured ? (
+                <span className="border border-[var(--accent)] bg-[var(--accent)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--paper)]">Featured</span>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--muted)] sm:justify-end">
+              <span>{article.status}</span>
+              {article.status === "published" && !article.isFeatured ? <FeaturedArticleButton articleId={article.id} title={article.titleZh} /> : null}
+            </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   );
 }

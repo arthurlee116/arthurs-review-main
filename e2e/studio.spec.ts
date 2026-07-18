@@ -97,6 +97,27 @@ test("admin can filter the article list by status category and search", async ({
   await expect(page.getByRole("link", { name: /一座城市如何把人训练成旁观者/ })).toHaveCount(0);
 });
 
+test("admin can pin a featured article to the first homepage slot", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium", "The E2E projects share one featured article setting.");
+  await login(page);
+  let title = "短评的锋利应该留一点余温";
+  await page.goto(`/studio/articles?q=${encodeURIComponent("余温")}`);
+  let setFeatured = page.getByRole("button", { name: `Set ${title} as featured article` });
+  if ((await setFeatured.count()) === 0) {
+    title = "一座城市如何把人训练成旁观者";
+    await page.goto(`/studio/articles?q=${encodeURIComponent("城市")}`);
+    setFeatured = page.getByRole("button", { name: `Set ${title} as featured article` });
+  }
+
+  const articleRow = page.getByRole("listitem").filter({ has: page.getByRole("link", { name: title, exact: true }) });
+  await setFeatured.click();
+  await expect(articleRow.getByText("Featured", { exact: true })).toBeVisible();
+
+  await page.goto("/");
+  const firstCard = page.getByRole("main").locator("article").first();
+  await expect(firstCard.getByRole("link", { name: title, exact: true })).toBeVisible();
+});
+
 test("publishing an existing article saves current editor input first", async ({ page }, testInfo) => {
   const slug = `publish-current-${testInfo.project.name}-${Date.now()}-${testInfo.workerIndex}`;
   await login(page);

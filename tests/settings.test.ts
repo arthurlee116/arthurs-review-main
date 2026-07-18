@@ -23,9 +23,10 @@ afterEach(async () => {
 });
 
 describe("featured article settings", () => {
-  it("only allows published articles to become featured", async () => {
+  it("keeps the featured article unique, published, and in sync with settings", async () => {
     const { migrate } = await import("@/lib/db/migrate");
-    const { createArticle, listPublishedArticles, publishArticle, setFeaturedArticle } = await import("@/lib/services/articles");
+    const { createArticle, listPublishedArticles, publishArticle, setFeaturedArticle, unpublishArticle } = await import("@/lib/services/articles");
+    const { getSetting } = await import("@/lib/services/settings");
     migrate();
 
     const draft = createArticle(
@@ -48,6 +49,12 @@ describe("featured article settings", () => {
     setFeaturedArticle(published.id);
 
     expect(listPublishedArticles().find((article) => article.isFeatured)?.id).toBe(published.id);
+    expect(getSetting("featuredArticleId")).toBe(String(published.id));
+
+    unpublishArticle(published.id);
+
+    expect(listPublishedArticles().some((article) => article.isFeatured)).toBe(false);
+    expect(getSetting("featuredArticleId")).toBe("");
   });
 
   it("stores the OpenRouter translation model with a sensible default", async () => {

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { CategoryPage } from "@/app/_categoryPage";
@@ -53,5 +53,18 @@ describe("public listing limits", () => {
     const { container } = render(await CategoryPage({ category: "commentary" }));
 
     expect(container.querySelectorAll("main article")).toHaveLength(8);
+  });
+
+  it("renders the featured article first in the large homepage slot", async () => {
+    await publishArticles(3);
+    const { listPublishedArticles, setFeaturedArticle } = await import("@/lib/services/articles");
+    const oldest = listPublishedArticles().find((article) => article.slug === "article-1")!;
+    setFeaturedArticle(oldest.id);
+
+    const { container } = render(await HomePage());
+
+    const cards = container.querySelectorAll("main article");
+    expect(cards[0]).toContainElement(screen.getByRole("link", { name: "文章 1" }));
+    expect(cards[0].querySelector("h2")).toHaveClass("text-4xl");
   });
 });

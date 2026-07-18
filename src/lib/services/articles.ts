@@ -2,6 +2,7 @@ import { readMarkdownBody, writeMarkdownBody, deleteMarkdownBody } from "@/lib/c
 import { assertValidSlug } from "@/lib/content/slugs";
 import type { CategoryId } from "@/lib/content/categories";
 import { getDb } from "@/lib/db/connection";
+import { setSetting } from "@/lib/services/settings";
 import { syncArticleToFts, deleteArticleFromFts } from "./search";
 
 export type ArticleStatus = "draft" | "published";
@@ -184,6 +185,7 @@ export function deleteArticle(id: number) {
   const db = getDb();
   db.transaction(() => {
     deleteArticleFromFts(id);
+    if (article.isFeatured) clearFeaturedArticleState(db);
     db.prepare("delete from articles where id = ?").run(id);
   })();
   deleteSupersededMarkdownBody(article.bodyZhPath, null);
@@ -247,9 +249,12 @@ export function publishArticle(id: number) {
 }
 
 export function unpublishArticle(id: number) {
+  const existing = getArticleById(id, { includeDraft: true });
+  if (!existing) throw new Error("Article not found.");
   const db = getDb();
   return db.transaction(() => {
     db.prepare("update articles set status = 'draft', updated_at = ? where id = ?").run(nowIso(), id);
+    if (existing.isFeatured) clearFeaturedArticleState(db);
     deleteArticleFromFts(id);
     return getArticleById(id, { includeDraft: true });
   })();
@@ -260,15 +265,22 @@ export function setFeaturedArticle(id: number) {
   const existing = getArticleById(id, { includeDraft: true });
   if (!existing) throw new Error("Article not found.");
   if (existing.status !== "published") throw new Error("Featured article must be published.");
-  const tx = db.transaction(() => {
+  return db.transaction(() => {
     db.prepare("update articles set is_featured = 0").run();
     db.prepare("update articles set is_featured = 1 where id = ?").run(id);
-  });
-  tx();
+    setSetting("featuredArticleId", String(id));
+    return getArticleById(id, { includeDraft: true })!;
+  })();
 }
 
 export function clearFeaturedArticle() {
-  getDb().prepare("update articles set is_featured = 0").run();
+  const db = getDb();
+  db.transaction(() => clearFeaturedArticleState(db))();
+}
+
+function clearFeaturedArticleState(db: ReturnType<typeof getDb>) {
+  db.prepare("update articles set is_featured = 0").run();
+  setSetting("featuredArticleId", "");
 }
 
 function replaceArticleTags(articleId: number, tagIds: number[]) {
