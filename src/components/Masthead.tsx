@@ -1,7 +1,7 @@
 import { SearchBox } from "@/components/SearchBox";
 
 export function Masthead({ headingLevel = 1 }: { headingLevel?: 1 | 2 }) {
-  const titleClassName = "whitespace-nowrap text-[clamp(2.25rem,10.9vw,3rem)] font-bold leading-none md:text-7xl";
+  const titleClassName = "whitespace-nowrap font-[Georgia,Times_New_Roman,serif] text-[clamp(30px,10.4vw,48px)] font-bold leading-none md:text-7xl";
 
   return (
     <header className="container pt-8 text-center">

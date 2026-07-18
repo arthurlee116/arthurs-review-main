@@ -287,7 +287,7 @@ button {
   }
 
   .contact-notice {
-    font-size: clamp(0.75rem, 3.64vw, 1rem);
+    font-size: clamp(12px, 3.64vw, 16px);
     white-space: normal;
   }
 

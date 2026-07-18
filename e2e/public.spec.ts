@@ -10,9 +10,10 @@ test("home page keeps the classic masthead and exposes every public archive", as
 });
 
 test("mobile masthead stays stable and keeps the contact notice compact", async ({ page }) => {
-  await page.setViewportSize({ width: 440, height: 956 });
+  await page.setViewportSize({ width: 393, height: 956 });
   await page.goto("/");
   await page.waitForLoadState("networkidle");
+  await page.addStyleTag({ content: 'html { font-size: 22px; } header h1 { font-family: Georgia, serif; }' });
 
   const layout = await page.evaluate(() => {
     const lineCount = (element: Element) => {
@@ -21,6 +22,9 @@ test("mobile masthead stays stable and keeps the contact notice compact", async 
       return new Set([...range.getClientRects()].map((rect) => Math.round(rect.top * 10) / 10)).size;
     };
     const title = document.querySelector("header h1")!;
+    const titleText = document.createRange();
+    titleText.selectNodeContents(title);
+    const titleRect = titleText.getBoundingClientRect();
     const notice = document.querySelector(".contact-notice")!;
     const noticeText = document.createRange();
     noticeText.selectNodeContents(notice);
@@ -31,6 +35,7 @@ test("mobile masthead stays stable and keeps the contact notice compact", async 
     return {
       textSizeAdjust: getComputedStyle(document.documentElement).webkitTextSizeAdjust,
       titleLines: lineCount(title),
+      titleFits: titleRect.left >= 0 && titleRect.right <= innerWidth,
       noticeLines: lineCount(notice),
       topGap: noticeRect.top - accentRect.bottom,
       bottomGap: navRect.top - noticeRect.bottom,
@@ -39,6 +44,7 @@ test("mobile masthead stays stable and keeps the contact notice compact", async 
 
   expect(layout.textSizeAdjust).toBe("100%");
   expect(layout.titleLines).toBe(1);
+  expect(layout.titleFits).toBe(true);
   expect(layout.noticeLines).toBe(3);
   expect(Math.abs(layout.topGap - layout.bottomGap)).toBeLessThanOrEqual(2);
 });
