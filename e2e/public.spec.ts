@@ -9,6 +9,40 @@ test("home page keeps the classic masthead and exposes every public archive", as
   }
 });
 
+test("mobile masthead stays stable and keeps the contact notice compact", async ({ page }) => {
+  await page.setViewportSize({ width: 440, height: 956 });
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+
+  const layout = await page.evaluate(() => {
+    const lineCount = (element: Element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return new Set([...range.getClientRects()].map((rect) => Math.round(rect.top * 10) / 10)).size;
+    };
+    const title = document.querySelector("header h1")!;
+    const notice = document.querySelector(".contact-notice")!;
+    const noticeText = document.createRange();
+    noticeText.selectNodeContents(notice);
+    const noticeRect = noticeText.getBoundingClientRect();
+    const accentRect = document.querySelector("header.container > div:last-child")!.getBoundingClientRect();
+    const navRect = document.querySelector("nav")!.getBoundingClientRect();
+
+    return {
+      textSizeAdjust: getComputedStyle(document.documentElement).webkitTextSizeAdjust,
+      titleLines: lineCount(title),
+      noticeLines: lineCount(notice),
+      topGap: noticeRect.top - accentRect.bottom,
+      bottomGap: navRect.top - noticeRect.bottom,
+    };
+  });
+
+  expect(layout.textSizeAdjust).toBe("100%");
+  expect(layout.titleLines).toBe(1);
+  expect(layout.noticeLines).toBe(3);
+  expect(Math.abs(layout.topGap - layout.bottomGap)).toBeLessThanOrEqual(2);
+});
+
 test("listing caps move the thirteenth article into Archive", async ({ page }) => {
   const archivedTitle = "E2E 上限文章 13";
 

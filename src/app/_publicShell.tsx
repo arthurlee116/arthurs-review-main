@@ -16,7 +16,7 @@ export function PublicShell({
     <div className="flex min-h-[100dvh] flex-col">
       <Masthead headingLevel={mastheadHeadingLevel} />
       {noticePlacement === "beforeNav" ? <ContactNotice className="container mt-7" /> : null}
-      <PublicNav />
+      <PublicNav compactTop={noticePlacement === "beforeNav"} />
       <div className="flex-1">{children}</div>
       <PublicFooter />
     </div>
