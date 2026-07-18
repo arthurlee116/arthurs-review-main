@@ -15,6 +15,8 @@ import { absoluteUrl } from "@/lib/seo";
 import { listPublicationProofs } from "@/lib/services/publication-proofs";
 import { PublicShell } from "./_publicShell";
 
+const SINGLE_LINE_TITLE_MAX = 9;
+
 export async function getArticlePageMetadata(category: CategoryId, slug: string, lang?: string) {
   await connection();
   const article = await getCachedPublishedArticle(category, slug);
@@ -36,6 +38,7 @@ export async function ArticlePage({
   if (!article) notFound();
   const useEnglish = lang === "en" && article.bodyEn;
   const title = useEnglish ? (article.titleEn ?? article.titleZh) : article.titleZh;
+  const singleLineTitle = Array.from(title.trim()).length <= SINGLE_LINE_TITLE_MAX;
   const description = (useEnglish ? article.excerptEn : article.seoDescription) || article.seoDescription || article.excerptZh;
   const url = absoluteUrl(articlePath(article.category, article.slug));
   const categoryUrl = absoluteUrl(categories[article.category].href);
@@ -94,7 +97,11 @@ export async function ArticlePage({
         <article className="reading">
           <ArticleMeta category={article.category} publishedAt={article.publishedAt} />
           <LanguageSwitch hasEnglish={Boolean(article.bodyEn)} currentPath={articlePath(article.category, article.slug)} />
-          <h1 className="mt-5 text-5xl font-bold leading-none md:text-7xl">{title}</h1>
+          <h1
+            className={`mt-5 text-[min(48px,9.5vw)] font-bold leading-none md:text-7xl ${singleLineTitle ? "whitespace-nowrap" : "max-w-[9.5em] text-balance md:max-w-none"}`}
+          >
+            {title}
+          </h1>
           {article.coverImagePath ? (
             <CoverImage className="mt-8" path={article.coverImagePath} alt={article.titleZh} sizes={coverImageSizes.article} eager />
           ) : null}

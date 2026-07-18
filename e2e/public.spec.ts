@@ -49,6 +49,27 @@ test("mobile masthead stays stable and keeps the contact notice compact", async 
   expect(Math.abs(layout.topGap - layout.bottomGap)).toBeLessThanOrEqual(2);
 });
 
+test("mobile article titles use the nine-character wrapping threshold", async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 956 });
+
+  const titleLayout = async (path: string) => {
+    await page.goto(path);
+    await page.addStyleTag({ content: "html { font-size: 22px; }" });
+    return page.locator("main article h1").evaluate((title) => {
+      const range = document.createRange();
+      range.selectNodeContents(title);
+      const rects = [...range.getClientRects()];
+      return {
+        lines: new Set(rects.map((rect) => Math.round(rect.top * 10) / 10)).size,
+        textWrap: getComputedStyle(title).textWrap,
+      };
+    });
+  };
+
+  await expect(titleLayout("/misc/night-lines")).resolves.toMatchObject({ lines: 1 });
+  await expect(titleLayout("/society/city-bystander")).resolves.toMatchObject({ lines: 2, textWrap: "balance" });
+});
+
 test("listing caps move the thirteenth article into Archive", async ({ page }) => {
   const archivedTitle = "E2E 上限文章 13";
 

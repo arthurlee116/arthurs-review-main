@@ -4,8 +4,6 @@ import { CoverImage, coverImageSizes } from "@/components/CoverImage";
 import { articlePath } from "@/lib/content/urls";
 import type { Article } from "@/lib/services/articles";
 
-const SINGLE_LINE_TITLE_MAX = 9;
-
 export function ArticleCard({
   article,
   large = false,
@@ -17,8 +15,6 @@ export function ArticleCard({
   eagerImage?: boolean;
   featured?: boolean;
 }) {
-  const singleLineLargeTitle = large && Array.from(article.titleZh.trim()).length <= SINGLE_LINE_TITLE_MAX;
-
   return (
     <article className="border-b border-[var(--rule)] py-7">
       {article.coverImagePath ? (
@@ -30,13 +26,7 @@ export function ArticleCard({
           <span className="sans border-l-2 border-[var(--accent)] pl-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">Featured</span>
         ) : null}
       </div>
-      <h2
-        className={
-          large
-            ? `mt-3 text-[min(36px,9.2vw)] font-bold leading-none md:text-5xl ${singleLineLargeTitle ? "whitespace-nowrap" : "max-w-[9.5em] text-balance md:max-w-none"}`
-            : "mt-3 text-2xl font-bold leading-tight md:text-3xl"
-        }
-      >
+      <h2 className={large ? "mt-3 text-4xl font-bold leading-none md:text-5xl" : "mt-3 text-2xl font-bold leading-tight md:text-3xl"}>
         <Link href={articlePath(article.category, article.slug)}>{article.titleZh}</Link>
       </h2>
       {article.excerptZh ? <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--muted)]">{article.excerptZh}</p> : null}
