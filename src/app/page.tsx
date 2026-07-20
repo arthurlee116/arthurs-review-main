@@ -1,3 +1,5 @@
+import { io } from "next/cache";
+import { Suspense } from "react";
 import { ArticleCard } from "@/components/ArticleCard";
 import { publicPageMetadata } from "@/lib/metadata";
 import { listCachedPublishedArticles } from "@/lib/services/public-content";
@@ -11,7 +13,8 @@ export function generateMetadata() {
   });
 }
 
-export default async function HomePage() {
+export async function HomeContent() {
+  await io();
   const articles = await listCachedPublishedArticles(undefined, { featuredFirst: true, limit: 12 });
   const featured = articles.find((article) => article.isFeatured) ?? articles[0];
   const feed = articles.filter((article) => article.id !== featured?.id).slice(0, 11);
@@ -38,5 +41,13 @@ export default async function HomePage() {
         </section>
       </main>
     </PublicShell>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<PublicShell noticePlacement="beforeNav"><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
+      <HomeContent />
+    </Suspense>
   );
 }

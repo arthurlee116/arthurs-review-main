@@ -1,8 +1,11 @@
+import { io } from "next/cache";
+import { Suspense } from "react";
 import { PublicShell } from "@/app/_publicShell";
 import { publicPageMetadata } from "@/lib/metadata";
 import { getCachedSettings } from "@/lib/services/public-content";
 
 export async function generateMetadata() {
+  await io();
   const settings = await getCachedSettings();
   return publicPageMetadata({
     title: "About",
@@ -11,7 +14,8 @@ export async function generateMetadata() {
   });
 }
 
-export default async function AboutPage() {
+export async function AboutContent() {
+  await io();
   const settings = await getCachedSettings();
   return (
     <PublicShell>
@@ -25,5 +29,13 @@ export default async function AboutPage() {
         </section>
       </main>
     </PublicShell>
+  );
+}
+
+export default function AboutPage() {
+  return (
+    <Suspense fallback={<PublicShell><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
+      <AboutContent />
+    </Suspense>
   );
 }

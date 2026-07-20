@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { io } from "next/cache";
+import { Suspense } from "react";
 
 import { PublicShell } from "@/app/_publicShell";
 import { categoryLabel } from "@/lib/content/categories";
@@ -24,7 +26,8 @@ function groupByYear(articles: Article[]) {
   return groups;
 }
 
-export default async function ArchivePage() {
+export async function ArchiveContent() {
+  await io();
   const groups = groupByYear(await listCachedPublishedArticles());
 
   return (
@@ -66,5 +69,13 @@ export default async function ArchivePage() {
         )}
       </main>
     </PublicShell>
+  );
+}
+
+export default function ArchivePage() {
+  return (
+    <Suspense fallback={<PublicShell mastheadHeadingLevel={2}><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
+      <ArchiveContent />
+    </Suspense>
   );
 }

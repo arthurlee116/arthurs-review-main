@@ -4,7 +4,7 @@ import path from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import ProofsPage from "@/app/proofs/page";
+import { ProofsContent } from "@/app/proofs/page";
 import { listPublicPublicationProofs } from "@/lib/services/publication-proofs";
 import { articleInput } from "@/test/factories";
 
@@ -62,7 +62,7 @@ describe("public proof archive", () => {
       capture: async () => "https://web.archive.org/web/20260715110000/https://blog.leesaitool.com/commentary/public-proof",
     });
 
-    render(await ProofsPage());
+    render(await ProofsContent());
 
     expect(screen.getByRole("heading", { level: 1, name: "Proofs" })).toBeVisible();
     expect(screen.getByText("1 proof")).toBeVisible();

@@ -1,9 +1,11 @@
+import { io } from "next/cache";
 import { ArticleCard } from "@/components/ArticleCard";
 import { categories, type CategoryId } from "@/lib/content/categories";
 import { listCachedPublishedArticles } from "@/lib/services/public-content";
 import { PublicShell } from "./_publicShell";
 
 export async function CategoryPage({ category }: { category: CategoryId }) {
+  await io();
   const articles = await listCachedPublishedArticles(category, { limit: 8 });
   return (
     <PublicShell>
@@ -27,4 +29,8 @@ export async function CategoryPage({ category }: { category: CategoryId }) {
       </main>
     </PublicShell>
   );
+}
+
+export function CategoryPageFallback() {
+  return <PublicShell><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>;
 }

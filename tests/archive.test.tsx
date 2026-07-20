@@ -4,7 +4,7 @@ import path from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import ArchivePage from "@/app/archive/page";
+import { ArchiveContent } from "@/app/archive/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
@@ -35,7 +35,7 @@ describe("archive page", () => {
     getDb().prepare("update articles set published_at = ? where id = ?").run("2026-07-01T00:00:00.000Z", recent.id);
     getDb().prepare("update articles set published_at = ? where id = ?").run("2025-12-02T00:00:00.000Z", older.id);
 
-    render(await ArchivePage());
+    render(await ArchiveContent());
 
     const currentYear = screen.getByRole("region", { name: "2026" });
     const previousYear = screen.getByRole("region", { name: "2025" });

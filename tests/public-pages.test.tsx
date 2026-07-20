@@ -5,7 +5,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ArticlePage } from "@/app/_articlePage";
-import HomePage from "@/app/page";
+import { HomeContent } from "@/app/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
@@ -45,7 +45,7 @@ describe("public article pages", () => {
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
-    render(await HomePage());
+    render(await HomeContent());
 
     expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
     expect(screen.getAllByText(contactNotice)).toHaveLength(1);

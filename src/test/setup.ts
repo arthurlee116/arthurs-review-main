@@ -35,6 +35,7 @@ vi.mock("next/font/local", () => ({
 vi.mock("next/cache", () => ({
   cacheLife: vi.fn(),
   cacheTag: vi.fn(),
+  io: vi.fn(),
   revalidateTag: vi.fn(),
 }));
 

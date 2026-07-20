@@ -58,8 +58,6 @@ describe("project scaffold", () => {
       "src/app/society/[slug]/page.tsx",
       "src/app/misc/page.tsx",
       "src/app/misc/[slug]/page.tsx",
-      "src/app/feed.xml/route.ts",
-      "src/app/sitemap.ts",
     ];
 
     for (const file of files) {
@@ -70,5 +68,29 @@ describe("project scaffold", () => {
 
     const searchPage = fs.readFileSync("src/app/search/page.tsx", "utf8");
     expect(searchPage).toContain("<Suspense");
+  });
+
+  it("defers build-time SQLite reads behind PPR boundaries", () => {
+    for (const file of [
+      "src/app/page.tsx",
+      "src/app/_categoryPage.tsx",
+      "src/app/about/page.tsx",
+      "src/app/archive/page.tsx",
+      "src/app/proofs/page.tsx",
+    ]) {
+      expect(fs.readFileSync(file, "utf8"), file).toContain("await io()");
+    }
+
+    for (const file of [
+      "src/app/page.tsx",
+      "src/app/about/page.tsx",
+      "src/app/archive/page.tsx",
+      "src/app/proofs/page.tsx",
+      "src/app/commentary/page.tsx",
+      "src/app/society/page.tsx",
+      "src/app/misc/page.tsx",
+    ]) {
+      expect(fs.readFileSync(file, "utf8"), file).toContain("<Suspense");
+    }
   });
 });

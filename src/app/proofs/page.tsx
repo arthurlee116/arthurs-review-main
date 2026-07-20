@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { io } from "next/cache";
+import { Suspense } from "react";
 
 import { PublicShell } from "@/app/_publicShell";
 import { articlePath } from "@/lib/content/urls";
@@ -32,7 +34,8 @@ function statusLabel(status: PublicPublicationProof["otsStatus"]) {
   return "failed";
 }
 
-export default async function ProofsPage() {
+export async function ProofsContent() {
+  await io();
   const proofs = await listCachedPublicPublicationProofs();
   const groups = groupByArticle(proofs);
   const serviceStatuses = proofs.flatMap((proof) => [proof.otsStatus, proof.waybackStatus]);
@@ -127,5 +130,13 @@ export default async function ProofsPage() {
         )}
       </main>
     </PublicShell>
+  );
+}
+
+export default function ProofsPage() {
+  return (
+    <Suspense fallback={<PublicShell mastheadHeadingLevel={2}><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
+      <ProofsContent />
+    </Suspense>
   );
 }

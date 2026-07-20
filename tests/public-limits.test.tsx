@@ -5,7 +5,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CategoryPage } from "@/app/_categoryPage";
-import HomePage from "@/app/page";
+import { HomeContent } from "@/app/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
@@ -45,7 +45,7 @@ describe("public listing limits", () => {
     const { getDb } = await import("@/lib/db/connection");
     const prepare = vi.spyOn(getDb(), "prepare");
 
-    const { container } = render(await HomePage());
+    const { container } = render(await HomeContent());
 
     expect(container.querySelectorAll("main article")).toHaveLength(12);
     const articleQuery = prepare.mock.calls.map(([sql]) => String(sql)).find((sql) => sql.includes("from articles where status"));
@@ -86,7 +86,7 @@ describe("public listing limits", () => {
     const oldest = listPublishedArticles().find((article) => article.slug === "article-1")!;
     setFeaturedArticle(oldest.id);
 
-    const { container } = render(await HomePage());
+    const { container } = render(await HomeContent());
 
     const cards = container.querySelectorAll("main article");
     expect(cards[0]).toContainElement(screen.getByRole("link", { name: "文章 1" }));

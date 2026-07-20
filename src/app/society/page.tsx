@@ -1,4 +1,5 @@
-import { CategoryPage } from "@/app/_categoryPage";
+import { Suspense } from "react";
+import { CategoryPage, CategoryPageFallback } from "@/app/_categoryPage";
 import { categoryMetadata } from "@/lib/metadata";
 
 export function generateMetadata() {
@@ -6,5 +7,5 @@ export function generateMetadata() {
 }
 
 export default function SocietyPage() {
-  return <CategoryPage category="society" />;
+  return <Suspense fallback={<CategoryPageFallback />}><CategoryPage category="society" /></Suspense>;
 }
