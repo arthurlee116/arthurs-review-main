@@ -83,6 +83,13 @@ describe("deployment scripts", () => {
     expect(compose).toContain("SITE_URL: https://blog.leesaitool.com");
   });
 
+  it("resolves the robots sitemap URL from the runtime environment", () => {
+    const robots = fs.readFileSync("src/app/robots.ts", "utf8");
+
+    expect(robots).toContain('import { connection } from "next/server"');
+    expect(robots).toContain("await connection()");
+  });
+
   it("adds admin credentials from dedicated GitHub secrets", () => {
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
 

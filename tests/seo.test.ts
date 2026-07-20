@@ -27,7 +27,7 @@ describe("SEO and discovery metadata", () => {
   it("builds robots.txt from the production SITE_URL", async () => {
     const robots = await import("@/app/robots");
 
-    expect(robots.default().sitemap).toBe("https://blog.leesaitool.com/sitemap.xml");
+    expect((await robots.default()).sitemap).toBe("https://blog.leesaitool.com/sitemap.xml");
   });
 
   it("generates article metadata from the stored article SEO fields", async () => {
