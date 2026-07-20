@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { connection } from "next/server";
 
 import { PublicShell } from "@/app/_publicShell";
 import { categoryLabel } from "@/lib/content/categories";
@@ -7,8 +6,6 @@ import { articlePath, categoryPath } from "@/lib/content/urls";
 import { publicPageMetadata } from "@/lib/metadata";
 import { listCachedPublishedArticles } from "@/lib/services/public-content";
 import type { Article } from "@/lib/services/articles";
-
-export const instant = false;
 
 export const metadata = publicPageMetadata({
   title: "Archive",
@@ -28,7 +25,6 @@ function groupByYear(articles: Article[]) {
 }
 
 export default async function ArchivePage() {
-  await connection();
   const groups = groupByYear(await listCachedPublishedArticles());
 
   return (

@@ -1,10 +1,7 @@
-import { connection } from "next/server";
 import { ArticleCard } from "@/components/ArticleCard";
 import { publicPageMetadata } from "@/lib/metadata";
 import { listCachedPublishedArticles } from "@/lib/services/public-content";
 import { PublicShell } from "./_publicShell";
-
-export const instant = false;
 
 export function generateMetadata() {
   return publicPageMetadata({
@@ -15,8 +12,7 @@ export function generateMetadata() {
 }
 
 export default async function HomePage() {
-  await connection();
-  const articles = await listCachedPublishedArticles();
+  const articles = await listCachedPublishedArticles(undefined, { featuredFirst: true, limit: 12 });
   const featured = articles.find((article) => article.isFeatured) ?? articles[0];
   const feed = articles.filter((article) => article.id !== featured?.id).slice(0, 11);
 

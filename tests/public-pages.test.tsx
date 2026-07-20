@@ -202,8 +202,9 @@ describe("public article pages", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Wayback snapshot" })).toHaveAttribute("href", proof!.waybackUrl);
     expect(screen.getByText(proof!.documentSha256)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Download source" })).toHaveAttribute("href", `/proofs/${proof!.id}/source`);
+    expect(screen.getByRole("link", { name: "Download source JSON" })).toHaveAttribute("href", `/proofs/${proof!.id}/source`);
     expect(screen.getByRole("link", { name: "Download OTS" })).toHaveAttribute("href", `/proofs/${proof!.id}/ots`);
+    expect(screen.getByText("The OTS file timestamps the exact source JSON provided above.")).toBeInTheDocument();
     expect(container.querySelector("details > summary")).toBe(summary);
   });
 });

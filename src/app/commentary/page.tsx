@@ -8,4 +8,3 @@ export function generateMetadata() {
 export default function CommentaryPage() {
   return <CategoryPage category="commentary" />;
 }
-export const instant = false;

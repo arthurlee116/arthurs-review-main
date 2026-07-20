@@ -76,7 +76,25 @@ function articleTags(articleId: number) {
     .all(articleId) as Array<{ id: number; name: string; slug: string }>;
 }
 
-export function mapArticleRow(row: ArticleRow): Article {
+function articleTagsByArticleId(articleIds: number[]) {
+  const tags = new Map<number, Article["tags"]>(articleIds.map((id) => [id, []]));
+  if (articleIds.length === 0) return tags;
+
+  const rows = getDb()
+    .prepare(
+      `select article_tags.article_id, tags.id, tags.name, tags.slug
+       from tags
+       join article_tags on article_tags.tag_id = tags.id
+       where article_tags.article_id in (${articleIds.map(() => "?").join(", ")})
+       order by article_tags.article_id, tags.name`,
+    )
+    .all(...articleIds) as Array<{ article_id: number; id: number; name: string; slug: string }>;
+
+  for (const row of rows) tags.get(row.article_id)!.push({ id: row.id, name: row.name, slug: row.slug });
+  return tags;
+}
+
+export function mapArticleRow(row: ArticleRow, tags = articleTags(row.id)): Article {
   return {
     id: row.id,
     titleZh: row.title_zh,
@@ -93,8 +111,13 @@ export function mapArticleRow(row: ArticleRow): Article {
     seoDescription: row.seo_description,
     bodyZhPath: row.body_zh_path,
     bodyEnPath: row.body_en_path,
-    tags: articleTags(row.id),
+    tags,
   };
+}
+
+function mapArticleRows(rows: ArticleRow[]) {
+  const tags = articleTagsByArticleId(rows.map((row) => row.id));
+  return rows.map((row) => mapArticleRow(row, tags.get(row.id)));
 }
 
 function withBodies(article: Article) {
@@ -208,17 +231,25 @@ export function getPublishedArticle(category: CategoryId, slug: string) {
   return row ? withBodies(mapArticleRow(row)) : null;
 }
 
-export function listPublishedArticles(category?: CategoryId) {
-  const rows = category
-    ? (getDb()
-        .prepare("select * from articles where status = ? and category = ? order by published_at desc, id desc")
-        .all("published", category) as ArticleRow[])
-    : (getDb().prepare("select * from articles where status = ? order by published_at desc, id desc").all("published") as ArticleRow[]);
-  return rows.map(mapArticleRow);
+export type PublishedArticleListOptions = {
+  featuredFirst?: boolean;
+  limit?: number;
+};
+
+export function listPublishedArticles(category?: CategoryId, options: PublishedArticleListOptions = {}) {
+  const where = category ? "status = ? and category = ?" : "status = ?";
+  const order = options.featuredFirst ? "is_featured desc, published_at desc, id desc" : "published_at desc, id desc";
+  const limit = options.limit === undefined ? "" : " limit ?";
+  const params: Array<string | number> = category ? ["published", category] : ["published"];
+  if (options.limit !== undefined) params.push(options.limit);
+  const rows = getDb()
+    .prepare(`select * from articles where ${where} order by ${order}${limit}`)
+    .all(...params) as ArticleRow[];
+  return mapArticleRows(rows);
 }
 
 export function listStudioArticles() {
-  return (getDb().prepare("select * from articles order by updated_at desc, id desc").all() as ArticleRow[]).map(mapArticleRow);
+  return mapArticleRows(getDb().prepare("select * from articles order by updated_at desc, id desc").all() as ArticleRow[]);
 }
 
 export function listPublishedArticlesMissingEnglish() {
@@ -230,7 +261,7 @@ export function listPublishedArticlesMissingEnglish() {
        order by published_at desc, id desc`,
     )
     .all("published") as ArticleRow[];
-  return rows.map((row) => withBodies(mapArticleRow(row)));
+  return mapArticleRows(rows).map(withBodies);
 }
 
 export function publishArticle(id: number) {

@@ -9,7 +9,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   return new Response(body, {
     headers: {
       "content-type": "application/vnd.opentimestamps.ots",
-      "content-disposition": `attachment; filename="publication-proof-${proof.id}.ots"`,
+      "content-disposition": `attachment; filename="publication-proof-${proof.id}.json.ots"`,
       "cache-control": "public, max-age=31536000, immutable",
     },
   });

@@ -145,10 +145,8 @@ describe("deployment scripts", () => {
     expect(nextConfig).toContain('key: "Referrer-Policy"');
   });
 
-  it("marks database-backed pages as intentionally blocking", () => {
+  it("marks protected database-backed pages as intentionally blocking", () => {
     for (const page of [
-      "src/app/archive/page.tsx",
-      "src/app/proofs/page.tsx",
       "src/app/studio/(protected)/articles/page.tsx",
       "src/app/studio/(protected)/articles/new/page.tsx",
       "src/app/studio/(protected)/articles/[id]/page.tsx",

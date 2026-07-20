@@ -1,13 +1,10 @@
 import Link from "next/link";
-import { connection } from "next/server";
 
 import { PublicShell } from "@/app/_publicShell";
 import { articlePath } from "@/lib/content/urls";
 import { publicPageMetadata } from "@/lib/metadata";
 import { listCachedPublicPublicationProofs } from "@/lib/services/public-content";
 import type { PublicPublicationProof } from "@/lib/services/publication-proofs";
-
-export const instant = false;
 
 export const metadata = publicPageMetadata({
   title: "Proofs",
@@ -36,7 +33,6 @@ function statusLabel(status: PublicPublicationProof["otsStatus"]) {
 }
 
 export default async function ProofsPage() {
-  await connection();
   const proofs = await listCachedPublicPublicationProofs();
   const groups = groupByArticle(proofs);
   const serviceStatuses = proofs.flatMap((proof) => [proof.otsStatus, proof.waybackStatus]);

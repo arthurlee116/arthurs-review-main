@@ -1,6 +1,5 @@
-import { ArticlePage, getArticlePageMetadata } from "@/app/_articlePage";
-
-export const instant = false;
+import { Suspense } from "react";
+import { ArticlePageFallback, ArticlePageFromParams, getArticlePageMetadata } from "@/app/_articlePage";
 
 export async function generateMetadata({
   params,
@@ -9,19 +8,20 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ lang?: string }>;
 }) {
-  const { slug } = await params;
-  const { lang } = await searchParams;
+  const [{ slug }, { lang }] = await Promise.all([params, searchParams]);
   return await getArticlePageMetadata("commentary", slug, lang);
 }
 
-export default async function CommentaryArticlePage({
+export default function CommentaryArticlePage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ lang?: string }>;
 }) {
-  const { slug } = await params;
-  const { lang } = await searchParams;
-  return <ArticlePage category="commentary" slug={slug} lang={lang} />;
+  return (
+    <Suspense fallback={<ArticlePageFallback />}>
+      <ArticlePageFromParams category="commentary" params={params} searchParams={searchParams} />
+    </Suspense>
+  );
 }

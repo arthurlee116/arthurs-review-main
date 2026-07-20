@@ -168,7 +168,7 @@ describe("publication proofs", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("content-disposition")).toContain(`publication-proof-${proof!.id}.ots`);
+    expect(response.headers.get("content-disposition")).toContain(`publication-proof-${proof!.id}.json.ots`);
     expect([...new Uint8Array(await response.arrayBuffer())]).toEqual([7, 8, 9]);
   });
 

@@ -1,3 +1,4 @@
+import { fixupPluginRules } from "@eslint/compat";
 import { defineConfig, globalIgnores } from "eslint/config";
 import next from "@next/eslint-plugin-next";
 import react from "eslint-plugin-react";
@@ -8,7 +9,7 @@ const eslintConfig = defineConfig([
     files: ["**/*.{js,jsx,mjs,cjs}"],
     plugins: {
       "@next/next": next,
-      react,
+      react: fixupPluginRules(react),
       "react-hooks": reactHooks,
     },
     rules: {

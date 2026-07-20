@@ -42,4 +42,33 @@ describe("project scaffold", () => {
     expect(publicContent).toContain('"use cache"');
     expect(publicContent).toContain('cacheLife("publicContent")');
   });
+
+  it("keeps public routes eligible for instant rendering", () => {
+    const files = [
+      "src/app/page.tsx",
+      "src/app/_categoryPage.tsx",
+      "src/app/_articlePage.tsx",
+      "src/app/about/page.tsx",
+      "src/app/archive/page.tsx",
+      "src/app/proofs/page.tsx",
+      "src/app/search/page.tsx",
+      "src/app/commentary/page.tsx",
+      "src/app/commentary/[slug]/page.tsx",
+      "src/app/society/page.tsx",
+      "src/app/society/[slug]/page.tsx",
+      "src/app/misc/page.tsx",
+      "src/app/misc/[slug]/page.tsx",
+      "src/app/feed.xml/route.ts",
+      "src/app/sitemap.ts",
+    ];
+
+    for (const file of files) {
+      const source = fs.readFileSync(file, "utf8");
+      expect(source, file).not.toContain("instant = false");
+      expect(source, file).not.toContain("connection()");
+    }
+
+    const searchPage = fs.readFileSync("src/app/search/page.tsx", "utf8");
+    expect(searchPage).toContain("<Suspense");
+  });
 });

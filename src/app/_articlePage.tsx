@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 import { ArticleMeta } from "@/components/ArticleMeta";
 import { ContactNotice } from "@/components/ContactNotice";
 import { CoverImage, coverImageSizes } from "@/components/CoverImage";
@@ -8,17 +7,34 @@ import { FeedbackCTA } from "@/components/FeedbackCTA";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { articlePath } from "@/lib/content/urls";
 import { categories, categoryLabel, type CategoryId } from "@/lib/content/categories";
-import { getCachedPublishedArticle } from "@/lib/services/public-content";
+import { getCachedPublishedArticle, listCachedPublicationProofs } from "@/lib/services/public-content";
 import { articleMetadata } from "@/lib/metadata";
 import { uploadPublicPath } from "@/lib/media/paths";
 import { absoluteUrl } from "@/lib/seo";
-import { listPublicationProofs } from "@/lib/services/publication-proofs";
 import { PublicShell } from "./_publicShell";
 
 const SINGLE_LINE_TITLE_MAX = 9;
 
+type ArticleRouteProps = {
+  category: CategoryId;
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
+};
+
+export function ArticlePageFallback() {
+  return (
+    <PublicShell mastheadHeadingLevel={2}>
+      <main className="container min-h-[50vh]" aria-busy="true" />
+    </PublicShell>
+  );
+}
+
+export async function ArticlePageFromParams({ category, params, searchParams }: ArticleRouteProps) {
+  const [{ slug }, { lang }] = await Promise.all([params, searchParams]);
+  return <ArticlePage category={category} slug={slug} lang={lang} />;
+}
+
 export async function getArticlePageMetadata(category: CategoryId, slug: string, lang?: string) {
-  await connection();
   const article = await getCachedPublishedArticle(category, slug);
   if (!article) return {};
   return articleMetadata(article, lang);
@@ -33,7 +49,6 @@ export async function ArticlePage({
   slug: string;
   lang?: string;
 }) {
-  await connection();
   const article = await getCachedPublishedArticle(category, slug);
   if (!article) notFound();
   const useEnglish = lang === "en" && article.bodyEn;
@@ -86,7 +101,7 @@ export async function ArticlePage({
       },
     ],
   };
-  const proofs = listPublicationProofs(article.id).filter((proof) => proof.otsPath || proof.waybackUrl);
+  const proofs = (await listCachedPublicationProofs(article.id)).filter((proof) => proof.otsPath || proof.waybackUrl);
 
   return (
     <PublicShell mastheadHeadingLevel={2}>
@@ -128,12 +143,15 @@ export async function ArticlePage({
                       className="underline underline-offset-2 hover:text-foreground"
                       href={`/proofs/${proof.id}/source`}
                     >
-                      Download source
+                      Download source JSON
                     </a>
                     {proof.otsPath ? (
-                      <a className="underline" href={`/proofs/${proof.id}/ots`}>
-                        Download OTS
-                      </a>
+                      <>
+                        <a className="underline" href={`/proofs/${proof.id}/ots`}>
+                          Download OTS
+                        </a>
+                        <span>The OTS file timestamps the exact source JSON provided above.</span>
+                      </>
                     ) : null}
                   </div>
                 ))}

@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import SearchPage from "@/app/search/page";
+import { SearchResults } from "@/app/search/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
@@ -44,7 +44,7 @@ describe("public search page", () => {
       publishArticle(article.id);
     }
 
-    render(await SearchPage({ searchParams: Promise.resolve({ q: "共同词", page: "2" }) }));
+    render(<main>{await SearchResults({ searchParams: Promise.resolve({ q: "共同词", page: "2" }) })}</main>);
 
     expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
     expect(screen.getAllByText("共同词", { selector: "mark" }).length).toBeGreaterThan(0);
@@ -60,9 +60,8 @@ describe("public search page", () => {
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
-    render(await SearchPage({ searchParams: Promise.resolve({}) }));
+    render(<main>{await SearchResults({ searchParams: Promise.resolve({}) })}</main>);
 
-    expect(screen.getByRole("heading", { name: "Search" })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Search results pages" })).not.toBeInTheDocument();
     expect(screen.queryByText("No matching articles.")).not.toBeInTheDocument();
     expect(within(screen.getByRole("main")).queryByRole("article")).not.toBeInTheDocument();

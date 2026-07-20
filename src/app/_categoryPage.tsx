@@ -1,12 +1,10 @@
-import { connection } from "next/server";
 import { ArticleCard } from "@/components/ArticleCard";
 import { categories, type CategoryId } from "@/lib/content/categories";
 import { listCachedPublishedArticles } from "@/lib/services/public-content";
 import { PublicShell } from "./_publicShell";
 
 export async function CategoryPage({ category }: { category: CategoryId }) {
-  await connection();
-  const articles = await listCachedPublishedArticles(category);
+  const articles = await listCachedPublishedArticles(category, { limit: 8 });
   return (
     <PublicShell>
       <main className="container pb-10">
@@ -19,7 +17,7 @@ export async function CategoryPage({ category }: { category: CategoryId }) {
         </header>
         {articles.length ? (
           <section>
-            {articles.slice(0, 8).map((article, index) => (
+            {articles.map((article, index) => (
               <ArticleCard key={article.id} article={article} large eagerImage={index === 0} />
             ))}
           </section>
