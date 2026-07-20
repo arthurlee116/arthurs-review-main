@@ -3,6 +3,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      args:
+        SITE_URL: https://blog.leesaitool.com
     env_file:
       - path: ./production.env
         required: false

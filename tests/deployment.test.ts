@@ -83,6 +83,15 @@ describe("deployment scripts", () => {
     expect(compose).toContain("SITE_URL: https://blog.leesaitool.com");
   });
 
+  it("provides the production site URL while Next.js metadata is built", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
+
+    expect(dockerfile).toContain("ARG SITE_URL");
+    expect(dockerfile).toContain("ENV SITE_URL=$SITE_URL");
+    expect(compose).toContain("args:\n        SITE_URL: https://blog.leesaitool.com");
+  });
+
   it("resolves the robots sitemap URL from the runtime environment", () => {
     const robots = fs.readFileSync("src/app/robots.ts", "utf8");
 

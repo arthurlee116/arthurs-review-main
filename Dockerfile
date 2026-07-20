@@ -11,6 +11,8 @@ RUN pnpm install --frozen-lockfile
 
 FROM node:26-alpine AS builder
 WORKDIR /app
+ARG SITE_URL
+ENV SITE_URL=$SITE_URL
 ENV CI=true
 RUN npm install --global corepack@0.35.0 && corepack enable
 COPY --from=deps /app/node_modules ./node_modules
