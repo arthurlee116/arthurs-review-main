@@ -54,19 +54,50 @@ jobs:
           else
             ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
           fi
+          cat > ~/.ssh/config <<EOF
+          Host $DEPLOY_HOST
+            IdentityFile ~/.ssh/deploy_key
+            IdentityAgent $SSH_AUTH_SOCK
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ConnectTimeout 30
+            ConnectionAttempts 1
+            ServerAliveInterval 15
+            ServerAliveCountMax 3
+          EOF
+          chmod 600 ~/.ssh/config
 
       - name: Download latest backup and current release record
         env:
           REMOTE: ${{ vars.DEPLOY_REMOTE }}
         run: |
+          retry_network() {
+            local attempt output status
+            output="$(mktemp)"
+            for attempt in 1 2 3 4 5; do
+              if "$@" >"$output"; then
+                cat "$output"
+                rm -f "$output"
+                return 0
+              else
+                status=$?
+              fi
+              : >"$output"
+              if [ "$attempt" = 5 ]; then
+                rm -f "$output"
+                return "$status"
+              fi
+              sleep $((attempt * 5))
+            done
+          }
           REMOTE="${REMOTE:-root@72.60.195.46}"
           BACKUP_DIR=/var/www/arthurs-review/backups
-          BACKUP_PATH="$(ssh "$REMOTE" "set -eu; latest=\$(find '$BACKUP_DIR' -maxdepth 1 -type f -name 'arthurs-review-*.tar.gz' -mmin -2160 -printf '%T@ %p\\n' | sort -nr | sed -n '1s/^[^ ]* //p'); test -n \"\$latest\"; printf '%s\\n' \"\$latest\"")"
+          BACKUP_PATH="$(retry_network ssh "$REMOTE" "set -eu; latest=\$(find '$BACKUP_DIR' -maxdepth 1 -type f -name 'arthurs-review-*.tar.gz' -mmin -2160 -printf '%T@ %p\\n' | sort -nr | sed -n '1s/^[^ ]* //p'); test -n \"\$latest\"; printf '%s\\n' \"\$latest\"")"
           BACKUP_NAME="$(basename "$BACKUP_PATH")"
           [[ "$BACKUP_PATH" == "$BACKUP_DIR/$BACKUP_NAME" ]]
           [[ "$BACKUP_NAME" =~ ^arthurs-review-[0-9]{8}T[0-9]{6}Z\.tar\.gz$ ]]
-          scp "$REMOTE:$BACKUP_PATH" production-backup.tar.gz
-          scp "$REMOTE:/var/lib/arthurs-review/current-release.env" production-release.env
+          retry_network scp "$REMOTE:$BACKUP_PATH" production-backup.tar.gz
+          retry_network scp "$REMOTE:/var/lib/arthurs-review/current-release.env" production-release.env
           scripts/verify-backup.sh production-backup.tar.gz
 
       - name: Read immutable release metadata

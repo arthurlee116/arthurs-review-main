@@ -183,6 +183,18 @@ describe("deployment scripts", () => {
     expect(workflow).not.toContain("backup-data.sh");
   });
 
+  it("retries transient SSH failures while copying backups for verification", () => {
+    for (const workflowPath of [".github/workflows/backup.yml", ".github/workflows/restore-drill.yml"]) {
+      const workflow = fs.readFileSync(workflowPath, "utf8");
+
+      expect(workflow).toContain("ConnectTimeout 30");
+      expect(workflow).toContain("ServerAliveInterval 15");
+      expect(workflow).toContain("retry_network()");
+      expect(workflow).toContain("retry_network ssh");
+      expect(workflow).toContain("retry_network scp");
+    }
+  });
+
   it("quiesces article writes while snapshotting SQLite and content files", () => {
     const backup = fs.readFileSync("scripts/backup-data.sh", "utf8");
     const stop = backup.indexOf("docker compose stop app worker");
