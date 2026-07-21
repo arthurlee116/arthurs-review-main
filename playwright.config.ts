@@ -16,7 +16,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: externalBaseURL ? undefined : {
-    command: `NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost PATH=${nodeBin}:$PATH E2E_LISTING_FIXTURES=1 pnpm seed && NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost PATH=${nodeBin}:$PATH pnpm exec next dev --hostname 127.0.0.1 --port 3100`,
+    command: `NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost PATH=${nodeBin}:$PATH E2E_LISTING_FIXTURES=1 scripts/start-e2e-server.sh`,
     url: baseURL,
     reuseExistingServer: true,
     timeout: 120_000,

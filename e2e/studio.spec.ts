@@ -113,9 +113,12 @@ test("admin can pin a featured article to the first homepage slot", async ({ pag
   await setFeatured.click();
   await expect(articleRow.getByText("Featured", { exact: true })).toBeVisible();
 
-  await page.goto("/");
-  const firstCard = page.getByRole("main").locator("article").first();
-  await expect(firstCard.getByRole("link", { name: title, exact: true })).toBeVisible();
+  await expect.poll(async () => {
+    await page.goto("/");
+    const firstCard = page.getByRole("main").locator("article").first();
+    await firstCard.waitFor();
+    return firstCard.getByRole("link", { name: title, exact: true }).count();
+  }).toBe(1);
 });
 
 test("publishing an existing article saves current editor input first", async ({ page }, testInfo) => {
