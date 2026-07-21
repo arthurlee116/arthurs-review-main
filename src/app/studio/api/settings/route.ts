@@ -2,7 +2,7 @@ import { z } from "zod";
 import { apiError, requireApiAdmin } from "@/app/studio/api/_helpers";
 import { getSettings, setSetting } from "@/lib/services/settings";
 import { clearFeaturedArticle, getArticleById, setFeaturedArticle } from "@/lib/services/articles";
-import { invalidatePublicContent } from "@/lib/services/public-cache";
+import { invalidateArticleLists, invalidateSettings } from "@/lib/services/public-cache";
 
 const SettingsSchema = z.object({
   siteName: z.string().min(1),
@@ -41,7 +41,8 @@ export async function PUT(request: Request) {
     } else {
       clearFeaturedArticle();
     }
-    invalidatePublicContent();
+    invalidateSettings();
+    invalidateArticleLists();
     return Response.json({ settings: getSettings() });
   } catch (error) {
     return apiError(error);

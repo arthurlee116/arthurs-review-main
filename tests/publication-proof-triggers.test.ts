@@ -74,7 +74,7 @@ describe("publication-proof mutation triggers", () => {
     expect(createPublicationProof).toHaveBeenCalledTimes(2);
   });
 
-  it("runs for published articles changed by batch translation", async () => {
+  it("does not create a public proof when batch translation only saves a draft", async () => {
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
     const { createPublicationProof } = await import("@/lib/services/publication-proofs");
     const { translatePublishedMissingEnglish } = await import("@/lib/translation/service");
@@ -88,6 +88,6 @@ describe("publication-proof mutation triggers", () => {
 
     await route.POST(new Request("http://localhost/studio/api/translations/published-missing", { method: "POST" }));
 
-    expect(createPublicationProof).toHaveBeenCalledOnce();
+    expect(createPublicationProof).not.toHaveBeenCalled();
   });
 });
