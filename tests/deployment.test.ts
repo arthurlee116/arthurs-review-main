@@ -423,6 +423,15 @@ describe("deployment scripts", () => {
     expect(policyCopy).toBeLessThan(install);
   });
 
+  it("ships the pinned pnpm runtime in the image without network fallback", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
+
+    expect(dockerfile.match(/corepack install --global pnpm@10\.28\.1/g)).toHaveLength(3);
+    expect(dockerfile).toContain("ENV COREPACK_ENABLE_NETWORK=0");
+    expect(workflow).toContain('docker run --rm --network none "$IMAGE_TAG" pnpm --version');
+  });
+
   it("uses Node 26 everywhere", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");

@@ -4,6 +4,7 @@ ENV CI=true
 RUN apk add --no-cache python3 py3-pip make g++ \
   && npm install --global corepack@0.35.0 \
   && corepack enable \
+  && corepack install --global pnpm@10.28.1 \
   && python3 -m venv /opt/opentimestamps \
   && /opt/opentimestamps/bin/pip install --no-cache-dir opentimestamps-client==0.7.2
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -14,7 +15,9 @@ WORKDIR /app
 ARG SITE_URL
 ENV SITE_URL=$SITE_URL
 ENV CI=true
-RUN npm install --global corepack@0.35.0 && corepack enable
+RUN npm install --global corepack@0.35.0 \
+  && corepack enable \
+  && corepack install --global pnpm@10.28.1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build
@@ -30,7 +33,9 @@ LABEL org.opencontainers.image.revision=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.source="https://github.com/arthurlee116/arthurs-review-main"
 RUN apk add --no-cache python3 make g++ \
   && npm install --global corepack@0.35.0 \
-  && corepack enable
+  && corepack enable \
+  && corepack install --global pnpm@10.28.1
+ENV COREPACK_ENABLE_NETWORK=0
 COPY --from=deps /opt/opentimestamps /opt/opentimestamps
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
