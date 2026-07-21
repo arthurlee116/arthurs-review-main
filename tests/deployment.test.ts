@@ -149,10 +149,16 @@ rollback_candidate
 describe("deployment scripts", () => {
   it("installs an automatic daily backup schedule during server bootstrap", () => {
     const bootstrap = fs.readFileSync("scripts/server-bootstrap.sh", "utf8");
+    const deploymentReadme = fs.readFileSync("deploy/README.md", "utf8");
 
     expect(bootstrap).toContain("arthurs-review-backup");
     expect(bootstrap).toContain("backup-data.sh");
     expect(bootstrap).toContain("/etc/cron.d");
+    expect(bootstrap).toContain("centos");
+    expect(bootstrap).toContain("dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo");
+    expect(bootstrap).toContain('cron_service="crond"');
+    expect(bootstrap).toContain("systemctl enable --now docker");
+    expect(deploymentReadme).toContain("CentOS Stream 9");
   });
 
   it("creates complete verified backups and copies them off the VPS", () => {
