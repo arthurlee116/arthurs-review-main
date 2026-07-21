@@ -60,6 +60,8 @@ for _ in $(seq 1 30); do
     && grep -qi '^strict-transport-security:' "${PUBLIC_HEADER_FILE}" \
     && grep -qi '^x-content-type-options:' "${PUBLIC_HEADER_FILE}" \
     && grep -qi '^referrer-policy:' "${PUBLIC_HEADER_FILE}" \
+    && grep -qi '^content-security-policy:.*frame-ancestors' "${PUBLIC_HEADER_FILE}" \
+    && grep -qi '^permissions-policy:.*camera=()' "${PUBLIC_HEADER_FILE}" \
     && ! grep -qi '^x-powered-by:' "${PUBLIC_HEADER_FILE}"; then
     PUBLIC_HEADERS_OK=1
     break

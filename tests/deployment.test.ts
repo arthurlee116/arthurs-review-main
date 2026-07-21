@@ -149,6 +149,7 @@ describe("deployment scripts", () => {
 
   it("sets production security headers and removes framework branding", () => {
     const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
+    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
     const nextConfig = fs.readFileSync("next.config.ts", "utf8");
     const commonDeploymentStart = deploy.indexOf('ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d caddy');
@@ -158,6 +159,9 @@ describe("deployment scripts", () => {
     expect(caddy).toContain("Strict-Transport-Security");
     expect(caddy).toContain("X-Content-Type-Options nosniff");
     expect(caddy).toContain("Referrer-Policy strict-origin-when-cross-origin");
+    expect(caddy).toContain("Content-Security-Policy");
+    expect(caddy).toContain("frame-ancestors 'none'");
+    expect(caddy).toContain("Permissions-Policy");
     expect(caddy).toContain("header_down -X-Powered-By");
     expect(afterDeploymentBranch).toContain("caddy validate");
     expect(afterDeploymentBranch).toContain("caddy reload");
@@ -165,11 +169,35 @@ describe("deployment scripts", () => {
     expect(afterDeploymentBranch).toContain("strict-transport-security:");
     expect(afterDeploymentBranch).toContain("x-content-type-options:");
     expect(afterDeploymentBranch).toContain("referrer-policy:");
+    expect(afterDeploymentBranch).toContain("content-security-policy:");
+    expect(afterDeploymentBranch).toContain("permissions-policy:");
     expect(afterDeploymentBranch).toContain("x-powered-by:");
     expect(nextConfig).toContain("poweredByHeader: false");
     expect(nextConfig).toContain('key: "Strict-Transport-Security"');
     expect(nextConfig).toContain('key: "X-Content-Type-Options"');
     expect(nextConfig).toContain('key: "Referrer-Policy"');
+    expect(nextConfig).toContain('key: "Content-Security-Policy"');
+    expect(nextConfig).toContain("frame-ancestors 'none'");
+    expect(nextConfig).toContain("base-uri 'self'");
+    expect(nextConfig).toContain("object-src 'none'");
+    expect(nextConfig).toContain('key: "Permissions-Policy"');
+    expect(nextConfig).toContain("camera=()");
+    expect(nextConfig).toContain("microphone=()");
+    expect(nextConfig).toContain("geolocation=()");
+    expect(compose).toContain("caddy_logs:/var/log/caddy");
+  });
+
+  it("writes bounded JSON access logs without enabling credential logging", () => {
+    const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
+
+    expect(caddy).toContain("log {");
+    expect(caddy).toContain("output file /var/log/caddy/access.log");
+    expect(caddy).toContain("roll_size 25MiB");
+    expect(caddy).toContain("roll_interval 24h");
+    expect(caddy).toContain("roll_keep 30");
+    expect(caddy).toContain("roll_keep_for 720h");
+    expect(caddy).toContain("format json");
+    expect(caddy).not.toContain("log_credentials");
   });
 
   it("marks protected database-backed pages as intentionally blocking", () => {
