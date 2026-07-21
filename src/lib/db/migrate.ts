@@ -1,8 +1,26 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type Database from "better-sqlite3";
 import { getDb } from "./connection";
 import { getDataPaths } from "@/lib/env";
+
+export type Migration = {
+  version: number;
+  name: string;
+  filename: string;
+  up: (db: Database.Database) => void;
+};
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+const migrations: Migration[] = [
+  {
+    version: 1,
+    name: "initial",
+    filename: "001_initial.sql",
+    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "001_initial.sql"), "utf8")),
+  },
+];
 
 type ArticleSearchRow = {
   id: number;
@@ -99,11 +117,45 @@ function migrateContentlessArticleSearch(db: ReturnType<typeof getDb>) {
   rebuildArticleSearch(db);
 }
 
+function validateMigrations(orderedMigrations: Migration[]) {
+  orderedMigrations.forEach((migration, index) => {
+    const version = index + 1;
+    const expectedFilename = `${String(version).padStart(3, "0")}_${migration.name}.sql`;
+    if (migration.version !== version) throw new Error(`Migration versions must be sequential from 1; expected ${version}.`);
+    if (migration.filename !== expectedFilename) throw new Error(`Migration filename must be ${expectedFilename}.`);
+  });
+}
+
+export function runMigrations(db: Database.Database, orderedMigrations: Migration[] = migrations) {
+  validateMigrations(orderedMigrations);
+  db.exec(`
+    create table if not exists schema_migrations (
+      version integer primary key,
+      name text not null,
+      applied_at text not null
+    )
+  `);
+
+  const applied = db.prepare("select version, name from schema_migrations order by version").all() as Array<{ version: number; name: string }>;
+  for (const [index, row] of applied.entries()) {
+    if (row.version !== index + 1) throw new Error(`Applied migration history has a gap before version ${row.version}.`);
+    const expected = orderedMigrations[row.version - 1];
+    if (!expected || expected.name !== row.name) throw new Error(`Unknown or changed migration ${row.version}:${row.name}.`);
+  }
+
+  const record = db.prepare("insert into schema_migrations(version, name, applied_at) values (?, ?, ?)");
+  for (const migration of orderedMigrations.slice(applied.length)) {
+    db.transaction(() => {
+      migration.up(db);
+      record.run(migration.version, migration.name, new Date().toISOString());
+    }).immediate();
+  }
+}
+
 export function migrate() {
   const db = getDb();
-  const dirname = path.dirname(fileURLToPath(import.meta.url));
-  const schema = fs.readFileSync(path.join(dirname, "schema.sql"), "utf8");
-  db.exec(schema);
+  db.pragma("journal_mode = WAL");
+  runMigrations(db);
   migrateContentlessArticleSearch(db);
 }
 

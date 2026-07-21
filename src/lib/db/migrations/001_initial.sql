@@ -1,6 +1,3 @@
-pragma journal_mode = wal;
-pragma foreign_keys = on;
-
 create table if not exists articles (
   id integer primary key autoincrement,
   title_zh text not null,
