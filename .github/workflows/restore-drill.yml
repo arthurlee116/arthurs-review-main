@@ -1,26 +1,27 @@
-name: Production backup
+name: Production restore drill
 
 on:
   schedule:
-    - cron: "30 3 * * *"
+    - cron: "15 4 1 * *"
   workflow_dispatch:
 
 concurrency:
-  group: production-maintenance
+  group: production-restore-drill
   cancel-in-progress: false
 
 jobs:
-  backup:
-    name: Verify and store production backup
+  restore-drill:
+    name: Restore latest backup in isolation
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Install backup verifier
+      - name: Install restore dependencies
         run: sudo apt-get update && sudo apt-get install -y sqlite3
 
       - name: Configure SSH
@@ -54,24 +55,44 @@ jobs:
             ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
           fi
 
-      - name: Download latest scheduled backup
+      - name: Download latest backup and current release record
         env:
           REMOTE: ${{ vars.DEPLOY_REMOTE }}
         run: |
           REMOTE="${REMOTE:-root@72.60.195.46}"
           BACKUP_DIR=/var/www/arthurs-review/backups
-          BACKUP_PATH="$(ssh "$REMOTE" "set -eu; latest=\$(find '$BACKUP_DIR' -maxdepth 1 -type f -name 'arthurs-review-*.tar.gz' -mmin -180 -printf '%T@ %p\\n' | sort -nr | sed -n '1s/^[^ ]* //p'); test -n \"\$latest\"; printf '%s\\n' \"\$latest\"")"
+          BACKUP_PATH="$(ssh "$REMOTE" "set -eu; latest=\$(find '$BACKUP_DIR' -maxdepth 1 -type f -name 'arthurs-review-*.tar.gz' -mmin -2160 -printf '%T@ %p\\n' | sort -nr | sed -n '1s/^[^ ]* //p'); test -n \"\$latest\"; printf '%s\\n' \"\$latest\"")"
           BACKUP_NAME="$(basename "$BACKUP_PATH")"
           [[ "$BACKUP_PATH" == "$BACKUP_DIR/$BACKUP_NAME" ]]
           [[ "$BACKUP_NAME" =~ ^arthurs-review-[0-9]{8}T[0-9]{6}Z\.tar\.gz$ ]]
           scp "$REMOTE:$BACKUP_PATH" production-backup.tar.gz
+          scp "$REMOTE:/var/lib/arthurs-review/current-release.env" production-release.env
           scripts/verify-backup.sh production-backup.tar.gz
 
-      - name: Store off-site backup
-        uses: actions/upload-artifact@v7
+      - name: Read immutable release metadata
+        run: |
+          APP_IMAGE="$(sed -n 's/^APP_IMAGE=//p' production-release.env)"
+          BUILD_SHA="$(sed -n 's/^BUILD_SHA=//p' production-release.env)"
+          IMAGE_DIGEST="$(sed -n 's/^IMAGE_DIGEST=//p' production-release.env)"
+          SCHEMA_VERSION="$(sed -n 's/^SCHEMA_VERSION=//p' production-release.env)"
+          [[ "$APP_IMAGE" == *@sha256:* ]]
+          [[ "$BUILD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          [[ "$SCHEMA_VERSION" =~ ^[0-9]+$ ]]
+          printf 'APP_IMAGE=%s\nBUILD_SHA=%s\nIMAGE_DIGEST=%s\nSCHEMA_VERSION=%s\n' \
+            "$APP_IMAGE" "$BUILD_SHA" "$IMAGE_DIGEST" "$SCHEMA_VERSION" >> "$GITHUB_ENV"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
         with:
-          name: arthurs-review-production-${{ github.run_id }}
-          path: production-backup.tar.gz
-          if-no-files-found: error
-          retention-days: 30
-          compression-level: 0
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore, migrate, and boot the isolated copy
+        run: |
+          MAINTENANCE_LOCK_HELD=1 scripts/restore-backup.sh production-backup.tar.gz \
+            --image "$APP_IMAGE" \
+            --expected-commit "$BUILD_SHA" \
+            --expected-digest "$IMAGE_DIGEST" \
+            --expected-schema "$SCHEMA_VERSION"

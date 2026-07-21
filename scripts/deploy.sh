@@ -4,11 +4,83 @@ set -euo pipefail
 REMOTE="${REMOTE:-root@72.60.195.46}"
 APP_DIR="${APP_DIR:-/opt/arthurs-review}"
 APP_ONLY="${APP_ONLY:-0}"
+MAINTENANCE_LOCK_FILE="${MAINTENANCE_LOCK_FILE:-/var/lock/arthurs-review-maintenance.lock}"
+MAINTENANCE_LOCK_WAIT_SECONDS="${MAINTENANCE_LOCK_WAIT_SECONDS:-1800}"
+REMOTE_LOCK_PID=""
+REMOTE_LOCK_CONTROL_DIR=""
+REMOTE_LOCK_FD_OPEN=0
+PUBLIC_HEADER_FILE=""
+
+cleanup() {
+  exit_code=$?
+  trap - EXIT
+  if [[ -n "${PUBLIC_HEADER_FILE}" ]]; then
+    rm -f "${PUBLIC_HEADER_FILE}"
+  fi
+  if [[ "${REMOTE_LOCK_FD_OPEN}" == "1" ]]; then
+    exec 9>&-
+    REMOTE_LOCK_FD_OPEN=0
+  fi
+  if [[ -n "${REMOTE_LOCK_PID}" ]]; then
+    lock_exit=0
+    wait "${REMOTE_LOCK_PID}" || lock_exit=$?
+    if [[ "${exit_code}" == "0" && "${lock_exit}" != "0" ]]; then
+      exit_code="${lock_exit}"
+    fi
+  fi
+  if [[ -n "${REMOTE_LOCK_CONTROL_DIR}" ]]; then
+    rm -rf "${REMOTE_LOCK_CONTROL_DIR}"
+  fi
+  exit "${exit_code}"
+}
+trap cleanup EXIT
+
+acquire_remote_maintenance_lock() {
+  [[ "${MAINTENANCE_LOCK_WAIT_SECONDS}" =~ ^[0-9]+$ ]] || {
+    echo "MAINTENANCE_LOCK_WAIT_SECONDS must be an integer." >&2
+    return 1
+  }
+  printf -v lock_file_quoted '%q' "${MAINTENANCE_LOCK_FILE}"
+  printf -v lock_wait_quoted '%q' "${MAINTENANCE_LOCK_WAIT_SECONDS}"
+  REMOTE_LOCK_CONTROL_DIR="$(mktemp -d)"
+  lock_input="${REMOTE_LOCK_CONTROL_DIR}/input"
+  lock_output="${REMOTE_LOCK_CONTROL_DIR}/output"
+  mkfifo "${lock_input}"
+  : >"${lock_output}"
+  exec 9<>"${lock_input}"
+  REMOTE_LOCK_FD_OPEN=1
+  (
+    exec 9>&-
+    ssh "${REMOTE}" "set -eu; command -v flock >/dev/null || { echo 'Missing required command: flock' >&2; exit 127; }; exec flock --exclusive --wait ${lock_wait_quoted} ${lock_file_quoted} sh -c 'printf \"LOCKED\\n\"; cat >/dev/null'"
+  ) <"${lock_input}" >"${lock_output}" &
+  REMOTE_LOCK_PID=$!
+
+  deadline=$((SECONDS + MAINTENANCE_LOCK_WAIT_SECONDS + 30))
+  while (( SECONDS < deadline )); do
+    if grep -qx LOCKED "${lock_output}"; then
+      return 0
+    fi
+    if ! kill -0 "${REMOTE_LOCK_PID}" 2>/dev/null; then
+      wait "${REMOTE_LOCK_PID}" || true
+      REMOTE_LOCK_PID=""
+      echo "Could not acquire the production maintenance lock." >&2
+      return 1
+    fi
+    sleep 1
+  done
+  kill "${REMOTE_LOCK_PID}" 2>/dev/null || true
+  wait "${REMOTE_LOCK_PID}" 2>/dev/null || true
+  REMOTE_LOCK_PID=""
+  echo "Timed out waiting for the production maintenance lock." >&2
+  return 1
+}
 
 if [[ ! -f deploy/production.env ]]; then
   echo "Missing deploy/production.env. Create it from deploy/production.env.example before deploying." >&2
   exit 1
 fi
+
+acquire_remote_maintenance_lock
 
 ssh "${REMOTE}" '
 set -eu
@@ -53,7 +125,6 @@ ssh "${REMOTE}" "cd ${APP_DIR}/deploy && for i in \$(seq 1 60); do docker compos
 
 PUBLIC_URL="${PUBLIC_URL:-https://blog.leesaitool.com}"
 PUBLIC_HEADER_FILE="$(mktemp)"
-trap 'rm -f "${PUBLIC_HEADER_FILE}"' EXIT
 PUBLIC_HEADERS_OK=0
 for _ in $(seq 1 30); do
   if curl -fsS --max-time 15 -D "${PUBLIC_HEADER_FILE}" -o /dev/null "${PUBLIC_URL}/healthz" \
@@ -74,6 +145,6 @@ if [[ "${PUBLIC_HEADERS_OK}" != "1" ]]; then
   exit 1
 fi
 rm -f "${PUBLIC_HEADER_FILE}"
-trap - EXIT
+PUBLIC_HEADER_FILE=""
 
 ssh "${REMOTE}" "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"

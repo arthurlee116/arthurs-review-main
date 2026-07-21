@@ -4,7 +4,7 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
-apt-get install -y ca-certificates curl ufw rsync git cron sqlite3
+apt-get install -y ca-certificates curl ufw rsync git cron sqlite3 util-linux
 install -m 0755 -d /etc/apt/keyrings
 . /etc/os-release
 case "${ID}" in
@@ -17,6 +17,8 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 mkdir -p /var/www/arthurs-review/data /var/www/arthurs-review/backups /opt/arthurs-review
+touch /var/lock/arthurs-review-maintenance.lock
+chmod 0600 /var/lock/arthurs-review-maintenance.lock
 cat > /etc/cron.d/arthurs-review-backup <<'CRON'
 SHELL=/bin/bash
 0 3 * * * root DATA_DIR=/var/www/arthurs-review/data BACKUP_DIR=/var/www/arthurs-review/backups /opt/arthurs-review/scripts/backup-data.sh >/var/log/arthurs-review-backup.log 2>&1

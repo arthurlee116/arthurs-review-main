@@ -28,20 +28,58 @@ describe("deployment scripts", () => {
     expect(workflow).toContain("scripts/verify-backup.sh");
     expect(workflow).toContain("actions/upload-artifact@v7");
     expect(workflow).toContain("retention-days: 30");
+    expect(workflow).toContain("-mmin -180");
+    expect(workflow).not.toContain("backup-data.sh");
   });
 
   it("quiesces article writes while snapshotting SQLite and content files", () => {
     const backup = fs.readFileSync("scripts/backup-data.sh", "utf8");
-    const stop = backup.indexOf("docker compose stop app");
+    const stop = backup.indexOf("docker compose stop app worker");
     const snapshot = backup.indexOf("docker compose run --rm --no-deps app");
     const copy = backup.indexOf('for directory in markdown uploads proofs');
-    const restart = backup.indexOf("docker compose up -d app");
+    const restart = backup.lastIndexOf("\nrestore_services\n");
 
     expect(stop).toBeGreaterThanOrEqual(0);
     expect(stop).toBeLessThan(snapshot);
     expect(snapshot).toBeLessThan(copy);
     expect(copy).toBeLessThan(restart);
     expect(backup).toContain("/healthz");
+    expect(backup).toContain("docker compose ps --status running --services");
+    expect(backup).toContain("docker compose up -d app worker");
+  });
+
+  it("uses one server maintenance lock for backup, deployment, and restore", () => {
+    for (const script of ["scripts/backup-data.sh", "scripts/deploy.sh", "scripts/restore-backup.sh"]) {
+      const source = fs.readFileSync(script, "utf8");
+      expect(source).toContain("/var/lock/arthurs-review-maintenance.lock");
+      expect(source).toContain("flock");
+    }
+
+    const backup = fs.readFileSync("scripts/backup-data.sh", "utf8");
+    const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const restore = fs.readFileSync("scripts/restore-backup.sh", "utf8");
+    expect(backup.indexOf("exec flock")).toBeLessThan(backup.indexOf("docker compose stop app worker"));
+    expect(deploy.indexOf("acquire_remote_maintenance_lock\n")).toBeLessThan(deploy.indexOf("rsync -az --delete"));
+    expect(restore.indexOf("exec flock")).toBeLessThan(restore.indexOf('${SCRIPT_DIR}/verify-backup.sh'));
+  });
+
+  it("runs monthly restore drills only against an isolated backup copy", () => {
+    expect(fs.existsSync("scripts/restore-backup.sh")).toBe(true);
+    expect(fs.existsSync(".github/workflows/restore-drill.yml")).toBe(true);
+
+    const restore = fs.readFileSync("scripts/restore-backup.sh", "utf8");
+    const workflow = fs.readFileSync(".github/workflows/restore-drill.yml", "utf8");
+
+    expect(restore).toContain("mktemp -d");
+    expect(restore).toContain("Refusing to restore into the production data directory");
+    expect(restore).toContain('${SCRIPT_DIR}/verify-backup.sh');
+    expect(restore).toContain("PRAGMA integrity_check");
+    expect(restore).toContain("/healthz");
+    expect(restore).toContain("/version");
+    expect(workflow).toContain('cron: "15 4 1 * *"');
+    expect(workflow).toContain("scripts/restore-backup.sh");
+    expect(workflow).toContain("--image");
+    expect(workflow).not.toContain("/var/www/arthurs-review/data:/data");
   });
 
   it("serializes GitHub deploy and backup maintenance", () => {
