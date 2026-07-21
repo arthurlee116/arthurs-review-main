@@ -35,6 +35,12 @@ const migrations: Migration[] = [
       rebuildArticleSearchWithShadow(db);
     },
   },
+  {
+    version: 4,
+    name: "article_url_history",
+    filename: "004_article_url_history.sql",
+    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "004_article_url_history.sql"), "utf8")),
+  },
 ];
 
 type ArticleSearchRow = {

@@ -4,6 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import type { CategoryId } from "@/lib/content/categories";
 import {
   getPublishedArticle,
+  getArticleUrlRedirect,
   listPublishedArticles,
   type PublishedArticleListOptions,
 } from "@/lib/services/articles";
@@ -21,6 +22,12 @@ export async function getCachedPublishedArticle(category: CategoryId, slug: stri
   cacheLife("publicContent");
   cacheTag(PUBLIC_CONTENT_TAG);
   return getPublishedArticle(category, slug);
+}
+
+export async function getCachedArticleUrlRedirect(category: CategoryId, slug: string) {
+  cacheLife("publicContent");
+  cacheTag(PUBLIC_CONTENT_TAG);
+  return getArticleUrlRedirect(category, slug);
 }
 
 export async function getCachedSettings() {

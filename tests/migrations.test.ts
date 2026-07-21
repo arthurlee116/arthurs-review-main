@@ -63,6 +63,7 @@ describe("schema migrations", () => {
       { version: 1, name: "initial" },
       { version: 2, name: "rebuild_fts_shadow" },
       { version: 3, name: "article_revisions" },
+      { version: 4, name: "article_url_history" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -81,6 +82,7 @@ describe("schema migrations", () => {
       { version: 1, name: "initial" },
       { version: 2, name: "rebuild_fts_shadow" },
       { version: 3, name: "article_revisions" },
+      { version: 4, name: "article_url_history" },
     ]);
   });
 

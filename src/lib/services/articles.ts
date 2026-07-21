@@ -307,6 +307,19 @@ export function getPublishedArticle(category: CategoryId, slug: string) {
   return row ? withBodies(mapArticleRow(row)) : null;
 }
 
+export function getArticleUrlRedirect(category: CategoryId, slug: string) {
+  const row = getDb()
+    .prepare(
+      `select current_revision.category, current_revision.slug
+       from article_url_history
+       join articles on articles.id = article_url_history.article_id
+       join article_revisions as current_revision on current_revision.id = articles.published_revision_id
+       where article_url_history.category = ? and article_url_history.slug = ?`,
+    )
+    .get(category, slug) as { category: CategoryId; slug: string } | undefined;
+  return row ?? null;
+}
+
 export type PublishedArticleListOptions = {
   featuredFirst?: boolean;
   limit?: number;
@@ -365,6 +378,14 @@ export function publishArticle(id: number) {
   if (!article.titleZh || !article.slug || !article.bodyZh) throw new Error("Required fields are missing.");
   const db = getDb();
   return db.transaction(() => {
+    const previous = db
+      .prepare(
+        `select revisions.category, revisions.slug
+         from articles
+         join article_revisions as revisions on revisions.id = articles.published_revision_id
+         where articles.id = ?`,
+      )
+      .get(id) as { category: CategoryId; slug: string } | undefined;
     const conflict = db
       .prepare(
         `select articles.id
@@ -375,7 +396,25 @@ export function publishArticle(id: number) {
       .get(article.category, article.slug, id);
     if (conflict) throw new Error("A published article already uses this category and slug.");
 
+    const historicalConflict = db
+      .prepare("select article_id from article_url_history where category = ? and slug = ? and article_id <> ?")
+      .get(article.category, article.slug, id);
+    if (historicalConflict) throw new Error("A historical article URL already uses this category and slug.");
+
     const timestamp = nowIso();
+    if (previous && (previous.category !== article.category || previous.slug !== article.slug)) {
+      const previousOwner = db
+        .prepare("select article_id from article_url_history where category = ? and slug = ?")
+        .get(previous.category, previous.slug) as { article_id: number } | undefined;
+      if (previousOwner && previousOwner.article_id !== id) {
+        throw new Error("A historical article URL already uses the previous category and slug.");
+      }
+      db.prepare(
+        `insert into article_url_history(article_id, category, slug, created_at)
+         values (?, ?, ?, ?)
+         on conflict(category, slug) do nothing`,
+      ).run(id, previous.category, previous.slug, timestamp);
+    }
     db.prepare(
       `update articles
        set published_revision_id = draft_revision_id,

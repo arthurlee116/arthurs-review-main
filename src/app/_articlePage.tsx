@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ArticleMeta } from "@/components/ArticleMeta";
 import { ContactNotice } from "@/components/ContactNotice";
 import { CoverImage, coverImageSizes } from "@/components/CoverImage";
@@ -7,7 +7,7 @@ import { FeedbackCTA } from "@/components/FeedbackCTA";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { articlePath } from "@/lib/content/urls";
 import { categories, categoryLabel, type CategoryId } from "@/lib/content/categories";
-import { getCachedPublishedArticle, listCachedPublicationProofs } from "@/lib/services/public-content";
+import { getCachedArticleUrlRedirect, getCachedPublishedArticle, listCachedPublicationProofs } from "@/lib/services/public-content";
 import { articleMetadata } from "@/lib/metadata";
 import { uploadPublicPath } from "@/lib/media/paths";
 import { absoluteUrl } from "@/lib/seo";
@@ -50,7 +50,14 @@ export async function ArticlePage({
   lang?: string;
 }) {
   const article = await getCachedPublishedArticle(category, slug);
-  if (!article) notFound();
+  if (!article) {
+    const target = await getCachedArticleUrlRedirect(category, slug);
+    if (target) {
+      const currentPath = articlePath(target.category, target.slug);
+      permanentRedirect(lang === "en" ? `${currentPath}?lang=en` : currentPath);
+    }
+    notFound();
+  }
   const useEnglish = lang === "en" && article.bodyEn;
   const title = useEnglish ? (article.titleEn ?? article.titleZh) : article.titleZh;
   const singleLineTitle = Array.from(title.trim()).length <= SINGLE_LINE_TITLE_MAX;
