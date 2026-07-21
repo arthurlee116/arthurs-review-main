@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: write
 
     steps:
       - name: Checkout
@@ -36,22 +37,153 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Cache Next.js build
-        uses: actions/cache@v6
-        with:
-          path: .next/cache
-          key: ${{ runner.os }}-next-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('package.json', 'next.config.*', 'postcss.config.*', 'tsconfig.json', 'src/**/*', 'public/**/*') }}
-          restore-keys: |
-            ${{ runner.os }}-next-${{ hashFiles('pnpm-lock.yaml') }}-
-
       - name: Lint JS and check TS/TSX with TypeScript 7 CLI
         run: pnpm lint
 
       - name: Test
         run: pnpm test
 
-      - name: Build
-        run: pnpm build
+      - name: Define immutable image tag
+        run: |
+          image_name="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "IMAGE_TAG=${image_name}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build production image once
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          platforms: linux/amd64
+          tags: ${{ env.IMAGE_TAG }}
+          build-args: |
+            SITE_URL=https://blog.leesaitool.com
+            GIT_COMMIT_SHA=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Start the production image for E2E
+        env:
+          E2E_ADMIN_PASSWORD_HASH: scrypt$16384$8$1$YXJ0aHVycy1yZXZpZXctZTJl$B8w4AkTlSV2dCTJRqSbGGTODO+tbdf5CGiHMVKwR0JDtZTLg0Y2OufUAJ+wcBHuagSp1C/tvIpU/cD8/51AdGQ==
+          E2E_DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
+        run: |
+          E2E_CONTAINER="arthurs-review-e2e-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          E2E_WORKER_CONTAINER="${E2E_CONTAINER}-worker"
+          E2E_DATA_VOLUME="${E2E_CONTAINER}-data"
+          E2E_NETWORK="${E2E_CONTAINER}-network"
+          echo "E2E_CONTAINER=$E2E_CONTAINER" >> "$GITHUB_ENV"
+          echo "E2E_WORKER_CONTAINER=$E2E_WORKER_CONTAINER" >> "$GITHUB_ENV"
+          echo "E2E_DATA_VOLUME=$E2E_DATA_VOLUME" >> "$GITHUB_ENV"
+          echo "E2E_NETWORK=$E2E_NETWORK" >> "$GITHUB_ENV"
+          echo "E2E_DIGEST=$E2E_DIGEST" >> "$GITHUB_ENV"
+
+          docker volume create "$E2E_DATA_VOLUME"
+          docker network create "$E2E_NETWORK"
+          docker run --rm \
+            -v "$E2E_DATA_VOLUME:/data" \
+            -e DATA_DIR=/data \
+            -e SITE_URL=https://blog.leesaitool.com \
+            -e E2E_LISTING_FIXTURES=1 \
+            -e ADMIN_PASSWORD_HASH="$E2E_ADMIN_PASSWORD_HASH" \
+            -e SESSION_SECRET=0123456789abcdefghijklmnopqrstuvwxyzABCDEF \
+            "$IMAGE_TAG" pnpm seed
+          docker run -d \
+            --name "$E2E_CONTAINER" \
+            --network "$E2E_NETWORK" \
+            --network-alias app \
+            -p 127.0.0.1:3100:3000 \
+            -v "$E2E_DATA_VOLUME:/data" \
+            -e DATA_DIR=/data \
+            -e SITE_URL=https://blog.leesaitool.com \
+            -e ADMIN_PASSWORD_HASH="$E2E_ADMIN_PASSWORD_HASH" \
+            -e SESSION_SECRET=0123456789abcdefghijklmnopqrstuvwxyzABCDEF \
+            -e LOGIN_RATE_LIMIT_MAX=100 \
+            -e WORKER_REVALIDATE_SECRET=e2e-worker-revalidate-secret \
+            -e DEPLOY_COMMIT_SHA="$GITHUB_SHA" \
+            -e IMAGE_DIGEST="$E2E_DIGEST" \
+            "$IMAGE_TAG"
+
+          test "$(docker image inspect --format '{{ index .Config.Labels \"org.opencontainers.image.revision\" }}' "$IMAGE_TAG")" = "$GITHUB_SHA"
+          healthy=0
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3100/healthz | grep -q '"ok":true'; then
+              healthy=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$healthy" != 1 ]; then
+            docker logs "$E2E_CONTAINER"
+            exit 1
+          fi
+
+          docker run -d \
+            --name "$E2E_WORKER_CONTAINER" \
+            --network "$E2E_NETWORK" \
+            -v "$E2E_DATA_VOLUME:/data" \
+            -e DATA_DIR=/data \
+            -e SITE_URL=https://blog.leesaitool.com \
+            -e ADMIN_PASSWORD_HASH="$E2E_ADMIN_PASSWORD_HASH" \
+            -e SESSION_SECRET=0123456789abcdefghijklmnopqrstuvwxyzABCDEF \
+            -e WORKER_REVALIDATE_SECRET=e2e-worker-revalidate-secret \
+            -e INTERNAL_APP_URL=http://app:3000 \
+            -e OTS_CLI_PATH=/bin/false \
+            "$IMAGE_TAG" pnpm jobs:work
+
+          cache_ready=0
+          for attempt in $(seq 1 60); do
+            pending_cache_jobs="$(docker exec "$E2E_CONTAINER" node -e 'const Database = require("better-sqlite3"); const db = new Database("/data/arthurs-review.sqlite3", { readonly: true }); const row = db.prepare("select count(*) as count from jobs where type = ? and status in (?, ?)").get("cache.invalidate", "queued", "running"); console.log(row.count); db.close();')"
+            if [ "$pending_cache_jobs" = 0 ]; then
+              cache_ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$cache_ready" != 1 ]; then
+            docker logs "$E2E_WORKER_CONTAINER"
+            exit 1
+          fi
+
+      - name: Run Playwright against the production image
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3100
+          E2E_EXPECTED_SITE_URL: https://blog.leesaitool.com
+          E2E_EXPECTED_COMMIT: ${{ github.sha }}
+          E2E_EXPECTED_DIGEST: ${{ env.E2E_DIGEST }}
+          E2E_ADMIN_PASSWORD: admin-password
+        run: pnpm exec playwright test
+
+      - name: Stop the E2E image
+        if: always()
+        run: |
+          docker rm -f "$E2E_WORKER_CONTAINER" >/dev/null 2>&1 || true
+          docker rm -f "$E2E_CONTAINER" >/dev/null 2>&1 || true
+          docker volume rm "$E2E_DATA_VOLUME" >/dev/null 2>&1 || true
+          docker network rm "$E2E_NETWORK" >/dev/null 2>&1 || true
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the tested image and resolve its digest
+        run: |
+          docker push "$IMAGE_TAG"
+          IMAGE_DIGEST="$(docker buildx imagetools inspect "$IMAGE_TAG" --format '{{json .Manifest}}' | jq -er '.digest')"
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          APP_IMAGE="${IMAGE_TAG%:*}@${IMAGE_DIGEST}"
+          echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> "$GITHUB_ENV"
+          echo "APP_IMAGE=$APP_IMAGE" >> "$GITHUB_ENV"
+          printf 'Tested image: `%s`\n' "$APP_IMAGE" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Prepare deployment secrets
         env:
@@ -124,6 +256,9 @@ jobs:
         env:
           APP_DIR: ${{ vars.DEPLOY_APP_DIR }}
           REMOTE: ${{ vars.DEPLOY_REMOTE }}
+          DEPLOY_COMMIT_SHA: ${{ github.sha }}
+          REGISTRY_USERNAME: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           REMOTE="${REMOTE:-root@72.60.195.46}" \
           APP_DIR="${APP_DIR:-/opt/arthurs-review}" \

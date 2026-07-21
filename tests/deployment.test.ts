@@ -266,6 +266,34 @@ describe("deployment scripts", () => {
     expect(fs.readFileSync(".node-version", "utf8").trim()).toBe("26");
   });
 
+  it("builds one SHA-tagged production image, tests that image, and only then pushes it", () => {
+    const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const playwright = fs.readFileSync("playwright.config.ts", "utf8");
+    const build = workflow.indexOf("docker/build-push-action@v7");
+    const e2e = workflow.indexOf("pnpm exec playwright test");
+    const push = workflow.indexOf('docker push "$IMAGE_TAG"');
+
+    expect(workflow).toContain("packages: write");
+    expect(workflow.match(/docker\/build-push-action@v7/g)).toHaveLength(1);
+    expect(workflow).toContain("load: true");
+    expect(workflow).toContain("GIT_COMMIT_SHA=${{ github.sha }}");
+    expect(workflow).toContain("${{ github.sha }}");
+    expect(workflow).toContain("pnpm exec playwright install --with-deps chromium");
+    expect(workflow).toContain('"$IMAGE_TAG" pnpm jobs:work');
+    expect(workflow).toContain('docker network create "$E2E_NETWORK"');
+    expect(workflow).toContain("pending_cache_jobs");
+    expect(workflow).toContain("type = ? and status in (?, ?)");
+    expect(workflow).not.toContain("run: pnpm build");
+    expect(build).toBeGreaterThanOrEqual(0);
+    expect(build).toBeLessThan(e2e);
+    expect(e2e).toBeLessThan(push);
+    expect(dockerfile.match(/FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66/g)).toHaveLength(3);
+    expect(playwright).toContain("process.env.PLAYWRIGHT_BASE_URL");
+    expect(playwright).toContain("webServer: externalBaseURL ? undefined");
+    expect(playwright).toContain("workers: 1");
+  });
+
   it("installs Corepack explicitly because Node 26 no longer bundles it", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
 

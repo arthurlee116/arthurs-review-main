@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100";
+const expectedSiteURL = (process.env.E2E_EXPECTED_SITE_URL ?? baseURL).replace(/\/$/, "");
+
 test("home page keeps the classic masthead and exposes every public archive", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Arthur's Review" })).toBeVisible();
@@ -55,7 +58,9 @@ test("mobile article titles use the nine-character wrapping threshold", async ({
   const titleLayout = async (path: string) => {
     await page.goto(path);
     await page.addStyleTag({ content: "html { font-size: 22px; }" });
-    return page.locator("main article h1").evaluate((title) => {
+    const title = page.locator("main article h1");
+    await expect(title).toBeVisible();
+    return title.evaluate((title) => {
       const range = document.createRange();
       range.selectNodeContents(title);
       const rects = [...range.getClientRects()];
@@ -91,7 +96,7 @@ test("article without English body hides language switch", async ({ page }) => {
 });
 
 test("article feedback stays out of the way and copies the WeChat id", async ({ page, context }) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: "http://127.0.0.1:3100" });
+  await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseURL).origin });
   await page.goto("/commentary/short-note");
 
   await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -102,7 +107,11 @@ test("article feedback stays out of the way and copies the WeChat id", async ({ 
 
 test("RSS discovery, Proofs, and the dynamic social card are reachable", async ({ page, request }) => {
   await page.goto("/");
-  await expect(page.locator('link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute("href", "http://127.0.0.1:3100/feed.xml");
+  const feedLinks = await page.locator('link[rel="alternate"][type="application/rss+xml"]').evaluateAll((links) =>
+    links.map((link) => link.getAttribute("href")),
+  );
+  expect(feedLinks.length).toBeGreaterThan(0);
+  expect(new Set(feedLinks)).toEqual(new Set([`${expectedSiteURL}/feed.xml`]));
 
   await page.goto("/proofs");
   await expect(page.getByRole("heading", { level: 1, name: "Proofs" })).toBeVisible();
@@ -115,6 +124,29 @@ test("RSS discovery, Proofs, and the dynamic social card are reachable", async (
   expect(socialCard.ok()).toBe(true);
   expect(socialCard.headers()["content-type"]).toContain("image/png");
   expect((await socialCard.body()).byteLength).toBeGreaterThan(1_000);
+});
+
+test("production runtime exposes health, immutable version metadata, and production URLs", async ({ page, request }) => {
+  const health = await request.get("/healthz");
+  expect(health.ok()).toBe(true);
+  expect(await health.json()).toMatchObject({ ok: true, checks: { database: "ok", storage: "ok", release: "ok" } });
+  expect(health.headers()["x-content-type-options"]).toBe("nosniff");
+  expect(health.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+
+  const version = await request.get("/version");
+  expect(version.ok()).toBe(true);
+  expect(await version.json()).toEqual({
+    commit: process.env.E2E_EXPECTED_COMMIT ?? "development",
+    digest: process.env.E2E_EXPECTED_DIGEST ?? "development",
+    schemaVersion: 8,
+  });
+
+  await page.goto("/");
+  const socialURLs = await page.locator('meta[property="og:url"]').evaluateAll((tags) =>
+    tags.map((tag) => tag.getAttribute("content")),
+  );
+  expect(socialURLs.length).toBeGreaterThan(0);
+  expect(new Set(socialURLs)).toEqual(new Set([expectedSiteURL]));
 });
 
 test("search returns matching published article", async ({ page }) => {

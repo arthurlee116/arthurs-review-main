@@ -1,4 +1,4 @@
-FROM node:26-alpine AS deps
+FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66 AS deps
 WORKDIR /app
 ENV CI=true
 RUN apk add --no-cache python3 py3-pip make g++ \
@@ -9,7 +9,7 @@ RUN apk add --no-cache python3 py3-pip make g++ \
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
-FROM node:26-alpine AS builder
+FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66 AS builder
 WORKDIR /app
 ARG SITE_URL
 ENV SITE_URL=$SITE_URL
@@ -19,7 +19,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build
 
-FROM node:26-alpine AS runner
+FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66 AS runner
 WORKDIR /app
 ARG GIT_COMMIT_SHA=development
 ENV CI=true
@@ -27,6 +27,7 @@ ENV NODE_ENV=production
 ENV OTS_CLI_PATH=/opt/opentimestamps/bin/ots
 ENV BUILD_COMMIT_SHA=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.revision=$GIT_COMMIT_SHA
+LABEL org.opencontainers.image.source="https://github.com/arthurlee116/arthurs-review-main"
 RUN apk add --no-cache python3 make g++ \
   && npm install --global corepack@0.35.0 \
   && corepack enable
