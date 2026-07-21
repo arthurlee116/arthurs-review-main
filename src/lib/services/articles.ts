@@ -5,6 +5,8 @@ import { getDb } from "@/lib/db/connection";
 import { setSetting } from "@/lib/services/settings";
 import { pageWindow, type PageResult } from "@/lib/pagination";
 import { MAX_SEARCH_CODE_POINTS } from "@/lib/search-limits";
+import { enqueueCacheInvalidation, enqueuePublishedRevisionJobs } from "@/lib/jobs/outbox";
+import { PUBLIC_ARTICLE_LIST_TAG, PUBLIC_PROOFS_TAG, PUBLIC_SETTINGS_TAG, publicArticleProofsTag, publicArticleTag } from "./public-cache-tags";
 import { deleteArticleFromFts, syncArticleToFts } from "./search";
 
 export type ArticleStatus = "draft" | "published";
@@ -262,7 +264,9 @@ export function updateArticleEnglishFields(id: number, input: { titleEn: string;
 export function deleteArticle(id: number) {
   const article = getArticleById(id, { includeDraft: true });
   if (!article) return false;
+  const published = getArticleById(id, { includeDraft: false });
   const db = getDb();
+  const timestamp = nowIso();
   const bodyPaths = db
     .prepare("select body_zh_path, body_en_path from article_revisions where article_id = ?")
     .all(id) as Array<{ body_zh_path: string; body_en_path: string | null }>;
@@ -270,6 +274,20 @@ export function deleteArticle(id: number) {
   db.transaction(() => {
     deleteArticleFromFts(id);
     if (article.isFeatured) clearFeaturedArticleState(db);
+    enqueueCacheInvalidation(
+      {
+        tags: [
+          PUBLIC_ARTICLE_LIST_TAG,
+          ...(published ? [publicArticleTag(published.category, published.slug)] : []),
+          PUBLIC_PROOFS_TAG,
+          publicArticleProofsTag(id),
+          ...(article.isFeatured ? [PUBLIC_SETTINGS_TAG] : []),
+        ],
+        dedupeKey: `article:${id}:delete:${timestamp}`,
+        now: new Date(timestamp),
+      },
+      db,
+    );
     db.prepare("update articles set draft_revision_id = null, published_revision_id = null where id = ?").run(id);
     db.prepare("delete from articles where id = ?").run(id);
   }).immediate();
@@ -294,6 +312,18 @@ export function getArticleById(id: number, options: { includeDraft: boolean }) {
        where articles.id = ?`,
     )
     .get(id) as ArticleRow | undefined;
+  return row ? withBodies(mapArticleRow(row)) : null;
+}
+
+export function getArticleRevisionById(articleId: number, revisionId: number) {
+  const row = getDb()
+    .prepare(
+      `select ${selectArticleColumns}
+       from articles
+       join article_revisions as revisions on revisions.id = ? and revisions.article_id = articles.id
+       where articles.id = ?`,
+    )
+    .get(revisionId, articleId) as ArticleRow | undefined;
   return row ? withBodies(mapArticleRow(row)) : null;
 }
 
@@ -515,6 +545,7 @@ export function publishArticle(id: number) {
     ).run(timestamp, timestamp, id);
     const published = getArticleById(id, { includeDraft: true })!;
     syncArticleToFts(published);
+    enqueuePublishedRevisionJobs({ article: published, oldPath: previous }, db);
     return published;
   }).immediate();
 }
@@ -522,11 +553,29 @@ export function publishArticle(id: number) {
 export function unpublishArticle(id: number) {
   const existing = getArticleById(id, { includeDraft: true });
   if (!existing) throw new Error("Article not found.");
+  const published = getArticleById(id, { includeDraft: false });
   const db = getDb();
   return db.transaction(() => {
-    db.prepare("update articles set published_revision_id = null, updated_at = ? where id = ?").run(nowIso(), id);
+    const timestamp = nowIso();
+    db.prepare("update articles set published_revision_id = null, updated_at = ? where id = ?").run(timestamp, id);
     if (existing.isFeatured) clearFeaturedArticleState(db);
     deleteArticleFromFts(id);
+    if (published) {
+      enqueueCacheInvalidation(
+        {
+          tags: [
+            PUBLIC_ARTICLE_LIST_TAG,
+            publicArticleTag(published.category, published.slug),
+            PUBLIC_PROOFS_TAG,
+            publicArticleProofsTag(id),
+            ...(existing.isFeatured ? [PUBLIC_SETTINGS_TAG] : []),
+          ],
+          dedupeKey: `article:${id}:unpublish:${timestamp}`,
+          now: new Date(timestamp),
+        },
+        db,
+      );
+    }
     return getArticleById(id, { includeDraft: true });
   }).immediate();
 }
@@ -537,16 +586,36 @@ export function setFeaturedArticle(id: number) {
   if (!existing) throw new Error("Article not found.");
   if (existing.status !== "published") throw new Error("Featured article must be published.");
   return db.transaction(() => {
+    const timestamp = nowIso();
     db.prepare("update articles set is_featured = 0").run();
     db.prepare("update articles set is_featured = 1 where id = ?").run(id);
     setSetting("featuredArticleId", String(id));
+    enqueueCacheInvalidation(
+      {
+        tags: [PUBLIC_ARTICLE_LIST_TAG, PUBLIC_SETTINGS_TAG],
+        dedupeKey: `featured:${id}:${timestamp}`,
+        now: new Date(timestamp),
+      },
+      db,
+    );
     return getArticleById(id, { includeDraft: true })!;
   }).immediate();
 }
 
 export function clearFeaturedArticle() {
   const db = getDb();
-  db.transaction(() => clearFeaturedArticleState(db)).immediate();
+  db.transaction(() => {
+    const timestamp = nowIso();
+    clearFeaturedArticleState(db);
+    enqueueCacheInvalidation(
+      {
+        tags: [PUBLIC_ARTICLE_LIST_TAG, PUBLIC_SETTINGS_TAG],
+        dedupeKey: `featured:clear:${timestamp}`,
+        now: new Date(timestamp),
+      },
+      db,
+    );
+  }).immediate();
 }
 
 function clearFeaturedArticleState(db: ReturnType<typeof getDb>) {

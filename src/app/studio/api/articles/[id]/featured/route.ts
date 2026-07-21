@@ -1,6 +1,5 @@
 import { apiError, requireApiAdmin } from "@/app/studio/api/_helpers";
 import { setFeaturedArticle } from "@/lib/services/articles";
-import { invalidateArticleLists } from "@/lib/services/public-cache";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const unauthorized = await requireApiAdmin(request);
@@ -12,7 +11,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       return Response.json({ error: "Invalid article id." }, { status: 400 });
     }
     const article = setFeaturedArticle(articleId);
-    invalidateArticleLists();
     return Response.json({ article });
   } catch (error) {
     return apiError(error);

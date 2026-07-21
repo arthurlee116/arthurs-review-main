@@ -61,11 +61,13 @@ jobs:
           PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
           ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          WORKER_REVALIDATE_SECRET: ${{ secrets.WORKER_REVALIDATE_SECRET }}
         run: |
           test -n "$DEPLOY_SSH_PRIVATE_KEY"
           test -n "$PRODUCTION_ENV"
           test -n "$ADMIN_PASSWORD_HASH"
           test -n "$SESSION_SECRET"
+          test -n "$WORKER_REVALIDATE_SECRET"
 
           mkdir -p ~/.ssh deploy
           chmod 700 ~/.ssh
@@ -115,6 +117,7 @@ jobs:
           printf '%s\n' "$PRODUCTION_ENV" > deploy/production.env
           printf 'ADMIN_PASSWORD_HASH=%s\n' "$ADMIN_PASSWORD_HASH" >> deploy/production.env
           printf 'SESSION_SECRET=%s\n' "$SESSION_SECRET" >> deploy/production.env
+          printf 'WORKER_REVALIDATE_SECRET=%s\n' "$WORKER_REVALIDATE_SECRET" >> deploy/production.env
           chmod 600 deploy/production.env
 
       - name: Deploy to VPS

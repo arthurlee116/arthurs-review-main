@@ -18,6 +18,7 @@ type WaybackStatus = "pending" | "complete" | "failed";
 export type PublicationProof = {
   id: number;
   articleId: number;
+  articleRevisionId: number | null;
   createdAt: string;
   publicUrl: string;
   contentFingerprint: string;
@@ -49,6 +50,7 @@ export type PublicPublicationProof = {
 type ProofRow = {
   id: number;
   article_id: number;
+  article_revision_id: number | null;
   created_at: string;
   public_url: string;
   content_fingerprint: string;
@@ -84,19 +86,11 @@ export type ProofServices = {
   capture: (url: string) => Promise<string>;
 };
 
-type ProofRuntime = {
-  runs: Map<string, Promise<PublicationProof | null>>;
-  waybackRetries: Map<string, ReturnType<typeof setTimeout>>;
-};
-
-const globalRuntime = globalThis as typeof globalThis & { __arthursReviewProofRuntime?: ProofRuntime };
-const proofRuntime = (globalRuntime.__arthursReviewProofRuntime ??= { runs: new Map(), waybackRetries: new Map() });
-const WAYBACK_RETRY_DELAY_MS = 20 * 60 * 1000;
-
 function mapProof(row: ProofRow): PublicationProof {
   return {
     id: row.id,
     articleId: row.article_id,
+    articleRevisionId: row.article_revision_id,
     createdAt: row.created_at,
     publicUrl: row.public_url,
     contentFingerprint: row.content_fingerprint,
@@ -150,6 +144,17 @@ function atomicWriteBytes(filePath: string, value: Uint8Array) {
   } catch (error) {
     fs.rmSync(temporaryPath, { force: true });
     throw error;
+  }
+}
+
+function writeImmutableText(filePath: string, value: string) {
+  try {
+    fs.writeFileSync(filePath, value, { encoding: "utf8", flag: "wx" });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+    if (fs.readFileSync(filePath, "utf8") !== value) {
+      throw new Error("Existing publication proof source does not match the queued revision.");
+    }
   }
 }
 
@@ -466,6 +471,24 @@ export async function advanceOpenTimestampProof(id: number, services: ProofServi
   return getPublicationProof(id);
 }
 
+export async function captureWaybackProof(id: number, capture: ProofServices["capture"] = captureWithWayback) {
+  const proof = getPublicationProof(id);
+  if (!proof) throw new Error("Publication proof not found.");
+  if (proof.waybackStatus === "complete") return proof;
+  try {
+    const waybackUrl = await capture(proof.publicUrl);
+    getDb()
+      .prepare("update publication_proofs set wayback_url = ?, wayback_status = 'complete', wayback_error = null where id = ?")
+      .run(waybackUrl, proof.id);
+    return getPublicationProof(proof.id);
+  } catch (error) {
+    getDb()
+      .prepare("update publication_proofs set wayback_status = 'failed', wayback_error = ? where id = ?")
+      .run(errorMessage(error), proof.id);
+    throw error;
+  }
+}
+
 async function finishPublicationProof(proof: PublicationProof, services: ProofServices) {
   const needsOts = proof.otsStatus === "submitted" || proof.otsStatus === "pending_confirmation";
   const needsWayback = proof.waybackStatus !== "complete";
@@ -497,49 +520,15 @@ async function finishPublicationProof(proof: PublicationProof, services: ProofSe
   return getPublicationProof(proof.id);
 }
 
-function finishPublicationProofOnce(proof: PublicationProof, services: ProofServices, scheduleWaybackRetry = true) {
-  const key = resolveProofPath(proof.documentPath);
-  const existing = proofRuntime.runs.get(key);
-  if (existing) return existing;
-
-  const run = finishPublicationProof(proof, services)
-    .then((result) => {
-      if (result?.waybackStatus === "complete") {
-        const timer = proofRuntime.waybackRetries.get(key);
-        if (timer) clearTimeout(timer);
-        proofRuntime.waybackRetries.delete(key);
-      } else if (scheduleWaybackRetry && result?.waybackStatus === "failed" && !proofRuntime.waybackRetries.has(key)) {
-        // ponytail: in-process timer; persist retry jobs if this app ever runs multiple replicas.
-        const timer = setTimeout(() => {
-          proofRuntime.waybackRetries.delete(key);
-          const current = getPublicationProof(proof.id);
-          if (!current || current.waybackStatus === "complete") return;
-          void finishPublicationProofOnce(current, services, false).catch((error: unknown) => {
-            console.error("Wayback retry failed", error);
-          });
-        }, WAYBACK_RETRY_DELAY_MS);
-        timer.unref();
-        proofRuntime.waybackRetries.set(key, timer);
-      }
-      return result;
-    })
-    .finally(() => {
-      proofRuntime.runs.delete(key);
-    });
-  proofRuntime.runs.set(key, run);
-  return run;
-}
-
-export async function createPublicationProof(article: Article, services: ProofServices = defaultServices) {
+export function ensurePublicationProofRecord(article: Article, { createdAt = new Date().toISOString() }: { createdAt?: string } = {}) {
   if (article.status !== "published") return null;
   const content = articleContent(article);
   const contentFingerprint = sha256(JSON.stringify(content));
   const duplicate = getDb()
     .prepare("select * from publication_proofs where article_id = ? and content_fingerprint = ?")
     .get(article.id, contentFingerprint) as ProofRow | undefined;
-  if (duplicate) return finishPublicationProofOnce(mapProof(duplicate), services);
+  if (duplicate) return mapProof(duplicate);
 
-  const createdAt = services.now().toISOString();
   const publicUrl = new URL(articlePath(article.category, article.slug), process.env.SITE_URL ?? "http://localhost:3000").toString();
   const document = `${JSON.stringify(
     {
@@ -558,15 +547,24 @@ export async function createPublicationProof(article: Article, services: ProofSe
   const documentPath = path.join(relativeDir, `${createdAt.replaceAll(":", "-")}-${documentSha256}.json`);
   const fullDocumentPath = resolveProofPath(documentPath);
   fs.mkdirSync(path.dirname(fullDocumentPath), { recursive: true });
-  fs.writeFileSync(fullDocumentPath, document, { encoding: "utf8", flag: "wx" });
+  writeImmutableText(fullDocumentPath, document);
 
-  const result = getDb()
+  getDb()
     .prepare(
       `insert into publication_proofs
-       (article_id, created_at, public_url, content_fingerprint, document_sha256, document_path, ots_status, wayback_status)
-       values (?, ?, ?, ?, ?, ?, 'submitted', 'pending')`,
+       (article_id, article_revision_id, created_at, public_url, content_fingerprint, document_sha256, document_path, ots_status, wayback_status)
+       values (?, ?, ?, ?, ?, ?, ?, 'submitted', 'pending')
+       on conflict(article_id, content_fingerprint) do nothing`,
     )
-    .run(article.id, createdAt, publicUrl, contentFingerprint, documentSha256, documentPath);
-  const id = Number(result.lastInsertRowid);
-  return finishPublicationProofOnce(getPublicationProof(id)!, services);
+    .run(article.id, article.revisionId, createdAt, publicUrl, contentFingerprint, documentSha256, documentPath);
+  const stored = getDb()
+    .prepare("select * from publication_proofs where article_id = ? and content_fingerprint = ?")
+    .get(article.id, contentFingerprint) as ProofRow | undefined;
+  if (!stored) throw new Error("Publication proof record was not stored.");
+  return mapProof(stored);
+}
+
+export async function createPublicationProof(article: Article, services: ProofServices = defaultServices) {
+  const proof = ensurePublicationProofRecord(article, { createdAt: services.now().toISOString() });
+  return proof ? finishPublicationProof(proof, services) : null;
 }

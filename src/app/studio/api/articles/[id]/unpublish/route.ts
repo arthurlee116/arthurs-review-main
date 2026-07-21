@@ -1,6 +1,5 @@
 import { apiError, requireApiAdmin } from "@/app/studio/api/_helpers";
-import { getArticleById, unpublishArticle } from "@/lib/services/articles";
-import { invalidateArticlePublication } from "@/lib/services/public-cache";
+import { unpublishArticle } from "@/lib/services/articles";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const unauthorized = await requireApiAdmin(request);
@@ -8,9 +7,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   try {
     const { id } = await context.params;
     const articleId = Number(id);
-    const previous = getArticleById(articleId, { includeDraft: false });
     const article = unpublishArticle(articleId);
-    invalidateArticlePublication({ oldPath: previous && { category: previous.category, slug: previous.slug } });
     return Response.json({ article });
   } catch (error) {
     return apiError(error);

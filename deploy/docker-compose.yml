@@ -1,5 +1,6 @@
 services:
   app:
+    image: arthurs-review-app:local
     build:
       context: ..
       dockerfile: Dockerfile
@@ -17,6 +18,23 @@ services:
     restart: unless-stopped
     expose:
       - "3000"
+
+  worker:
+    image: arthurs-review-app:local
+    env_file:
+      - path: ./production.env
+        required: false
+        format: raw
+    environment:
+      DATA_DIR: /data
+      SITE_URL: https://blog.leesaitool.com
+      INTERNAL_APP_URL: http://app:3000
+    volumes:
+      - /var/www/arthurs-review/data:/data
+    command: ["pnpm", "jobs:work"]
+    restart: unless-stopped
+    depends_on:
+      - app
 
   caddy:
     image: caddy:2-alpine

@@ -1,20 +1,30 @@
 import { revalidateTag } from "next/cache";
 import type { CategoryId } from "@/lib/content/categories";
+import {
+  PUBLIC_ARTICLE_LIST_TAG,
+  PUBLIC_PROOFS_TAG,
+  PUBLIC_SETTINGS_TAG,
+  publicArticleProofsTag,
+  publicArticleTag,
+} from "./public-cache-tags";
 
-export const PUBLIC_ARTICLE_LIST_TAG = "public:article-lists";
-export const PUBLIC_SETTINGS_TAG = "public:settings";
-export const PUBLIC_PROOFS_TAG = "public:proofs";
-
-export function publicArticleTag(category: CategoryId, slug: string) {
-  return `public:article:${category}:${slug}`;
-}
-
-export function publicArticleProofsTag(articleId: number) {
-  return `public:proofs:article:${articleId}`;
-}
+export {
+  PUBLIC_ARTICLE_LIST_TAG,
+  PUBLIC_PROOFS_TAG,
+  PUBLIC_SETTINGS_TAG,
+  publicArticleProofsTag,
+  publicArticleTag,
+} from "./public-cache-tags";
 
 function expireTags(tags: string[]) {
   for (const tag of new Set(tags)) revalidateTag(tag, { expire: 0 });
+}
+
+export function invalidateCacheTags(tags: string[]) {
+  if (tags.length > 128 || tags.some((tag) => !tag.startsWith("public:") || tag.length > 256)) {
+    throw new Error("Invalid public cache tags.");
+  }
+  expireTags(tags);
 }
 
 export function invalidateArticleLists() {

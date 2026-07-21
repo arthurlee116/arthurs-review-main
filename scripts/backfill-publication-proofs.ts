@@ -29,7 +29,7 @@ async function backfillPublicationProofs() {
             sha256: proof?.documentSha256,
           }),
         );
-        if (proof?.otsStatus !== "complete" || proof.waybackStatus !== "complete") failures += 1;
+        if (proof?.otsStatus !== "anchored" || proof.waybackStatus !== "complete") failures += 1;
       } catch (error) {
         failures += 1;
         console.error(

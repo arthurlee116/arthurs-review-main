@@ -188,25 +188,16 @@ describe("publication proofs", () => {
     expect(listPublicationProofs(article.id)).toHaveLength(1);
   });
 
-  it("runs identical concurrent proof requests only once", async () => {
+  it("creates one idempotent source record before background evidence jobs run", async () => {
     const article = await publishedArticle();
-    let releaseStamp!: (value: Uint8Array) => void;
-    const stampResult = new Promise<Uint8Array>((resolve) => {
-      releaseStamp = resolve;
-    });
-    const stamp = vi.fn(() => stampResult);
-    const capture = vi.fn(async () => "https://web.archive.org/web/20260713150000/example");
-    const { createPublicationProof, listPublicationProofs } = await import("@/lib/services/publication-proofs");
-    const services = { now: () => new Date("2026-07-13T15:00:00.000Z"), stamp, capture };
+    const { ensurePublicationProofRecord, listPublicationProofs } = await import("@/lib/services/publication-proofs");
+    const options = { createdAt: "2026-07-13T15:00:00.000Z" };
 
-    const first = createPublicationProof(article, services);
-    const duplicate = createPublicationProof(article, services);
-    await Promise.resolve();
+    const first = ensurePublicationProofRecord(article, options);
+    const duplicate = ensurePublicationProofRecord(article, options);
 
-    expect(stamp).toHaveBeenCalledOnce();
-    expect(capture).toHaveBeenCalledOnce();
-    releaseStamp(Uint8Array.of(1, 2, 3));
-    await expect(Promise.all([first, duplicate])).resolves.toHaveLength(2);
+    expect(duplicate?.id).toBe(first?.id);
+    expect(first).toMatchObject({ articleId: article.id, articleRevisionId: article.revisionId, otsStatus: "submitted", waybackStatus: "pending" });
     expect(listPublicationProofs(article.id)).toHaveLength(1);
   });
 
@@ -230,29 +221,24 @@ describe("publication proofs", () => {
     expect(fs.existsSync(path.join(tmpDir, proof!.otsPath!))).toBe(true);
   });
 
-  it("retries a failed Wayback capture once after twenty minutes", async () => {
-    vi.useFakeTimers();
+  it("persists a Wayback failure for the durable worker to retry", async () => {
     const article = await publishedArticle();
-    const stamp = vi.fn(async () => Uint8Array.of(9, 9));
     const capture = vi
       .fn<() => Promise<string>>()
       .mockRejectedValueOnce(new Error("Wayback unavailable"))
       .mockResolvedValueOnce("https://web.archive.org/web/20260713160000/example");
-    const { createPublicationProof, listPublicationProofs } = await import("@/lib/services/publication-proofs");
+    const { captureWaybackProof, ensurePublicationProofRecord, getPublicationProof } = await import("@/lib/services/publication-proofs");
+    const proof = ensurePublicationProofRecord(article, { createdAt: "2026-07-13T15:00:00.000Z" })!;
 
-    const failed = await createPublicationProof(article, {
-      now: () => new Date("2026-07-13T15:00:00.000Z"),
-      stamp,
-      capture,
-    });
-    expect(failed?.waybackStatus).toBe("failed");
-
-    await vi.advanceTimersByTimeAsync(20 * 60 * 1000);
+    await expect(captureWaybackProof(proof.id, capture)).rejects.toThrow("Wayback unavailable");
+    expect(getPublicationProof(proof.id)).toMatchObject({ waybackStatus: "failed", waybackError: "Wayback unavailable" });
+    await expect(captureWaybackProof(proof.id, capture)).resolves.toMatchObject({ waybackStatus: "complete", waybackError: null });
 
     expect(capture).toHaveBeenCalledTimes(2);
-    expect(stamp).toHaveBeenCalledOnce();
-    expect(listPublicationProofs(article.id)[0]).toMatchObject({ waybackStatus: "complete", waybackError: null });
-    vi.useRealTimers();
+    const source = fs.readFileSync("src/lib/services/publication-proofs.ts", "utf8");
+    expect(source).not.toContain("__arthursReviewProofRuntime");
+    expect(source).not.toContain("waybackRetries");
+    expect(source).not.toContain("WAYBACK_RETRY_DELAY_MS");
   });
 
   it("retries only the failed service when identical content is saved again", async () => {

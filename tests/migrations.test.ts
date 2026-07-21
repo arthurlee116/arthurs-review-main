@@ -78,6 +78,7 @@ describe("schema migrations", () => {
       { version: 3, name: "article_revisions" },
       { version: 4, name: "article_url_history" },
       { version: 5, name: "ots_verification_states" },
+      { version: 6, name: "durable_jobs" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -98,6 +99,7 @@ describe("schema migrations", () => {
       { version: 3, name: "article_revisions" },
       { version: 4, name: "article_url_history" },
       { version: 5, name: "ots_verification_states" },
+      { version: 6, name: "durable_jobs" },
     ]);
   });
 
@@ -173,6 +175,9 @@ describe("schema migrations", () => {
     });
     expect(db.prepare("select ots_status from publication_proofs where id = 1").get()).toEqual({
       ots_status: "pending_confirmation",
+    });
+    expect(db.prepare("select article_revision_id from publication_proofs where id = 1").get()).toEqual({
+      article_revision_id: 1,
     });
   });
 

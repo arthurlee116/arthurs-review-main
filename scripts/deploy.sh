@@ -44,7 +44,7 @@ rsync -az --delete \
   ./ "${REMOTE}:${APP_DIR}/"
 
 if [[ "${APP_ONLY}" == "1" ]]; then
-  ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose build app && docker compose up -d app && docker pull caddy:2-alpine >/dev/null && docker run --rm -v ${APP_DIR}/deploy/Caddyfile:/etc/caddy/Caddyfile:ro caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile"
+  ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose build app && docker compose up -d app worker && docker pull caddy:2-alpine >/dev/null && docker run --rm -v ${APP_DIR}/deploy/Caddyfile:/etc/caddy/Caddyfile:ro caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile"
 else
   ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d --build"
 fi

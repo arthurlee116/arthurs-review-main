@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { apiError, requireApiAdmin } from "@/app/studio/api/_helpers";
+import { getDb } from "@/lib/db/connection";
 import { getSettings, setSetting } from "@/lib/services/settings";
 import { clearFeaturedArticle, getArticleById, setFeaturedArticle } from "@/lib/services/articles";
-import { invalidateArticleLists, invalidateSettings } from "@/lib/services/public-cache";
 
 const SettingsSchema = z.object({
   siteName: z.string().min(1),
@@ -32,17 +32,14 @@ export async function PUT(request: Request) {
         return Response.json({ error: "Featured article must be published." }, { status: 400 });
       }
     }
-    for (const [key, value] of Object.entries(input)) {
-      if (key === "featuredArticleId") continue;
-      setSetting(key as keyof typeof input, value);
-    }
-    if (featuredId) {
-      setFeaturedArticle(Number(featuredId));
-    } else {
-      clearFeaturedArticle();
-    }
-    invalidateSettings();
-    invalidateArticleLists();
+    getDb().transaction(() => {
+      for (const [key, value] of Object.entries(input)) {
+        if (key === "featuredArticleId") continue;
+        setSetting(key as keyof typeof input, value);
+      }
+      if (featuredId) setFeaturedArticle(Number(featuredId));
+      else clearFeaturedArticle();
+    }).immediate();
     return Response.json({ settings: getSettings() });
   } catch (error) {
     return apiError(error);

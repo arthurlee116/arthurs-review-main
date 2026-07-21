@@ -83,6 +83,17 @@ describe("deployment scripts", () => {
     expect(compose).toContain("SITE_URL: https://blog.leesaitool.com");
   });
 
+  it("runs a restartable worker from the exact same app image and data volume", () => {
+    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
+    const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as { scripts: Record<string, string> };
+
+    expect(compose.match(/image: arthurs-review-app:local/g)).toHaveLength(2);
+    expect(compose).toContain("worker:");
+    expect(compose).toContain('command: ["pnpm", "jobs:work"]');
+    expect(compose.match(/\/var\/www\/arthurs-review\/data:\/data/g)).toHaveLength(2);
+    expect(packageJson.scripts["jobs:work"]).toBe("tsx scripts/jobs-worker.ts");
+  });
+
   it("provides the production site URL while Next.js metadata is built", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
