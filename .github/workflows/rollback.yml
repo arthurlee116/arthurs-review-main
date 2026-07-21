@@ -1,0 +1,71 @@
+name: Roll back production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_previous_release:
+        description: Roll back only to the VPS-recorded previous-release.env
+        required: true
+        type: boolean
+
+concurrency:
+  group: production-maintenance
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    name: Restore the recorded previous release
+    if: ${{ inputs.confirm_previous_release }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout current deployment tooling
+        uses: actions/checkout@v6
+
+      - name: Prepare SSH
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_SSH_PASSPHRASE: ${{ secrets.DEPLOY_SSH_PASSPHRASE }}
+        run: |
+          test -n "$DEPLOY_SSH_PRIVATE_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          eval "$(ssh-agent -s)"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+          if [ -n "${DEPLOY_SSH_PASSPHRASE:-}" ]; then
+            cat > "$RUNNER_TEMP/ssh-askpass" <<'EOF'
+          #!/usr/bin/env sh
+          printf '%s\n' "$DEPLOY_SSH_PASSPHRASE"
+          EOF
+            chmod 700 "$RUNNER_TEMP/ssh-askpass"
+            DISPLAY=none SSH_ASKPASS="$RUNNER_TEMP/ssh-askpass" SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key </dev/null
+          else
+            ssh-add ~/.ssh/deploy_key
+          fi
+
+          DEPLOY_HOST="${DEPLOY_HOST:-72.60.195.46}"
+          if [ "$DEPLOY_HOST" = "72.60.195.46" ]; then
+            printf '%s\n' '72.60.195.46 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPW6DVc3HbWdUhmPpQxR2De5SrdmSsmYyxm+RrHgedSl' >> ~/.ssh/known_hosts
+          else
+            ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          fi
+
+      - name: Roll back to previous-release.env
+        env:
+          APP_DIR: ${{ vars.DEPLOY_APP_DIR }}
+          REMOTE: ${{ vars.DEPLOY_REMOTE }}
+          REGISTRY_USERNAME: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLLBACK_ONLY: "1"
+        run: |
+          REMOTE="${REMOTE:-root@72.60.195.46}" \
+          APP_DIR="${APP_DIR:-/opt/arthurs-review}" \
+          ./scripts/deploy.sh

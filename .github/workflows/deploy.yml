@@ -180,9 +180,12 @@ jobs:
           docker push "$IMAGE_TAG"
           IMAGE_DIGEST="$(docker buildx imagetools inspect "$IMAGE_TAG" --format '{{json .Manifest}}' | jq -er '.digest')"
           [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          EXPECTED_SCHEMA_VERSION="$(find src/lib/db/migrations -maxdepth 1 -name '[0-9][0-9][0-9]_*.sql' -print | wc -l | tr -d '[:space:]')"
+          [[ "$EXPECTED_SCHEMA_VERSION" =~ ^[1-9][0-9]*$ ]]
           APP_IMAGE="${IMAGE_TAG%:*}@${IMAGE_DIGEST}"
           echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> "$GITHUB_ENV"
           echo "APP_IMAGE=$APP_IMAGE" >> "$GITHUB_ENV"
+          echo "EXPECTED_SCHEMA_VERSION=$EXPECTED_SCHEMA_VERSION" >> "$GITHUB_ENV"
           printf 'Tested image: `%s`\n' "$APP_IMAGE" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Prepare deployment secrets
@@ -256,7 +259,10 @@ jobs:
         env:
           APP_DIR: ${{ vars.DEPLOY_APP_DIR }}
           REMOTE: ${{ vars.DEPLOY_REMOTE }}
+          APP_IMAGE: ${{ env.APP_IMAGE }}
           DEPLOY_COMMIT_SHA: ${{ github.sha }}
+          IMAGE_DIGEST: ${{ env.IMAGE_DIGEST }}
+          EXPECTED_SCHEMA_VERSION: ${{ env.EXPECTED_SCHEMA_VERSION }}
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

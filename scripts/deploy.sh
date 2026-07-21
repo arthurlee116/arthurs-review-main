@@ -1,18 +1,45 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
 REMOTE="${REMOTE:-root@72.60.195.46}"
 APP_DIR="${APP_DIR:-/opt/arthurs-review}"
-APP_ONLY="${APP_ONLY:-0}"
+APP_IMAGE="${APP_IMAGE:-}"
+DEPLOY_COMMIT_SHA="${DEPLOY_COMMIT_SHA:-}"
+IMAGE_DIGEST="${IMAGE_DIGEST:-}"
+EXPECTED_SCHEMA_VERSION="${EXPECTED_SCHEMA_VERSION:-}"
+REGISTRY_USERNAME="${REGISTRY_USERNAME:-}"
+REGISTRY_TOKEN="${REGISTRY_TOKEN:-}"
+ROLLBACK_ONLY="${ROLLBACK_ONLY:-0}"
 XRAY_PUBLIC_HOST="${XRAY_PUBLIC_HOST:-72.60.195.46}"
 MAINTENANCE_LOCK_FILE="${MAINTENANCE_LOCK_FILE:-/var/lock/arthurs-review-maintenance.lock}"
 MAINTENANCE_LOCK_WAIT_SECONDS="${MAINTENANCE_LOCK_WAIT_SECONDS:-1800}"
-REMOTE_LOCK_PID=""
-REMOTE_LOCK_CONTROL_DIR=""
-REMOTE_LOCK_FD_OPEN=0
-PUBLIC_HEADER_FILE=""
-XRAY_FINGERPRINT=""
-XRAY_GUARD_VERIFIED=0
+STAGING_DIR=""
+VERIFY_XRAY_ON_EXIT=0
+
+fail() {
+  echo "Deploy failed: $*" >&2
+  return 1
+}
+
+validate_deploy_inputs() {
+  [[ "${ROLLBACK_ONLY}" == "0" || "${ROLLBACK_ONLY}" == "1" ]] \
+    || { fail "ROLLBACK_ONLY must be 0 or 1"; return; }
+  [[ "${REMOTE}" == *@* ]] || { fail "REMOTE must include an explicit user"; return; }
+  [[ "${APP_DIR}" == /* && "${APP_DIR}" != "/" ]] || { fail "APP_DIR must be a specific absolute path"; return; }
+  [[ "${MAINTENANCE_LOCK_WAIT_SECONDS}" =~ ^[0-9]+$ ]] \
+    || { fail "MAINTENANCE_LOCK_WAIT_SECONDS must be an integer"; return; }
+  [[ -n "${REGISTRY_USERNAME}" ]] || { fail "REGISTRY_USERNAME is required"; return; }
+  [[ -n "${REGISTRY_TOKEN}" ]] || { fail "REGISTRY_TOKEN is required"; return; }
+  if [[ "${ROLLBACK_ONLY}" == "0" ]]; then
+    [[ -f deploy/production.env ]] || { fail "Missing deploy/production.env"; return; }
+    [[ "${APP_IMAGE}" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$ ]] \
+      || { fail "APP_IMAGE must be an immutable GHCR digest reference"; return; }
+    [[ "${DEPLOY_COMMIT_SHA}" =~ ^[0-9a-f]{40}$ ]] || { fail "DEPLOY_COMMIT_SHA must be a full commit SHA"; return; }
+    [[ "${IMAGE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] || { fail "IMAGE_DIGEST must be a sha256 digest"; return; }
+    [[ "${APP_IMAGE##*@}" == "${IMAGE_DIGEST}" ]] || { fail "APP_IMAGE and IMAGE_DIGEST disagree"; return; }
+    [[ "${EXPECTED_SCHEMA_VERSION}" =~ ^[1-9][0-9]*$ ]] || { fail "EXPECTED_SCHEMA_VERSION must be positive"; return; }
+  fi
+}
 
 probe_external_xray() {
   node -e '
@@ -21,179 +48,71 @@ probe_external_xray() {
     const socket = net.createConnection({ host, port: Number(rawPort) });
     const timer = setTimeout(() => socket.destroy(new Error("connection timed out")), 10_000);
     socket.once("connect", () => { clearTimeout(timer); socket.destroy(); });
-    socket.once("close", (hadError) => process.exitCode = hadError ? 1 : 0);
+    socket.once("close", (hadError) => { process.exitCode = hadError ? 1 : 0; });
     socket.once("error", (error) => console.error(`Xray TCP probe failed: ${error.message}`));
   ' "${XRAY_PUBLIC_HOST}" 2443
 }
 
-verify_xray_unchanged() {
-  local expect_topology="${1:-0}"
-  local topology_arg=""
-  printf -v app_dir_quoted '%q' "${APP_DIR}"
-  printf -v preflight_quoted '%q' "${APP_DIR}/scripts/production-topology-preflight.sh"
-  printf -v fingerprint_quoted '%q' "${XRAY_FINGERPRINT}"
-  if [[ "${expect_topology}" == "1" ]]; then topology_arg=" --expect-topology"; fi
-  ssh "${REMOTE}" "APP_DIR=${app_dir_quoted} ${preflight_quoted} verify ${fingerprint_quoted}${topology_arg}"
-  probe_external_xray
-}
-
 cleanup() {
-  exit_code=$?
+  local exit_code=$? cleanup_status=0 xray_status=0 staging_quoted
   trap - EXIT
-  if [[ -n "${XRAY_FINGERPRINT}" && "${XRAY_GUARD_VERIFIED}" != "1" ]]; then
-    xray_exit=0
-    verify_xray_unchanged 0 || xray_exit=$?
-    if [[ "${xray_exit}" != "0" ]]; then
-      echo "Xray changed or became unreachable; no repair was attempted." >&2
-      exit_code="${xray_exit}"
-    fi
+  if [[ -n "${STAGING_DIR}" && "${STAGING_DIR}" == "${APP_DIR}"/.release-stage.* ]]; then
+    printf -v staging_quoted '%q' "${STAGING_DIR}"
+    ssh "${REMOTE}" "rm -rf -- ${staging_quoted}" || cleanup_status=$?
   fi
-  if [[ -n "${PUBLIC_HEADER_FILE}" ]]; then
-    rm -f "${PUBLIC_HEADER_FILE}"
+  if [[ "${VERIFY_XRAY_ON_EXIT}" == "1" ]]; then
+    probe_external_xray || xray_status=$?
   fi
-  if [[ "${REMOTE_LOCK_FD_OPEN}" == "1" ]]; then
-    exec 9>&-
-    REMOTE_LOCK_FD_OPEN=0
-  fi
-  if [[ -n "${REMOTE_LOCK_PID}" ]]; then
-    lock_exit=0
-    wait "${REMOTE_LOCK_PID}" || lock_exit=$?
-    if [[ "${exit_code}" == "0" && "${lock_exit}" != "0" ]]; then
-      exit_code="${lock_exit}"
-    fi
-  fi
-  if [[ -n "${REMOTE_LOCK_CONTROL_DIR}" ]]; then
-    rm -rf "${REMOTE_LOCK_CONTROL_DIR}"
+  if [[ "${xray_status}" != "0" ]]; then
+    echo "Xray on public port 2443 became unreachable; no repair was attempted." >&2
+    exit_code="${xray_status}"
+  elif [[ "${exit_code}" == "0" && "${cleanup_status}" != "0" ]]; then
+    exit_code="${cleanup_status}"
   fi
   exit "${exit_code}"
 }
-trap cleanup EXIT
 
-acquire_remote_maintenance_lock() {
-  [[ "${MAINTENANCE_LOCK_WAIT_SECONDS}" =~ ^[0-9]+$ ]] || {
-    echo "MAINTENANCE_LOCK_WAIT_SECONDS must be an integer." >&2
-    return 1
-  }
-  printf -v lock_file_quoted '%q' "${MAINTENANCE_LOCK_FILE}"
-  printf -v lock_wait_quoted '%q' "${MAINTENANCE_LOCK_WAIT_SECONDS}"
-  REMOTE_LOCK_CONTROL_DIR="$(mktemp -d)"
-  lock_input="${REMOTE_LOCK_CONTROL_DIR}/input"
-  lock_output="${REMOTE_LOCK_CONTROL_DIR}/output"
-  mkfifo "${lock_input}"
-  : >"${lock_output}"
-  exec 9<>"${lock_input}"
-  REMOTE_LOCK_FD_OPEN=1
-  (
-    exec 9>&-
-    ssh "${REMOTE}" "set -eu; command -v flock >/dev/null || { echo 'Missing required command: flock' >&2; exit 127; }; exec flock --exclusive --wait ${lock_wait_quoted} ${lock_file_quoted} sh -c 'printf \"LOCKED\\n\"; cat >/dev/null'"
-  ) <"${lock_input}" >"${lock_output}" &
-  REMOTE_LOCK_PID=$!
-
-  deadline=$((SECONDS + MAINTENANCE_LOCK_WAIT_SECONDS + 30))
-  while (( SECONDS < deadline )); do
-    if grep -qx LOCKED "${lock_output}"; then
-      return 0
-    fi
-    if ! kill -0 "${REMOTE_LOCK_PID}" 2>/dev/null; then
-      wait "${REMOTE_LOCK_PID}" || true
-      REMOTE_LOCK_PID=""
-      echo "Could not acquire the production maintenance lock." >&2
-      return 1
-    fi
-    sleep 1
-  done
-  kill "${REMOTE_LOCK_PID}" 2>/dev/null || true
-  wait "${REMOTE_LOCK_PID}" 2>/dev/null || true
-  REMOTE_LOCK_PID=""
-  echo "Timed out waiting for the production maintenance lock." >&2
-  return 1
+stage_release_files() {
+  local app_dir_quoted
+  printf -v app_dir_quoted '%q' "${APP_DIR}"
+  STAGING_DIR="$(ssh "${REMOTE}" "install -d -m 0755 ${app_dir_quoted}; mktemp -d ${app_dir_quoted}/.release-stage.XXXXXX")" || return
+  [[ "${STAGING_DIR}" == "${APP_DIR}"/.release-stage.* ]] \
+    || { fail "Remote staging directory was not created under APP_DIR"; return; }
+  rsync -az --delete deploy/ "${REMOTE}:${STAGING_DIR}/deploy/" || return
+  rsync -az --delete scripts/ "${REMOTE}:${STAGING_DIR}/scripts/" || return
 }
 
-if [[ ! -f deploy/production.env ]]; then
-  echo "Missing deploy/production.env. Create it from deploy/production.env.example before deploying." >&2
-  exit 1
-fi
+run_remote_release() {
+  local mode="$1"
+  local app_dir_quoted staging_quoted image_quoted commit_quoted digest_quoted schema_quoted
+  local username_quoted lock_quoted wait_quoted script_quoted
+  printf -v app_dir_quoted '%q' "${APP_DIR}"
+  printf -v staging_quoted '%q' "${STAGING_DIR}"
+  printf -v image_quoted '%q' "${APP_IMAGE}"
+  printf -v commit_quoted '%q' "${DEPLOY_COMMIT_SHA}"
+  printf -v digest_quoted '%q' "${IMAGE_DIGEST}"
+  printf -v schema_quoted '%q' "${EXPECTED_SCHEMA_VERSION}"
+  printf -v username_quoted '%q' "${REGISTRY_USERNAME}"
+  printf -v lock_quoted '%q' "${MAINTENANCE_LOCK_FILE}"
+  printf -v wait_quoted '%q' "${MAINTENANCE_LOCK_WAIT_SECONDS}"
+  printf -v script_quoted '%q' "${STAGING_DIR}/scripts/remote-release.sh"
 
-acquire_remote_maintenance_lock
-probe_external_xray
-
-ssh "${REMOTE}" '
-set -eu
-if command -v sqlite3 >/dev/null 2>&1; then
-  exit 0
-elif command -v apt-get >/dev/null 2>&1; then
-  apt-get update >/dev/null
-  DEBIAN_FRONTEND=noninteractive apt-get install -y sqlite3 >/dev/null
-elif command -v apk >/dev/null 2>&1; then
-  apk add --no-cache sqlite >/dev/null
-elif command -v dnf >/dev/null 2>&1; then
-  dnf install -y sqlite >/dev/null
-elif command -v yum >/dev/null 2>&1; then
-  yum install -y sqlite >/dev/null
-else
-  echo "No supported package manager is available to install sqlite3." >&2
-  exit 127
-fi
-command -v sqlite3 >/dev/null
-'
-
-rsync -az --delete \
-  --exclude .git \
-  --exclude .codegraph \
-  --exclude node_modules \
-  --exclude .next \
-  --exclude .ops-secrets \
-  --exclude .playwright-mcp \
-  --exclude data \
-  --exclude test-results \
-  --exclude playwright-report \
-  --exclude '/*.png' \
-  ./ "${REMOTE}:${APP_DIR}/"
-
-printf -v app_dir_quoted '%q' "${APP_DIR}"
-printf -v preflight_quoted '%q' "${APP_DIR}/scripts/production-topology-preflight.sh"
-XRAY_FINGERPRINT="$(ssh "${REMOTE}" "APP_DIR=${app_dir_quoted} ${preflight_quoted} fingerprint")"
-[[ "${XRAY_FINGERPRINT}" =~ ^[0-9a-f]{64}$ ]] || {
-  echo "Production preflight did not return a valid Xray fingerprint." >&2
-  exit 1
+  printf '%s' "${REGISTRY_TOKEN}" | ssh "${REMOTE}" \
+    "APP_DIR=${app_dir_quoted} STAGING_DIR=${staging_quoted} APP_IMAGE=${image_quoted} DEPLOY_COMMIT_SHA=${commit_quoted} IMAGE_DIGEST=${digest_quoted} EXPECTED_SCHEMA_VERSION=${schema_quoted} REGISTRY_USERNAME=${username_quoted} MAINTENANCE_LOCK_FILE=${lock_quoted} MAINTENANCE_LOCK_WAIT_SECONDS=${wait_quoted} ${script_quoted} ${mode}"
 }
 
-ssh "${REMOTE}" "cd ${app_dir_quoted}/deploy && docker compose pull caddy >/dev/null && docker compose run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile"
+main() {
+  local mode="forward"
+  validate_deploy_inputs || return
+  trap cleanup EXIT
+  ssh "${REMOTE}" "command -v flock >/dev/null" || { fail "The VPS is missing flock"; return; }
+  probe_external_xray || { fail "Xray public port 2443 is unreachable before deployment"; return; }
+  VERIFY_XRAY_ON_EXIT=1
+  stage_release_files || return
+  if [[ "${ROLLBACK_ONLY}" == "1" ]]; then mode="rollback"; fi
+  run_remote_release "${mode}"
+}
 
-if [[ "${APP_ONLY}" == "1" ]]; then
-  ssh "${REMOTE}" "cd ${app_dir_quoted}/deploy && docker compose build app && docker compose up -d app worker"
-else
-  ssh "${REMOTE}" "cd ${app_dir_quoted}/deploy && docker compose up -d --build"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
 fi
-ssh "${REMOTE}" "cd ${app_dir_quoted}/deploy && docker compose up -d caddy && docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile"
-ssh "${REMOTE}" "cd ${app_dir_quoted}/deploy && for i in \$(seq 1 60); do docker compose exec -T app sh -lc 'wget -qO- http://127.0.0.1:3000/healthz' | grep -q '\"ok\":true' && exit 0; sleep 2; done; docker compose logs --tail=80 app; exit 1"
-ssh "${REMOTE}" "${app_dir_quoted}/scripts/install-haproxy-config.sh ${app_dir_quoted}/deploy/haproxy.cfg"
-
-PUBLIC_URL="${PUBLIC_URL:-https://blog.leesaitool.com}"
-PUBLIC_HEADER_FILE="$(mktemp)"
-PUBLIC_HEADERS_OK=0
-for _ in $(seq 1 30); do
-  if curl -fsS --max-time 15 -D "${PUBLIC_HEADER_FILE}" -o /dev/null "${PUBLIC_URL}/healthz" \
-    && grep -qi '^strict-transport-security:' "${PUBLIC_HEADER_FILE}" \
-    && grep -qi '^x-content-type-options:' "${PUBLIC_HEADER_FILE}" \
-    && grep -qi '^referrer-policy:' "${PUBLIC_HEADER_FILE}" \
-    && grep -qi '^content-security-policy:.*frame-ancestors' "${PUBLIC_HEADER_FILE}" \
-    && grep -qi '^permissions-policy:.*camera=()' "${PUBLIC_HEADER_FILE}" \
-    && ! grep -qi '^x-powered-by:' "${PUBLIC_HEADER_FILE}"; then
-    PUBLIC_HEADERS_OK=1
-    break
-  fi
-  sleep 2
-done
-if [[ "${PUBLIC_HEADERS_OK}" != "1" ]]; then
-  echo "Public security-header probe failed for ${PUBLIC_URL}." >&2
-  cat "${PUBLIC_HEADER_FILE}" >&2
-  exit 1
-fi
-rm -f "${PUBLIC_HEADER_FILE}"
-PUBLIC_HEADER_FILE=""
-
-verify_xray_unchanged 1
-XRAY_GUARD_VERIFIED=1
-
-ssh "${REMOTE}" "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"

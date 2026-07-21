@@ -125,7 +125,7 @@ else
     -e SITE_URL=https://blog.leesaitool.com \
     -e ADMIN_PASSWORD_HASH='scrypt$16384$8$1$ZHJpbGwtc2FsdC0xMjM0NTY3OA==$9zhZGvqilAcQdYQeN2H3cAQSUTb1xdrJ5nV2NwSLiFmM24H7v5fB1pFLo2tUfKj0vN+oJfG53XJguVjWfvVU3A==' \
     -e SESSION_SECRET=restore-drill-session-secret-0123456789 \
-    -e BUILD_SHA="${EXPECTED_COMMIT}" \
+    -e DEPLOY_COMMIT_SHA="${EXPECTED_COMMIT}" \
     -e IMAGE_DIGEST="${EXPECTED_DIGEST}" \
     -v "${TARGET_REAL}:/data" \
     "${IMAGE}" >/dev/null

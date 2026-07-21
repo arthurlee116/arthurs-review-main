@@ -42,4 +42,4 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/scripts ./scripts
 EXPOSE 3000
-CMD ["sh", "-c", "pnpm db:migrate && pnpm start"]
+CMD ["pnpm", "start"]

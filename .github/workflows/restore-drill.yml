@@ -71,16 +71,17 @@ jobs:
 
       - name: Read immutable release metadata
         run: |
-          APP_IMAGE="$(sed -n 's/^APP_IMAGE=//p' production-release.env)"
-          BUILD_SHA="$(sed -n 's/^BUILD_SHA=//p' production-release.env)"
-          IMAGE_DIGEST="$(sed -n 's/^IMAGE_DIGEST=//p' production-release.env)"
-          SCHEMA_VERSION="$(sed -n 's/^SCHEMA_VERSION=//p' production-release.env)"
+          APP_IMAGE="$(sed -n 's/^RELEASE_APP_IMAGE=//p' production-release.env)"
+          DEPLOY_COMMIT_SHA="$(sed -n 's/^RELEASE_COMMIT_SHA=//p' production-release.env)"
+          IMAGE_DIGEST="$(sed -n 's/^RELEASE_IMAGE_DIGEST=//p' production-release.env)"
+          SCHEMA_VERSION="$(sed -n 's/^RELEASE_SCHEMA_VERSION=//p' production-release.env)"
           [[ "$APP_IMAGE" == *@sha256:* ]]
-          [[ "$BUILD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$DEPLOY_COMMIT_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
-          [[ "$SCHEMA_VERSION" =~ ^[0-9]+$ ]]
-          printf 'APP_IMAGE=%s\nBUILD_SHA=%s\nIMAGE_DIGEST=%s\nSCHEMA_VERSION=%s\n' \
-            "$APP_IMAGE" "$BUILD_SHA" "$IMAGE_DIGEST" "$SCHEMA_VERSION" >> "$GITHUB_ENV"
+          [[ "${APP_IMAGE##*@}" == "$IMAGE_DIGEST" ]]
+          [[ "$SCHEMA_VERSION" =~ ^[1-9][0-9]*$ ]]
+          printf 'APP_IMAGE=%s\nDEPLOY_COMMIT_SHA=%s\nIMAGE_DIGEST=%s\nSCHEMA_VERSION=%s\n' \
+            "$APP_IMAGE" "$DEPLOY_COMMIT_SHA" "$IMAGE_DIGEST" "$SCHEMA_VERSION" >> "$GITHUB_ENV"
 
       - name: Log in to GHCR
         uses: docker/login-action@v4
@@ -93,6 +94,6 @@ jobs:
         run: |
           MAINTENANCE_LOCK_HELD=1 scripts/restore-backup.sh production-backup.tar.gz \
             --image "$APP_IMAGE" \
-            --expected-commit "$BUILD_SHA" \
+            --expected-commit "$DEPLOY_COMMIT_SHA" \
             --expected-digest "$IMAGE_DIGEST" \
             --expected-schema "$SCHEMA_VERSION"

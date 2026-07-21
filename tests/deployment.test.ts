@@ -1,5 +1,150 @@
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
+
+function runReleaseHarness({ failAt = "", rollbackFails = false }: { failAt?: string; rollbackFails?: boolean } = {}) {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-release-test-"));
+  const log = path.join(directory, "events.log");
+  const harness = `
+set -u
+source scripts/remote-release.sh
+record() { printf '%s\\n' "$1" >> "$RELEASE_TEST_LOG"; }
+step() { record "$1"; [[ "$FAIL_AT" != "$1" ]]; }
+prepare_candidate() { step prepare; }
+quiesce_and_snapshot_database() { step snapshot; }
+install_target_configuration() { step install; }
+migrate_target_database() { step migrate; }
+start_target_app() { step app; }
+verify_target_internal() { step internal; }
+activate_target_proxy() { step proxy; }
+verify_target_public() { step version; }
+start_target_worker() { step worker; }
+finalize_forward_release() { step finalize; }
+rollback_candidate() { record rollback; [[ "$ROLLBACK_FAILS" != 1 ]]; }
+run_forward_release
+`;
+  const result = spawnSync("bash", ["-c", harness], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      RELEASE_TEST_LOG: log,
+      FAIL_AT: failAt,
+      ROLLBACK_FAILS: rollbackFails ? "1" : "0",
+    },
+  });
+  const events = fs.existsSync(log) ? fs.readFileSync(log, "utf8").trim().split("\n").filter(Boolean) : [];
+  fs.rmSync(directory, { recursive: true, force: true });
+  return { status: result.status, stderr: result.stderr, events };
+}
+
+function validateReleaseInputs(appImage: string) {
+  return spawnSync("bash", ["-c", 'source scripts/remote-release.sh; if validate_release_inputs; then exit 0; else exit 1; fi'], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      APP_IMAGE: appImage,
+      DEPLOY_COMMIT_SHA: "a".repeat(40),
+      IMAGE_DIGEST: `sha256:${"b".repeat(64)}`,
+      EXPECTED_SCHEMA_VERSION: "8",
+      REGISTRY_USERNAME: "ci-user",
+    },
+  });
+}
+
+function runManualRollbackHarness({ snapshotFails = false, stateWriteFails = false } = {}) {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-manual-rollback-test-"));
+  const appDirectory = path.join(directory, "app");
+  const log = path.join(directory, "events.log");
+  const preflight = path.join(appDirectory, "scripts", "production-topology-preflight.sh");
+  fs.mkdirSync(path.dirname(preflight), { recursive: true });
+  fs.writeFileSync(preflight, `#!/usr/bin/env bash\nif [[ "\${1:-}" == fingerprint ]]; then printf '%s\\n' '${"c".repeat(64)}'; fi\n`);
+  fs.chmodSync(preflight, 0o700);
+
+  const harness = `
+source scripts/remote-release.sh
+record() { printf '%s\\n' "$1" >> "$RELEASE_TEST_LOG"; }
+id() { printf '0\\n'; }
+install_server_dependencies() { :; }
+load_current_release() {
+  CURRENT_WAS_IMMUTABLE=1
+  CURRENT_APP_IMAGE="ghcr.io/example/blog@sha256:${"d".repeat(64)}"
+  CURRENT_COMMIT_SHA="${"e".repeat(40)}"
+  CURRENT_IMAGE_DIGEST="sha256:${"d".repeat(64)}"
+  CURRENT_SCHEMA_VERSION=8
+}
+load_recorded_previous() {
+  RELEASE_APP_IMAGE="ghcr.io/example/blog@sha256:${"f".repeat(64)}"
+  RELEASE_COMMIT_SHA="${"a".repeat(40)}"
+  RELEASE_IMAGE_DIGEST="sha256:${"f".repeat(64)}"
+  RELEASE_SCHEMA_VERSION=7
+  RELEASE_CONFIG_SNAPSHOT="$STATE_DIR/target-config.tar.gz"
+  RELEASE_DATABASE_SNAPSHOT="$STATE_DIR/target.sqlite3"
+  RELEASE_HAPROXY_SNAPSHOT="$STATE_DIR/target-haproxy.cfg"
+}
+pull_recorded_image() { record pull; }
+quiesce_and_snapshot_database() {
+  record snapshot
+  CONFIG_SNAPSHOT="$STATE_DIR/backout-config.tar.gz"
+  DATABASE_SNAPSHOT="$STATE_DIR/backout.sqlite3"
+  HAPROXY_SNAPSHOT="$STATE_DIR/backout-haproxy.cfg"
+  [[ "$SNAPSHOT_FAILS" != 1 ]]
+}
+restore_configuration() { record restore-config; }
+restore_database() { record restore-db; }
+production_compose() { record "compose:$*"; }
+wait_for_internal_release() { record internal; }
+activate_recovered_proxy() { record proxy; }
+wait_for_public_release() { record public; }
+service_is_running() { record worker; }
+write_release_file() {
+  record "state:$1"
+  if [[ "$STATE_WRITE_FAILS" == 1 && "$1" == "$CURRENT_RELEASE_FILE" ]]; then return 1; fi
+}
+rollback_candidate() { record rollback; }
+run_recorded_rollback
+`;
+  const result = spawnSync("bash", ["-c", harness], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      APP_DIR: appDirectory,
+      STATE_DIR: path.join(directory, "state"),
+      REGISTRY_USERNAME: "ci-user",
+      RELEASE_TEST_LOG: log,
+      SNAPSHOT_FAILS: snapshotFails ? "1" : "0",
+      STATE_WRITE_FAILS: stateWriteFails ? "1" : "0",
+    },
+  });
+  const events = fs.existsSync(log) ? fs.readFileSync(log, "utf8").trim().split("\n").filter(Boolean) : [];
+  fs.rmSync(directory, { recursive: true, force: true });
+  return { status: result.status, stderr: result.stderr, events };
+}
+
+function runUnmutatedRollbackHarness() {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-unmutated-rollback-test-"));
+  const log = path.join(directory, "events.log");
+  const harness = `
+source scripts/remote-release.sh
+record() { printf '%s\\n' "$1" >> "$RELEASE_TEST_LOG"; }
+production_compose() { record "compose:$*"; }
+restore_release_state_files() { record state; }
+verify_previous_release() { record verify; }
+rollback_candidate
+`;
+  const result = spawnSync("bash", ["-c", harness], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: { ...process.env, RELEASE_TEST_LOG: log },
+  });
+  const events = fs.existsSync(log) ? fs.readFileSync(log, "utf8").trim().split("\n").filter(Boolean) : [];
+  fs.rmSync(directory, { recursive: true, force: true });
+  return { status: result.status, events };
+}
 
 describe("deployment scripts", () => {
   it("installs an automatic daily backup schedule during server bootstrap", () => {
@@ -49,7 +194,7 @@ describe("deployment scripts", () => {
   });
 
   it("uses one server maintenance lock for backup, deployment, and restore", () => {
-    for (const script of ["scripts/backup-data.sh", "scripts/deploy.sh", "scripts/restore-backup.sh"]) {
+    for (const script of ["scripts/backup-data.sh", "scripts/deploy.sh", "scripts/remote-release.sh", "scripts/restore-backup.sh"]) {
       const source = fs.readFileSync(script, "utf8");
       expect(source).toContain("/var/lock/arthurs-review-maintenance.lock");
       expect(source).toContain("flock");
@@ -57,9 +202,14 @@ describe("deployment scripts", () => {
 
     const backup = fs.readFileSync("scripts/backup-data.sh", "utf8");
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const remoteRelease = fs.readFileSync("scripts/remote-release.sh", "utf8");
     const restore = fs.readFileSync("scripts/restore-backup.sh", "utf8");
     expect(backup.indexOf("exec flock")).toBeLessThan(backup.indexOf("docker compose stop app worker"));
-    expect(deploy.indexOf("acquire_remote_maintenance_lock\n")).toBeLessThan(deploy.indexOf("rsync -az --delete"));
+    expect(deploy).toContain("MAINTENANCE_LOCK_FILE");
+    expect(deploy).toContain("remote-release.sh");
+    expect(remoteRelease.indexOf("exec flock")).toBeLessThan(remoteRelease.indexOf("run_forward_release"));
+    expect(remoteRelease).toContain('mkdir -p "$(dirname "${MAINTENANCE_LOCK_FILE}")"');
+    expect(remoteRelease).not.toContain('install -d -m 0700 "$(dirname "${MAINTENANCE_LOCK_FILE}")"');
     expect(restore.indexOf("exec flock")).toBeLessThan(restore.indexOf('${SCRIPT_DIR}/verify-backup.sh'));
   });
 
@@ -79,6 +229,12 @@ describe("deployment scripts", () => {
     expect(workflow).toContain('cron: "15 4 1 * *"');
     expect(workflow).toContain("scripts/restore-backup.sh");
     expect(workflow).toContain("--image");
+    expect(workflow).toContain("RELEASE_APP_IMAGE");
+    expect(workflow).toContain("RELEASE_COMMIT_SHA");
+    expect(workflow).toContain("RELEASE_IMAGE_DIGEST");
+    expect(workflow).toContain("RELEASE_SCHEMA_VERSION");
+    expect(workflow).toContain('[[ "${APP_IMAGE##*@}" == "$IMAGE_DIGEST" ]]');
+    expect(workflow).not.toContain("BUILD_SHA");
     expect(workflow).not.toContain("/var/www/arthurs-review/data:/data");
   });
 
@@ -91,19 +247,23 @@ describe("deployment scripts", () => {
   });
 
   it("requires the app to become healthy after every deployment mode", () => {
-    const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const deploy = fs.readFileSync("scripts/remote-release.sh", "utf8");
     const health = fs.readFileSync("src/app/healthz/route.ts", "utf8");
-    const commonDeploymentStart = deploy.indexOf("docker compose up -d caddy");
-    const afterDeploymentBranch = deploy.slice(commonDeploymentStart);
 
-    expect(commonDeploymentStart).toBeGreaterThanOrEqual(0);
-    expect(afterDeploymentBranch).toContain("/healthz");
-    expect(afterDeploymentBranch).toContain("docker compose logs --tail=80 app");
+    expect(deploy).toContain("verify_target_internal");
+    expect(deploy).toContain("verify_target_public");
+    expect(deploy).toContain("verify_previous_release");
+    expect(deploy).toContain("verify_current_release_before_snapshot || return");
+    expect(deploy.indexOf("verify_current_release_before_snapshot || return")).toBeLessThan(
+      deploy.indexOf("production_compose stop app"),
+    );
+    expect(deploy).toContain("/healthz");
+    expect(deploy).toContain("docker compose logs --tail=80 app");
     expect(health).toContain("await connection()");
   });
 
   it("installs the SQLite CLI through the VPS package manager", () => {
-    const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const deploy = fs.readFileSync("scripts/remote-release.sh", "utf8");
 
     expect(deploy).toContain("command -v apt-get");
     expect(deploy).toContain("command -v apk");
@@ -151,9 +311,11 @@ describe("deployment scripts", () => {
 
     const preflight = fs.readFileSync("scripts/production-topology-preflight.sh", "utf8");
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const remoteRelease = fs.readFileSync("scripts/remote-release.sh", "utf8");
     const scripts = [
       preflight,
       deploy,
+      remoteRelease,
       fs.readFileSync("scripts/switch-xray-to-caddy.sh", "utf8"),
       fs.readFileSync("scripts/remote-switch-xray-caddy.sh", "utf8"),
     ].join("\n");
@@ -167,9 +329,9 @@ describe("deployment scripts", () => {
     expect(preflight).toContain('require_xray "${XRAY_9443_UNIT}" "${XRAY_9443_CONFIG}" 9443');
     expect(preflight).toContain("--expect-topology");
     expect(deploy).toContain("probe_external_xray");
-    expect(deploy).toContain('${preflight_quoted} fingerprint');
-    expect(deploy).toContain('${preflight_quoted} verify');
-    expect(deploy).toContain("install-haproxy-config.sh");
+    expect(remoteRelease).toContain("production-topology-preflight.sh");
+    expect(remoteRelease).toContain("install-haproxy-config.sh");
+    expect(remoteRelease).toContain("XRAY_FINGERPRINT");
     expect(scripts).not.toMatch(/systemctl\s+(?:stop|restart|disable|enable).*xray/i);
   });
 
@@ -213,7 +375,8 @@ describe("deployment scripts", () => {
     const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
     const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as { scripts: Record<string, string> };
 
-    expect(compose.match(/image: arthurs-review-app:local/g)).toHaveLength(2);
+    expect(compose.match(/image: \$\{APP_IMAGE:\?APP_IMAGE must contain an immutable digest\}/g)).toHaveLength(2);
+    expect(compose).not.toContain("build:");
     expect(compose).toContain("worker:");
     expect(compose).toContain('command: ["pnpm", "jobs:work"]');
     expect(compose.match(/\/var\/www\/arthurs-review\/data:\/data/g)).toHaveLength(2);
@@ -222,11 +385,11 @@ describe("deployment scripts", () => {
 
   it("provides the production site URL while Next.js metadata is built", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
-    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
+    const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
 
     expect(dockerfile).toContain("ARG SITE_URL");
     expect(dockerfile).toContain("ENV SITE_URL=$SITE_URL");
-    expect(compose).toContain("args:\n        SITE_URL: https://blog.leesaitool.com");
+    expect(workflow).toContain("SITE_URL=https://blog.leesaitool.com");
   });
 
   it("resolves the robots sitemap URL from the runtime environment", () => {
@@ -283,6 +446,7 @@ describe("deployment scripts", () => {
     expect(workflow).toContain('"$IMAGE_TAG" pnpm jobs:work');
     expect(workflow).toContain('docker network create "$E2E_NETWORK"');
     expect(workflow).toContain("pending_cache_jobs");
+    expect(workflow).toContain("EXPECTED_SCHEMA_VERSION");
     expect(workflow).toContain("type = ? and status in (?, ?)");
     expect(workflow).not.toContain("run: pnpm build");
     expect(build).toBeGreaterThanOrEqual(0);
@@ -304,12 +468,9 @@ describe("deployment scripts", () => {
   it("sets production security headers and removes framework branding", () => {
     const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
     const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
-    const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const deploy = fs.readFileSync("scripts/remote-release.sh", "utf8");
     const nextConfig = fs.readFileSync("next.config.ts", "utf8");
-    const commonDeploymentStart = deploy.indexOf("docker compose up -d caddy");
-    const afterDeploymentBranch = deploy.slice(commonDeploymentStart);
 
-    expect(commonDeploymentStart).toBeGreaterThanOrEqual(0);
     expect(caddy).toContain("Strict-Transport-Security");
     expect(caddy).toContain("X-Content-Type-Options nosniff");
     expect(caddy).toContain("Referrer-Policy strict-origin-when-cross-origin");
@@ -317,15 +478,15 @@ describe("deployment scripts", () => {
     expect(caddy).toContain("frame-ancestors 'none'");
     expect(caddy).toContain("Permissions-Policy");
     expect(caddy).toContain("header_down -X-Powered-By");
-    expect(afterDeploymentBranch).toContain("caddy validate");
-    expect(afterDeploymentBranch).toContain("caddy reload");
-    expect(afterDeploymentBranch).toContain("PUBLIC_URL");
-    expect(afterDeploymentBranch).toContain("strict-transport-security:");
-    expect(afterDeploymentBranch).toContain("x-content-type-options:");
-    expect(afterDeploymentBranch).toContain("referrer-policy:");
-    expect(afterDeploymentBranch).toContain("content-security-policy:");
-    expect(afterDeploymentBranch).toContain("permissions-policy:");
-    expect(afterDeploymentBranch).toContain("x-powered-by:");
+    expect(deploy).toContain("caddy validate");
+    expect(deploy).toContain("caddy reload");
+    expect(deploy).toContain("PUBLIC_URL");
+    expect(deploy).toContain("strict-transport-security:");
+    expect(deploy).toContain("x-content-type-options:");
+    expect(deploy).toContain("referrer-policy:");
+    expect(deploy).toContain("content-security-policy:");
+    expect(deploy).toContain("permissions-policy:");
+    expect(deploy).toContain("x-powered-by:");
     expect(nextConfig).toContain("poweredByHeader: false");
     expect(nextConfig).toContain('key: "Strict-Transport-Security"');
     expect(nextConfig).toContain('key: "X-Content-Type-Options"');
@@ -352,6 +513,126 @@ describe("deployment scripts", () => {
     expect(caddy).toContain("roll_keep_for 720h");
     expect(caddy).toContain("format json");
     expect(caddy).not.toContain("log_credentials");
+  });
+
+  it("rejects moving image tags and accepts one exact digest", () => {
+    const moving = validateReleaseInputs("ghcr.io/arthurlee116/arthurs-review-main:main");
+    const immutable = validateReleaseInputs(`ghcr.io/arthurlee116/arthurs-review-main@sha256:${"b".repeat(64)}`);
+
+    expect(moving.status).not.toBe(0);
+    expect(immutable.status, immutable.stderr).toBe(0);
+  });
+
+  it("runs one forward transaction and starts the worker only after public version verification", () => {
+    const result = runReleaseHarness();
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.events).toEqual([
+      "prepare",
+      "snapshot",
+      "install",
+      "migrate",
+      "app",
+      "internal",
+      "proxy",
+      "version",
+      "worker",
+      "finalize",
+    ]);
+  });
+
+  it.each([
+    ["migrate", ["prepare", "snapshot", "install", "migrate", "rollback"]],
+    ["internal", ["prepare", "snapshot", "install", "migrate", "app", "internal", "rollback"]],
+    ["version", ["prepare", "snapshot", "install", "migrate", "app", "internal", "proxy", "version", "rollback"]],
+  ])("rolls back when %s fails", (failAt, expectedEvents) => {
+    const result = runReleaseHarness({ failAt });
+
+    expect(result.status).not.toBe(0);
+    expect(result.events).toEqual(expectedEvents);
+    expect(result.events).not.toContain("worker");
+    expect(result.events).not.toContain("finalize");
+  });
+
+  it("returns an unmistakable failure when rollback also fails", () => {
+    const result = runReleaseHarness({ failAt: "internal", rollbackFails: true });
+
+    expect(result.status).toBe(70);
+    expect(result.events.at(-1)).toBe("rollback");
+  });
+
+  it("restores the current release when a manual rollback snapshot fails", () => {
+    const result = runManualRollbackHarness({ snapshotFails: true });
+
+    expect(result.status).not.toBe(0);
+    expect(result.events).toEqual(["pull", "snapshot", "rollback"]);
+  });
+
+  it("restores the current release when manual rollback state cannot be committed", () => {
+    const result = runManualRollbackHarness({ stateWriteFails: true });
+
+    expect(result.status).not.toBe(0);
+    expect(result.events.at(-1)).toBe("rollback");
+  });
+
+  it("does not stop the current app when the candidate never mutated production", () => {
+    const result = runUnmutatedRollbackHarness();
+
+    expect(result.status).toBe(0);
+    expect(result.events).toEqual([]);
+  });
+
+  it("pulls with an ephemeral registry token, verifies metadata, and records atomic release state", () => {
+    const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const remoteRelease = fs.readFileSync("scripts/remote-release.sh", "utf8");
+
+    expect(deploy).toContain('deploy/ "${REMOTE}:${STAGING_DIR}/deploy/"');
+    expect(deploy).toContain('scripts/ "${REMOTE}:${STAGING_DIR}/scripts/"');
+    expect(deploy).not.toContain('./ "${REMOTE}:${APP_DIR}/"');
+    expect(deploy).toContain('printf \'%s\' "${REGISTRY_TOKEN}"');
+    expect(remoteRelease).toContain("docker login ghcr.io");
+    expect(remoteRelease).toContain("--password-stdin");
+    expect(remoteRelease.indexOf("docker login ghcr.io")).toBeLessThan(remoteRelease.indexOf('docker pull "${APP_IMAGE}"'));
+    expect(remoteRelease.indexOf('docker pull "${APP_IMAGE}"')).toBeLessThan(remoteRelease.indexOf("docker logout ghcr.io"));
+    expect(remoteRelease).toContain("org.opencontainers.image.revision");
+    expect(remoteRelease).toContain("current-release.env");
+    expect(remoteRelease).toContain("previous-release.env");
+    expect(remoteRelease).toContain("DATABASE_SNAPSHOT");
+    expect(remoteRelease).toContain("CONFIG_SNAPSHOT");
+    expect(remoteRelease).toContain("/version");
+    expect(remoteRelease).toContain('"commit":"${DEPLOY_COMMIT_SHA}"');
+    expect(remoteRelease).toContain('"digest":"${IMAGE_DIGEST}"');
+    expect(remoteRelease).toContain('"schemaVersion":${EXPECTED_SCHEMA_VERSION}');
+  });
+
+  it("can recover the legacy app-only deployment without depending on legacy helper scripts", () => {
+    const remoteRelease = fs.readFileSync("scripts/remote-release.sh", "utf8");
+    const recoveredProxy = remoteRelease.slice(
+      remoteRelease.indexOf("activate_recovered_proxy()"),
+      remoteRelease.indexOf("verify_previous_release()"),
+    );
+    const rollback = remoteRelease.slice(
+      remoteRelease.indexOf("rollback_candidate()"),
+      remoteRelease.indexOf("run_forward_release()"),
+    );
+
+    expect(recoveredProxy).toContain("install_recovered_haproxy");
+    expect(recoveredProxy).not.toContain("/scripts/install-haproxy-config.sh");
+    expect(rollback).toContain("production_compose stop worker");
+    expect(rollback).toContain("production_compose stop app");
+    expect(rollback).not.toContain("production_compose stop app worker");
+  });
+
+  it("starts the image without hidden migrations and offers a previous-release-only manual rollback", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const rollbackWorkflow = fs.readFileSync(".github/workflows/rollback.yml", "utf8");
+
+    expect(dockerfile).toContain('CMD ["pnpm", "start"]');
+    expect(dockerfile).not.toContain("pnpm db:migrate && pnpm start");
+    expect(rollbackWorkflow).toContain("workflow_dispatch:");
+    expect(rollbackWorkflow).toContain('ROLLBACK_ONLY: "1"');
+    expect(rollbackWorkflow).toContain("./scripts/deploy.sh");
+    expect(rollbackWorkflow).toContain("previous-release.env");
   });
 
   it("marks protected database-backed pages as intentionally blocking", () => {
