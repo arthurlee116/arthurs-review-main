@@ -378,25 +378,37 @@ describe("ArticleEditor", () => {
 });
 
 describe("TranslateMissingEnglishButton", () => {
-  it("shows saved batch translation results", async () => {
-    const user = userEvent.setup();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        Response.json({
-          summary: { attempted: 2, succeeded: 1, failed: 1 },
-          successes: [{ id: 1, titleZh: "道德与理性" }],
-          failures: [{ id: 2, titleZh: "反战的人们，醒醒了！", error: "OpenRouter request failed with status 429." }],
-        }),
-      ),
-    );
+  it("polls and shows durable batch progress", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        Response.json(
+          { batch: { id: "batch-1", total: 2, queued: 2, running: 0, succeeded: 0, dead: 0 } },
+          { status: 202 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        Response.json({ batch: { id: "batch-1", total: 2, queued: 0, running: 0, succeeded: 1, dead: 1 } }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
 
     render(<TranslateMissingEnglishButton />);
 
-    await user.click(screen.getByRole("button", { name: "Translate missing English" }));
+    fireEvent.click(screen.getByRole("button", { name: "Translate missing English" }));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(screen.getByText("Queued 2. Running 0. Completed 0. Failed 0.")).toBeVisible();
 
-    expect(await screen.findByText("Attempted 2. Saved 1. Failed 1.")).toBeVisible();
-    expect(screen.getByText("Saved: 道德与理性")).toBeVisible();
-    expect(screen.getByText("Failed: 反战的人们，醒醒了！ - OpenRouter request failed with status 429.")).toBeVisible();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000);
+    });
+
+    expect(screen.getByText("Queued 0. Running 0. Completed 1. Failed 1.")).toBeVisible();
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/studio/api/translations/published-missing?batch=batch-1", {
+      signal: expect.any(AbortSignal),
+    });
   });
 });

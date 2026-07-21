@@ -9,11 +9,6 @@ vi.mock("@/app/studio/api/_helpers", async (importOriginal) => ({
   requireApiAdmin: vi.fn(async () => null),
 }));
 
-vi.mock("@/lib/translation/service", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/translation/service")>()),
-  translatePublishedMissingEnglish: vi.fn(),
-}));
-
 let tmpDir: string;
 
 beforeEach(async () => {
@@ -75,20 +70,15 @@ describe("publication-proof mutation triggers", () => {
     expect(new Set(proofJobs.map((job) => JSON.parse(job.payload).revisionId)).size).toBe(2);
   });
 
-  it("does not create a public proof when batch translation only saves a draft", async () => {
+  it("does not create another proof merely by queuing a translation batch", async () => {
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
     const { getDb } = await import("@/lib/db/connection");
-    const { translatePublishedMissingEnglish } = await import("@/lib/translation/service");
-    const article = publishArticle(createArticle(articleInput()).id);
-    vi.mocked(translatePublishedMissingEnglish).mockResolvedValue({
-      summary: { attempted: 1, succeeded: 1, failed: 0 },
-      successes: [{ id: article.id, titleZh: article.titleZh }],
-      failures: [],
-    });
+    publishArticle(createArticle(articleInput()).id);
     const route = await import("@/app/studio/api/translations/published-missing/route");
 
     await route.POST(new Request("http://localhost/studio/api/translations/published-missing", { method: "POST" }));
 
     expect(getDb().prepare("select count(*) as count from jobs where type = 'proof.create'").get()).toEqual({ count: 1 });
+    expect(getDb().prepare("select count(*) as count from jobs where type = 'translation.article'").get()).toEqual({ count: 1 });
   });
 });

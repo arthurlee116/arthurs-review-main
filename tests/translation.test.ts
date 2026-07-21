@@ -4,6 +4,11 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { articleInput } from "@/test/factories";
 
+vi.mock("@/app/studio/api/_helpers", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/app/studio/api/_helpers")>()),
+  requireApiAdmin: vi.fn(async () => null),
+}));
+
 afterEach(() => {
   vi.unstubAllGlobals();
   delete process.env.OPENROUTER_API_KEY;
@@ -237,34 +242,183 @@ describe("translation article service", () => {
     });
   });
 
-  it("batch translates published missing-English articles and records a retry failure", async () => {
+  it("returns 202 after durably queuing one exact-revision job per article", async () => {
     await setupDb();
-    const { createArticle, getArticleById, publishArticle } = await import("@/lib/services/articles");
-    const { translatePublishedMissingEnglish } = await import("@/lib/translation/service");
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
     const first = createArticle(articleInput({ slug: "first", titleZh: "第一篇", titleEn: null, excerptEn: null, bodyEn: null }));
     const second = createArticle(articleInput({ slug: "second", titleZh: "第二篇", titleEn: null, excerptEn: null, bodyEn: null }));
-    publishArticle(first.id);
-    publishArticle(second.id);
-    const calls: string[] = [];
+    const firstPublished = publishArticle(first.id);
+    const secondPublished = publishArticle(second.id);
+    getDb().prepare("delete from jobs").run();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const route = await import("@/app/studio/api/translations/published-missing/route");
 
-    const result = await translatePublishedMissingEnglish({
-      model: "inclusionai/ring-2.6-1t:free",
-      translate: async (input) => {
-        calls.push(input.titleZh);
-        if (input.titleZh === "第二篇") throw new Error("model exploded");
-        return {
-          titleEn: `${input.titleZh} EN`,
-          excerptEn: `${input.excerptZh} EN`,
-          bodyEn: `${input.bodyZh} EN`,
-        };
-      },
+    const response = await route.POST(new Request("http://localhost/studio/api/translations/published-missing", { method: "POST" }));
+    const body = await response.json() as { batch: { id: string; total: number; queued: number; running: number; succeeded: number; dead: number } };
+
+    expect(response.status).toBe(202);
+    expect(body.batch).toMatchObject({ id: expect.any(String), total: 2, queued: 2, running: 0, succeeded: 0, dead: 0 });
+    expect(fetchMock).not.toHaveBeenCalled();
+    const jobs = getDb().prepare("select payload from jobs where type = 'translation.article' order by id").all() as Array<{ payload: string }>;
+    expect(jobs.map((row) => JSON.parse(row.payload))).toEqual([
+      expect.objectContaining({ batchId: body.batch.id, articleId: second.id, sourceRevisionId: secondPublished.revisionId }),
+      expect.objectContaining({ batchId: body.batch.id, articleId: first.id, sourceRevisionId: firstPublished.revisionId }),
+    ]);
+    const progressResponse = await route.GET(
+      new Request(`http://localhost/studio/api/translations/published-missing?batch=${body.batch.id}`),
+    );
+    await expect(progressResponse.json()).resolves.toEqual({ batch: body.batch });
+  });
+
+  it("publishes a translated revision and durable proof/cache work exactly once", async () => {
+    await setupDb();
+    process.env.OPENROUTER_API_KEY = "test-key";
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, getArticleById, getPublishedArticle, publishArticle } = await import("@/lib/services/articles");
+    const source = publishArticle(createArticle(articleInput({ titleZh: "待翻译", bodyZh: "中文源文" })).id);
+    getDb().prepare("delete from jobs").run();
+    const { enqueuePublishedMissingEnglishTranslations, getTranslationBatchProgress } = await import("@/lib/translation/service");
+    const batch = enqueuePublishedMissingEnglishTranslations({ model: "test-model" });
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        choices: [{ message: { content: JSON.stringify({ titleEn: "Translated", excerptEn: "English excerpt", bodyEn: "English body" }) } }],
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const { createJobHandlers } = await import("@/lib/jobs/handlers");
+    const { getJob, runNextJob } = await import("@/lib/jobs/queue");
+    const handlers = createJobHandlers();
+    const completed = await runNextJob({ workerId: "translator", handlers, baseDelayMs: 0 });
+
+    expect(completed).toMatchObject({ type: "translation.article", status: "succeeded" });
+    expect(getTranslationBatchProgress(batch.id)).toMatchObject({ total: 1, queued: 0, running: 0, succeeded: 1, dead: 0 });
+    expect(getPublishedArticle("commentary", source.slug)).toMatchObject({
+      titleZh: "待翻译",
+      titleEn: "Translated",
+      bodyZh: "中文源文",
+      bodyEn: "English body",
     });
+    expect(getArticleById(source.id, { includeDraft: true })?.titleEn).toBe("Translated");
+    expect(getDb().prepare("select count(*) as count from article_revisions where article_id = ?").get(source.id)).toEqual({ count: 2 });
+    expect(getDb().prepare("select type from jobs where type in ('proof.create', 'cache.invalidate') order by id").all()).toEqual([
+      { type: "proof.create" },
+      { type: "cache.invalidate" },
+    ]);
 
-    expect(result.summary).toEqual({ attempted: 2, succeeded: 1, failed: 1 });
-    expect(result.successes).toEqual([{ id: first.id, titleZh: "第一篇" }]);
-    expect(result.failures).toEqual([{ id: second.id, titleZh: "第二篇", error: "model exploded" }]);
-    expect(calls).toEqual(["第二篇", "第二篇", "第一篇"]);
-    expect(getArticleById(first.id, { includeDraft: true })?.titleEn).toBe("第一篇 EN");
-    expect(getArticleById(second.id, { includeDraft: true })?.titleEn).toBeNull();
+    await handlers["translation.article"]!(getJob(completed!.id)!);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(getDb().prepare("select count(*) as count from article_revisions where article_id = ?").get(source.id)).toEqual({ count: 2 });
+  });
+
+  it("keeps a newer manual draft while translating the still-current published revision", async () => {
+    await setupDb();
+    process.env.OPENROUTER_API_KEY = "test-key";
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, getArticleById, getPublishedArticle, publishArticle, updateArticle } = await import("@/lib/services/articles");
+    const source = publishArticle(createArticle(articleInput({ titleZh: "线上中文", bodyZh: "线上正文" })).id);
+    getDb().prepare("delete from jobs").run();
+    const manualDraft = updateArticle(
+      source.id,
+      articleInput({ titleZh: "人工新草稿", bodyZh: "人工新正文" }),
+      source.draftRevisionId,
+    );
+    const { enqueuePublishedMissingEnglishTranslations } = await import("@/lib/translation/service");
+    enqueuePublishedMissingEnglishTranslations({ model: "test-model" });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({ choices: [{ message: { content: JSON.stringify({ titleEn: "Online English", excerptEn: "Excerpt", bodyEn: "Body" }) } }] }),
+      ),
+    );
+    const { createJobHandlers } = await import("@/lib/jobs/handlers");
+    const { runNextJob } = await import("@/lib/jobs/queue");
+
+    await runNextJob({ workerId: "translator", handlers: createJobHandlers(), baseDelayMs: 0 });
+
+    expect(getArticleById(source.id, { includeDraft: true })).toMatchObject({
+      revisionId: manualDraft.revisionId,
+      titleZh: "人工新草稿",
+      titleEn: null,
+      bodyZh: "人工新正文",
+    });
+    expect(getPublishedArticle("commentary", source.slug)).toMatchObject({
+      titleZh: "线上中文",
+      titleEn: "Online English",
+      bodyZh: "线上正文",
+      bodyEn: "Body",
+    });
+  });
+
+  it("completes an obsolete job without calling the model or overwriting a newer publish", async () => {
+    await setupDb();
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, getPublishedArticle, publishArticle, updateArticle } = await import("@/lib/services/articles");
+    const source = publishArticle(createArticle(articleInput({ titleZh: "旧发布" })).id);
+    getDb().prepare("delete from jobs").run();
+    const { enqueuePublishedMissingEnglishTranslations, getTranslationBatchProgress } = await import("@/lib/translation/service");
+    const batch = enqueuePublishedMissingEnglishTranslations({ model: "test-model" });
+    updateArticle(source.id, articleInput({ titleZh: "新发布" }), source.draftRevisionId);
+    const newer = publishArticle(source.id);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const { createJobHandlers } = await import("@/lib/jobs/handlers");
+    const { runNextJob } = await import("@/lib/jobs/queue");
+
+    await runNextJob({ workerId: "translator", handlers: createJobHandlers(), baseDelayMs: 0 });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(getTranslationBatchProgress(batch.id)).toMatchObject({ succeeded: 1, dead: 0 });
+    expect(getPublishedArticle("commentary", newer.slug)).toMatchObject({ revisionId: newer.revisionId, titleZh: "新发布", titleEn: null });
+  });
+
+  it("rechecks the published pointer after an in-flight model call", async () => {
+    await setupDb();
+    const { createArticle, getPublishedArticle, publishArticle, updateArticle } = await import("@/lib/services/articles");
+    const source = publishArticle(createArticle(articleInput({ titleZh: "模型调用前" })).id);
+    let release!: (value: { titleEn: string; excerptEn: string; bodyEn: string }) => void;
+    const translate = vi.fn(() => new Promise<{ titleEn: string; excerptEn: string; bodyEn: string }>((resolve) => { release = resolve; }));
+    const { translatePublishedRevision } = await import("@/lib/translation/service");
+    const running = translatePublishedRevision({ articleId: source.id, sourceRevisionId: source.revisionId, model: "test-model", translate });
+    await vi.waitFor(() => expect(translate).toHaveBeenCalledOnce());
+
+    updateArticle(source.id, articleInput({ titleZh: "模型调用期间的新版本" }), source.draftRevisionId);
+    const newer = publishArticle(source.id);
+    release({ titleEn: "Stale English", excerptEn: "Stale excerpt", bodyEn: "Stale body" });
+
+    await expect(running).resolves.toEqual({ status: "obsolete" });
+    expect(getPublishedArticle("commentary", newer.slug)).toMatchObject({ revisionId: newer.revisionId, titleZh: "模型调用期间的新版本", titleEn: null });
+  });
+
+  it("rolls the translated revision back when its outbox insert fails", async () => {
+    await setupDb();
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, getPublishedArticle, publishArticle } = await import("@/lib/services/articles");
+    const source = publishArticle(createArticle(articleInput({ titleZh: "事务源版本" })).id);
+    const db = getDb();
+    db.prepare("delete from jobs").run();
+    db.exec(`
+      create trigger reject_translation_proof_job
+      before insert on jobs
+      when new.type = 'proof.create'
+      begin
+        select raise(abort, 'translation outbox unavailable');
+      end
+    `);
+    const { translatePublishedRevision } = await import("@/lib/translation/service");
+
+    await expect(
+      translatePublishedRevision({
+        articleId: source.id,
+        sourceRevisionId: source.revisionId,
+        model: "test-model",
+        translate: async () => ({ titleEn: "English", excerptEn: "Excerpt", bodyEn: "Body" }),
+      }),
+    ).rejects.toThrow("translation outbox unavailable");
+
+    expect(getPublishedArticle("commentary", source.slug)).toMatchObject({ revisionId: source.revisionId, titleEn: null });
+    expect(db.prepare("select count(*) as count from article_revisions where article_id = ?").get(source.id)).toEqual({ count: 1 });
+    expect(fs.readdirSync(path.join(tmpDir!, "markdown")).filter((name) => name.includes(".en."))).toEqual([]);
   });
 });

@@ -261,6 +261,78 @@ export function updateArticleEnglishFields(id: number, input: { titleEn: string;
   );
 }
 
+export function applyTranslationToPublishedRevision(
+  articleId: number,
+  sourceRevisionId: number,
+  translation: { titleEn: string; excerptEn: string; bodyEn: string },
+) {
+  const source = getArticleRevisionById(articleId, sourceRevisionId);
+  const current = getArticleById(articleId, { includeDraft: false });
+  if (!source?.bodyZh || current?.revisionId !== sourceRevisionId) return { status: "obsolete" as const };
+
+  const bodyEnPath = writeMarkdownBody(articleId, "en", translation.bodyEn);
+  const db = getDb();
+  try {
+    const result = db.transaction(() => {
+      const pointers = db
+        .prepare("select draft_revision_id, published_revision_id from articles where id = ?")
+        .get(articleId) as { draft_revision_id: number; published_revision_id: number | null } | undefined;
+      if (pointers?.published_revision_id !== sourceRevisionId) return { status: "obsolete" as const };
+
+      const timestamp = nowIso();
+      const revisionId = insertRevision(
+        articleId,
+        {
+          titleZh: source.titleZh,
+          titleEn: translation.titleEn,
+          slug: source.slug,
+          category: source.category,
+          excerptZh: source.excerptZh,
+          excerptEn: translation.excerptEn,
+          seoDescription: source.seoDescription,
+          bodyZh: source.bodyZh!,
+          bodyEn: translation.bodyEn,
+          tagIds: source.tags.map((tag) => tag.id),
+          coverImagePath: source.coverImagePath,
+        },
+        source.bodyZhPath,
+        bodyEnPath,
+        timestamp,
+      );
+      const updated = db
+        .prepare(
+          `update articles
+           set published_revision_id = ?,
+               draft_revision_id = case when draft_revision_id = ? then ? else draft_revision_id end,
+               updated_at = ?
+           where id = ? and published_revision_id = ?`,
+        )
+        .run(revisionId, sourceRevisionId, revisionId, timestamp, articleId, sourceRevisionId);
+      if (updated.changes !== 1) throw new Error("Published revision changed while applying translation.");
+
+      const published = getArticleRevisionById(articleId, revisionId)!;
+      syncArticleToFts(published);
+      enqueuePublishedRevisionJobs(
+        { article: published, oldPath: { category: source.category, slug: source.slug } },
+        db,
+      );
+      return { status: "published" as const, article: published };
+    }).immediate();
+    if (result.status === "obsolete") deleteMarkdownBodyIfUnreferenced(bodyEnPath);
+    return result;
+  } catch (error) {
+    deleteMarkdownBodyIfUnreferenced(bodyEnPath);
+    throw error;
+  }
+}
+
+function deleteMarkdownBodyIfUnreferenced(bodyPath: string) {
+  const referenced = getDb()
+    .prepare("select 1 from article_revisions where body_zh_path = ? or body_en_path = ? limit 1")
+    .get(bodyPath, bodyPath);
+  if (!referenced) deleteMarkdownBody(bodyPath);
+}
+
 export function deleteArticle(id: number) {
   const article = getArticleById(id, { includeDraft: true });
   if (!article) return false;

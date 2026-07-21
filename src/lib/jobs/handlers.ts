@@ -8,6 +8,7 @@ import {
   getPublicationProof,
 } from "@/lib/services/publication-proofs";
 import { PUBLIC_PROOFS_TAG, publicArticleProofsTag } from "@/lib/services/public-cache-tags";
+import { translatePublishedRevision } from "@/lib/translation/service";
 import { invalidateCacheThroughApp } from "./cache-client";
 import { enqueueCacheInvalidation } from "./outbox";
 import { enqueueJob, PermanentJobError, type JobHandlers } from "./queue";
@@ -22,6 +23,12 @@ const ProofPayload = z.object({ proofId: z.number().int().positive() });
 const CachePayload = z.object({
   tags: z.array(z.string().startsWith("public:").max(256)).max(128),
 });
+const TranslationPayload = z.object({
+  batchId: z.string().min(1),
+  articleId: z.number().int().positive(),
+  sourceRevisionId: z.number().int().positive(),
+  model: z.string().min(1),
+});
 
 type JobHandlerDependencies = {
   getArticleRevisionById: typeof getArticleRevisionById;
@@ -30,6 +37,7 @@ type JobHandlerDependencies = {
   captureWaybackProof: typeof captureWaybackProof;
   getPublicationProof: typeof getPublicationProof;
   invalidateCache: typeof invalidateCacheThroughApp;
+  translatePublishedRevision: typeof translatePublishedRevision;
 };
 
 function enqueueProofCache(articleId: number, proofId: number, state: string) {
@@ -47,6 +55,7 @@ export function createJobHandlers(overrides: Partial<JobHandlerDependencies> = {
     captureWaybackProof,
     getPublicationProof,
     invalidateCache: invalidateCacheThroughApp,
+    translatePublishedRevision,
     ...overrides,
   };
 
@@ -122,6 +131,11 @@ export function createJobHandlers(overrides: Partial<JobHandlerDependencies> = {
     "cache.invalidate": async (job) => {
       const { tags } = CachePayload.parse(job.payload);
       await dependencies.invalidateCache([...new Set(tags)]);
+    },
+
+    "translation.article": async (job) => {
+      const { articleId, sourceRevisionId, model } = TranslationPayload.parse(job.payload);
+      await dependencies.translatePublishedRevision({ articleId, sourceRevisionId, model });
     },
   };
 }

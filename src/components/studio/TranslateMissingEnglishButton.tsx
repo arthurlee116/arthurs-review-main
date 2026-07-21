@@ -1,81 +1,89 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { csrfToken } from "@/lib/client/csrf";
 
-type BatchResult = {
-  summary: {
-    attempted: number;
-    succeeded: number;
-    failed: number;
-  };
-  successes: Array<{ id: number; titleZh: string }>;
-  failures: Array<{ id: number; titleZh: string; error: string }>;
-  error?: string;
+type BatchProgress = {
+  id: string;
+  total: number;
+  queued: number;
+  running: number;
+  succeeded: number;
+  dead: number;
 };
 
 type State =
   | { kind: "idle" }
-  | { kind: "running" }
-  | { kind: "error"; message: string }
-  | { kind: "success"; result: BatchResult };
+  | { kind: "starting" }
+  | { kind: "active"; batch: BatchProgress }
+  | { kind: "error"; message: string };
+
+function finished(batch: BatchProgress) {
+  return batch.queued + batch.running === 0;
+}
 
 export function TranslateMissingEnglishButton() {
   const [state, setState] = useState<State>({ kind: "idle" });
 
+  useEffect(() => {
+    if (state.kind !== "active" || finished(state.batch)) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/studio/api/translations/published-missing?batch=${encodeURIComponent(state.batch.id)}`, {
+          signal: controller.signal,
+        });
+        const body = await response.json().catch(() => null) as { batch?: BatchProgress; error?: string } | null;
+        if (!response.ok || !body?.batch) throw new Error(body?.error ?? `HTTP ${response.status}`);
+        setState({ kind: "active", batch: body.batch });
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setState({ kind: "error", message: `Batch progress failed: ${error instanceof Error ? error.message : "unknown error"}` });
+        }
+      }
+    }, 1_000);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [state]);
+
   async function translateMissingEnglish() {
-    setState({ kind: "running" });
+    setState({ kind: "starting" });
     try {
       const response = await fetch("/studio/api/translations/published-missing", {
         method: "POST",
         headers: { "x-csrf-token": csrfToken() ?? "" },
       });
-      if (!response.ok) {
-        const body = await response.json().catch(() => null);
-        const message = body?.error ?? `HTTP ${response.status}`;
-        setState({ kind: "error", message: `Batch translation failed: ${message}` });
-        return;
+      const body = await response.json().catch(() => null) as { batch?: BatchProgress; error?: string } | null;
+      if (response.status !== 202 || !body?.batch) {
+        throw new Error(body?.error ?? `HTTP ${response.status}`);
       }
-      const data: BatchResult = await response.json();
-      setState({ kind: "success", result: data });
-    } catch {
-      setState({ kind: "error", message: "Batch translation failed" });
+      setState({ kind: "active", batch: body.batch });
+    } catch (error) {
+      setState({ kind: "error", message: `Batch translation failed: ${error instanceof Error ? error.message : "unknown error"}` });
     }
   }
 
-  const MAX_ITEMS = 50;
+  const running = state.kind === "starting" || (state.kind === "active" && !finished(state.batch));
 
   return (
     <div className="sans mt-4 border-y border-[var(--rule)] py-4">
       <button
         type="button"
         onClick={translateMissingEnglish}
-        disabled={state.kind === "running"}
+        disabled={running}
         className="border border-[var(--rule)] px-4 py-2 disabled:opacity-50"
       >
-        {state.kind === "running" ? "Translating..." : "Translate missing English"}
+        {state.kind === "starting" ? "Queuing..." : running ? "Translation running..." : "Translate missing English"}
       </button>
       {state.kind === "error" ? <p className="mt-3 text-sm">{state.message}</p> : null}
-      {state.kind === "success" ? (
+      {state.kind === "active" ? (
         <div className="mt-3 grid gap-2 text-sm">
           <p>
-            Attempted {state.result.summary.attempted}. Saved {state.result.summary.succeeded}. Failed{" "}
-            {state.result.summary.failed}.
+            Queued {state.batch.queued}. Running {state.batch.running}. Completed {state.batch.succeeded}. Failed {state.batch.dead}.
           </p>
-          {state.result.successes.slice(0, MAX_ITEMS).map((item) => (
-            <p key={`success-${item.id}`}>Saved: {item.titleZh}</p>
-          ))}
-          {state.result.successes.length > MAX_ITEMS ? (
-            <p className="text-[var(--muted)]">...and {state.result.successes.length - MAX_ITEMS} more</p>
-          ) : null}
-          {state.result.failures.slice(0, MAX_ITEMS).map((item) => (
-            <p key={`failure-${item.id}`}>
-              Failed: {item.titleZh} - {item.error}
-            </p>
-          ))}
-          {state.result.failures.length > MAX_ITEMS ? (
-            <p className="text-[var(--muted)]">...and {state.result.failures.length - MAX_ITEMS} more</p>
-          ) : null}
+          {state.batch.total === 0 ? <p>No published articles are missing English.</p> : null}
         </div>
       ) : null}
     </div>

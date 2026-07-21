@@ -79,6 +79,7 @@ describe("schema migrations", () => {
       { version: 4, name: "article_url_history" },
       { version: 5, name: "ots_verification_states" },
       { version: 6, name: "durable_jobs" },
+      { version: 7, name: "translation_batches" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -100,6 +101,7 @@ describe("schema migrations", () => {
       { version: 4, name: "article_url_history" },
       { version: 5, name: "ots_verification_states" },
       { version: 6, name: "durable_jobs" },
+      { version: 7, name: "translation_batches" },
     ]);
   });
 

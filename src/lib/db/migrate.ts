@@ -53,6 +53,12 @@ const migrations: Migration[] = [
     filename: "006_durable_jobs.sql",
     up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "006_durable_jobs.sql"), "utf8")),
   },
+  {
+    version: 7,
+    name: "translation_batches",
+    filename: "007_translation_batches.sql",
+    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "007_translation_batches.sql"), "utf8")),
+  },
 ];
 
 type ArticleSearchRow = {
