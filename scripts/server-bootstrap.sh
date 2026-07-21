@@ -4,7 +4,7 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
-apt-get install -y ca-certificates curl ufw rsync git cron sqlite3 util-linux
+apt-get install -y ca-certificates curl ufw rsync git cron sqlite3 util-linux haproxy
 install -m 0755 -d /etc/apt/keyrings
 . /etc/os-release
 case "${ID}" in

@@ -1,3 +1,17 @@
+{
+  servers :443 {
+    listener_wrappers {
+      proxy_protocol {
+        timeout 2s
+        allow 127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+        # ponytail: loopback-only fallback keeps HAProxy/Caddy reloads non-breaking; require PROXY when atomic socket handoff exists.
+        fallback_policy ignore
+      }
+      tls
+    }
+  }
+}
+
 blog.leesaitool.com {
   encode zstd gzip
   log {
@@ -20,6 +34,8 @@ blog.leesaitool.com {
   @internal path /internal/*
   respond @internal 404
   reverse_proxy app:3000 {
+    header_up X-Forwarded-For {remote_host}
+    header_up X-Real-IP {remote_host}
     header_down -X-Powered-By
   }
 }

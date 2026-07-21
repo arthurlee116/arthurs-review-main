@@ -93,7 +93,7 @@ describe("deployment scripts", () => {
   it("requires the app to become healthy after every deployment mode", () => {
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
     const health = fs.readFileSync("src/app/healthz/route.ts", "utf8");
-    const commonDeploymentStart = deploy.indexOf('ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d caddy');
+    const commonDeploymentStart = deploy.indexOf("docker compose up -d caddy");
     const afterDeploymentBranch = deploy.slice(commonDeploymentStart);
 
     expect(commonDeploymentStart).toBeGreaterThanOrEqual(0);
@@ -119,6 +119,78 @@ describe("deployment scripts", () => {
 
     expect(compose).toContain("DATA_DIR: /data");
     expect(compose).toContain("SITE_URL: https://blog.leesaitool.com");
+  });
+
+  it("declares the real HAProxy-to-Caddy topology without exposing the app", () => {
+    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
+    const haproxy = fs.readFileSync("deploy/haproxy.cfg", "utf8");
+    const appSection = compose.slice(compose.indexOf("  app:"), compose.indexOf("  worker:"));
+    const workerSection = compose.slice(compose.indexOf("  worker:"), compose.indexOf("  caddy:"));
+    const caddySection = compose.slice(compose.indexOf("  caddy:"), compose.indexOf("\nvolumes:"));
+
+    expect(appSection).not.toContain("ports:");
+    expect(workerSection).not.toContain("ports:");
+    expect(caddySection).toContain('- "127.0.0.1:8444:443"');
+    expect(caddySection).toContain(
+      "caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648",
+    );
+    expect(haproxy).toContain("bind *:80");
+    expect(haproxy).toContain("bind *:443");
+    expect(haproxy).toContain("acl sni_blog req.ssl_sni -i blog.leesaitool.com");
+    expect(haproxy).toContain("acl sni_studio req.ssl_sni -i studio.blog.leesaitool.com");
+    expect(haproxy).toContain("http-request redirect scheme https code 308");
+    expect(haproxy).toContain("server caddy_https 127.0.0.1:8444 send-proxy-v2 check");
+    expect(haproxy).toContain("server xray_reality 127.0.0.1:9443 check");
+    expect(haproxy).toContain("default_backend xray_reality");
+    expect(fs.readFileSync("scripts/server-bootstrap.sh", "utf8")).toContain("util-linux haproxy");
+  });
+
+  it("keeps the 2443 Xray service read-only across topology checks and deployments", () => {
+    expect(fs.existsSync("scripts/production-topology-preflight.sh")).toBe(true);
+    expect(fs.existsSync("deploy/README.md")).toBe(true);
+
+    const preflight = fs.readFileSync("scripts/production-topology-preflight.sh", "utf8");
+    const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
+    const scripts = [
+      preflight,
+      deploy,
+      fs.readFileSync("scripts/switch-xray-to-caddy.sh", "utf8"),
+      fs.readFileSync("scripts/remote-switch-xray-caddy.sh", "utf8"),
+    ].join("\n");
+
+    expect(preflight).toContain("xray-test.service");
+    expect(preflight).toContain("xray-443.service");
+    expect(preflight).toContain("config-test-2443.json");
+    expect(preflight).toContain("config-443.json");
+    expect(preflight).toContain("sha256sum");
+    expect(preflight).toContain('require_xray "${XRAY_2443_UNIT}" "${XRAY_2443_CONFIG}" 2443');
+    expect(preflight).toContain('require_xray "${XRAY_9443_UNIT}" "${XRAY_9443_CONFIG}" 9443');
+    expect(preflight).toContain("--expect-topology");
+    expect(deploy).toContain("probe_external_xray");
+    expect(deploy).toContain('${preflight_quoted} fingerprint');
+    expect(deploy).toContain('${preflight_quoted} verify');
+    expect(deploy).toContain("install-haproxy-config.sh");
+    expect(scripts).not.toMatch(/systemctl\s+(?:stop|restart|disable|enable).*xray/i);
+  });
+
+  it("overwrites client IP headers with Caddy's direct peer address", () => {
+    const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
+
+    expect(caddy).toContain("proxy_protocol");
+    expect(caddy).toContain("fallback_policy ignore");
+    expect(caddy).toContain("header_up X-Forwarded-For {remote_host}");
+    expect(caddy).toContain("header_up X-Real-IP {remote_host}");
+    expect(caddy).not.toContain("trusted_proxies");
+  });
+
+  it("validates and rolls back HAProxy config reloads without touching Xray", () => {
+    const installer = fs.readFileSync("scripts/install-haproxy-config.sh", "utf8");
+
+    expect(installer).toContain('haproxy -c -f "${SOURCE}"');
+    expect(installer).toContain("trap rollback ERR");
+    expect(installer).toContain("systemctl reload haproxy.service");
+    expect(installer).toContain("/healthz");
+    expect(installer).not.toMatch(/systemctl .*xray/i);
   });
 
   it("runs a restartable worker from the exact same app image and data volume", () => {
@@ -190,7 +262,7 @@ describe("deployment scripts", () => {
     const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
     const deploy = fs.readFileSync("scripts/deploy.sh", "utf8");
     const nextConfig = fs.readFileSync("next.config.ts", "utf8");
-    const commonDeploymentStart = deploy.indexOf('ssh "${REMOTE}" "cd ${APP_DIR}/deploy && docker compose up -d caddy');
+    const commonDeploymentStart = deploy.indexOf("docker compose up -d caddy");
     const afterDeploymentBranch = deploy.slice(commonDeploymentStart);
 
     expect(commonDeploymentStart).toBeGreaterThanOrEqual(0);

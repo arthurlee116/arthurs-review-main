@@ -553,26 +553,28 @@ rtk bash -n scripts/backup-data.sh scripts/restore-backup.sh scripts/deploy.sh
 
 ---
 
-### Commit 17 — `ops: codify the direct-Caddy production topology`
+### Commit 17 — `ops: codify the HAProxy-fronted production topology`
 
 **修复：** 仓库 Compose 与当前生产端口拓扑互相矛盾，切换脚本会误判。
 
-**明确选择：** 直接 Caddy，而不是 Xray 前置。
+**实施中校正：** 2026-07-21 的生产只读盘点确认公网 443 实际由 HAProxy 做 SNI 分流，而不是 Xray 或 Caddy 直接监听。为保留现有 Xray 443/2443 能力，选择版本化现有 HAProxy 前置拓扑。
 
 **版本控制的拓扑：**
 
-- Caddy 独占公网 TCP 80/443。
+- HAProxy 占用公网 TCP 80/443；80 只做 HTTPS 跳转。
+- `blog.leesaitool.com` 与 `studio.blog.leesaitool.com` 的 TLS 流量转发到 Caddy `127.0.0.1:8444`。
+- 其他/default TLS 流量保持转发到 Xray `127.0.0.1:9443`。
 - app 和 worker 不向宿主机公开端口，只存在于 Compose 网络。
 - 现有 Xray 原样保留并继续监听 2443；本计划不得修改它的 service、配置、证书、协议、路由或防火墙规则。
-- Caddy 显式覆盖传给 app 的 `X-Forwarded-For` 为直接客户端地址；app 不信任公网传入的伪造 header。
+- HAProxy 只向 Caddy 发送 PROXY v2；Caddy 从经验证的内部来源恢复客户端地址，并显式覆盖传给 app 的 `X-Forwarded-For`。
 
 **实现：**
 
-- 修改 `deploy/docker-compose.yml` 为 `80:80`、`443:443`，移除 `127.0.0.1:8444`。
+- 保留 Caddy 的 `127.0.0.1:8444:443`，并把完整 HAProxy SNI 配置纳入版本控制。
 - Caddy 镜像以不可变 digest 固定。
 - 删除会停止或重配 Xray 的危险动作，把旧切换脚本收敛为只读 preflight；不得执行 `systemctl stop/restart/disable xray`。
-- 新增版本化拓扑说明和只读 preflight；只记录 80/443/2443 的服务归属，不新增或改写 Xray systemd unit/template。
-- 部署前后都验证 2443 正在监听且外部 TCP 可达；失败立即停止/回滚博客部署，绝不尝试“修复”Xray。
+- 新增版本化拓扑说明和只读 preflight；记录 80/443/2443/8444/9443 的服务归属，不新增或改写 Xray systemd unit/template。
+- 部署前后校验 2443 与 9443 的 unit/config 哈希，并验证 2443 外部 TCP 可达；失败立即停止/回滚博客部署，绝不尝试“修复”Xray。
 - 任何实际端口切换前先读取生产监听者、Compose 和 systemd 状态；结果与计划不同就停止，不猜。
 
 **测试：** 扩展 `tests/deployment.test.ts`，验证 Compose、Caddy、systemd 和脚本使用同一端口契约，且 app 无宿主机端口。
@@ -788,7 +790,7 @@ rtk git log --oneline origin/main..HEAD
 - worker 在运行；发布产生的 jobs 能跨 worker 重启继续并最终完成/进入可观察死信。
 - OTS 刚 stamp 后显示 pending，只有 verify 成功才显示 anchored。
 - 服务器当前 release state 使用 `@sha256:`，Compose 不存在应用 `build:`。
-- Caddy 占用 80/443，既有 Xray 原样占用 2443；实际监听状态与仓库声明一致，且部署前后 Xray 配置摘要不变。
+- HAProxy 占用 80/443，Caddy 只占用回环 8444，既有 Xray 原样占用 2443/9443；实际监听状态与仓库声明一致，且部署前后 Xray 配置摘要不变。
 - 最新每日备份存在、manifest 可验证；恢复脚本在隔离目录演练成功。
 
 ## 8. 失败处理与停止条件
@@ -804,7 +806,7 @@ rtk git log --oneline origin/main..HEAD
 
 批准本计划即表示同意以下四项会改变生产边界的决定：
 
-1. 直接 Caddy 占用公网 80/443；既有 Xray 原样保留在 2443，任何 Xray service/config/证书/路由均不改变。
+1. 生产只读盘点后采用 HAProxy 前置：HAProxy 占用公网 80/443，Caddy 位于回环 8444，既有 Xray 原样保留在 2443/9443；任何 Xray service/config/证书/路由均不改变。生产 HAProxy reload 前展示精确 diff 再确认。
 2. 新增 `studio.blog.leesaitool.com`，并在确认本机证书可用后封死公共域名的 `/studio*`。
 3. 将文章表迁移到 immutable revisions；部署失败时允许脚本恢复部署前数据库 snapshot。
 4. 应用镜像发布到私有 GHCR，VPS 只拉完整 digest，不再远端 build。
