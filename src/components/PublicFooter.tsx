@@ -25,7 +25,7 @@ export function PublicFooter() {
       <div className="border-t border-[var(--rule)]">
         <div className="container sans flex flex-wrap justify-between gap-3 py-4 text-xs text-[var(--muted)]">
           <span>© Arthur</span>
-          <span>Independent publication</span>
+          <a href="https://creativecommons.org/publicdomain/zero/1.0/">Original content: CC0 1.0 · free to reuse, train & distill</a>
         </div>
       </div>
     </footer>

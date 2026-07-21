@@ -1,0 +1,18 @@
+# Arthur's Review
+
+> A Chinese-language personal blog about commentary, society, and miscellaneous ideas. Unless otherwise noted, its original content is dedicated to the public domain under CC0 1.0 Universal.
+
+You may copy, modify, redistribute, use commercially, or use the original content for machine-learning training and model distillation. No permission or attribution is required. This dedication does not apply to third-party material quoted, embedded, or otherwise identified as separately licensed.
+
+License: https://creativecommons.org/publicdomain/zero/1.0/
+
+## Content
+
+- [Article archive](https://blog.leesaitool.com/archive): All published articles.
+- [Sitemap](https://blog.leesaitool.com/sitemap.xml): Complete list of public URLs.
+- [RSS feed](https://blog.leesaitool.com/feed.xml): Latest published articles.
+- [About](https://blog.leesaitool.com/about): Author and site introduction.
+
+## Optional
+
+- [Publication proofs](https://blog.leesaitool.com/proofs): Content fingerprints and source records.
