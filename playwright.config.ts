@@ -18,7 +18,7 @@ export default defineConfig({
   webServer: externalBaseURL ? undefined : {
     command: `NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost PATH=${nodeBin}:$PATH E2E_LISTING_FIXTURES=1 scripts/start-e2e-server.sh`,
     url: baseURL,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [

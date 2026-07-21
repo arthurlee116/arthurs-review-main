@@ -16,7 +16,7 @@
     "typecheck": "pnpm lint:ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost DATA_DIR=./data/e2e SITE_URL=http://127.0.0.1:3100 INTERNAL_APP_URL=http://127.0.0.1:3100 WORKER_REVALIDATE_SECRET=e2e-worker-revalidate-secret OTS_CLI_PATH=/bin/false ADMIN_PASSWORD_HASH='scrypt$16384$8$1$YXJ0aHVycy1yZXZpZXctZTJl$B8w4AkTlSV2dCTJRqSbGGTODO+tbdf5CGiHMVKwR0JDtZTLg0Y2OufUAJ+wcBHuagSp1C/tvIpU/cD8/51AdGQ==' SESSION_SECRET=0123456789abcdefghijklmnopqrstuvwxyzABCDEF LOGIN_RATE_LIMIT_MAX=100 playwright test",
+    "test:e2e": "NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost SITE_URL=http://127.0.0.1:3100 INTERNAL_APP_URL=http://127.0.0.1:3100 WORKER_REVALIDATE_SECRET=e2e-worker-revalidate-secret OTS_CLI_PATH=/bin/false ADMIN_PASSWORD_HASH='scrypt$16384$8$1$YXJ0aHVycy1yZXZpZXctZTJl$B8w4AkTlSV2dCTJRqSbGGTODO+tbdf5CGiHMVKwR0JDtZTLg0Y2OufUAJ+wcBHuagSp1C/tvIpU/cD8/51AdGQ==' SESSION_SECRET=0123456789abcdefghijklmnopqrstuvwxyzABCDEF LOGIN_RATE_LIMIT_MAX=100 scripts/run-e2e.sh",
     "jobs:work": "tsx scripts/jobs-worker.ts",
     "db:migrate": "tsx src/lib/db/migrate.ts",
     "backup:database": "tsx scripts/backup-database.ts",
