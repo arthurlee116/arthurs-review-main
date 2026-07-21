@@ -326,6 +326,30 @@ describe("ArticleEditor", () => {
 
     expect(publishButton).not.toHaveClass("studio-button-error");
   });
+
+  it("keeps unsaved fields when unpublishing", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          article: article({ status: "draft", titleZh: "服务器旧标题", excerptZh: "服务器旧摘要" }),
+        }),
+      ),
+    );
+
+    render(<ArticleEditor article={article({ status: "published", publishedAt: "2026-05-04T00:00:00.000Z" })} />);
+    await user.clear(screen.getByRole("textbox", { name: "Chinese title" }));
+    await user.type(screen.getByRole("textbox", { name: "Chinese title" }), "未保存标题");
+    await user.clear(screen.getByRole("textbox", { name: "Chinese excerpt" }));
+    await user.type(screen.getByRole("textbox", { name: "Chinese excerpt" }), "未保存摘要");
+    await user.click(screen.getByRole("button", { name: "Unpublish" }));
+
+    expect(await screen.findByText("Unpublished. Unsaved changes kept.")).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "Chinese title" })).toHaveValue("未保存标题");
+    expect(screen.getByRole("textbox", { name: "Chinese excerpt" })).toHaveValue("未保存摘要");
+    expect(screen.queryByRole("button", { name: "Unpublish" })).not.toBeInTheDocument();
+  });
 });
 
 describe("TranslateMissingEnglishButton", () => {

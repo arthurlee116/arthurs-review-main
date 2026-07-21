@@ -193,8 +193,8 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
     });
     if (response.ok) {
       const data = (await response.json()) as { article: Article };
-      setForm(initial(data.article));
-      setMessage("Unpublished");
+      setForm((current) => ({ ...current, status: data.article.status }));
+      setMessage("Unpublished. Unsaved changes kept.");
     } else {
       setMessage("Unpublish failed");
     }
