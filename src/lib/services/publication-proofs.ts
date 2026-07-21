@@ -72,6 +72,15 @@ type ProofServices = {
   capture: (url: string) => Promise<string>;
 };
 
+type ProofRuntime = {
+  runs: Map<string, Promise<PublicationProof | null>>;
+  waybackRetries: Map<string, ReturnType<typeof setTimeout>>;
+};
+
+const globalRuntime = globalThis as typeof globalThis & { __arthursReviewProofRuntime?: ProofRuntime };
+const proofRuntime = (globalRuntime.__arthursReviewProofRuntime ??= { runs: new Map(), waybackRetries: new Map() });
+const WAYBACK_RETRY_DELAY_MS = 20 * 60 * 1000;
+
 function mapProof(row: ProofRow): PublicationProof {
   return {
     id: row.id,
@@ -281,6 +290,39 @@ async function finishPublicationProof(proof: PublicationProof, services: ProofSe
   return getPublicationProof(proof.id);
 }
 
+function finishPublicationProofOnce(proof: PublicationProof, services: ProofServices, scheduleWaybackRetry = true) {
+  const key = resolveProofPath(proof.documentPath);
+  const existing = proofRuntime.runs.get(key);
+  if (existing) return existing;
+
+  const run = finishPublicationProof(proof, services)
+    .then((result) => {
+      if (result?.waybackStatus === "complete") {
+        const timer = proofRuntime.waybackRetries.get(key);
+        if (timer) clearTimeout(timer);
+        proofRuntime.waybackRetries.delete(key);
+      } else if (scheduleWaybackRetry && result?.waybackStatus === "failed" && !proofRuntime.waybackRetries.has(key)) {
+        // ponytail: in-process timer; persist retry jobs if this app ever runs multiple replicas.
+        const timer = setTimeout(() => {
+          proofRuntime.waybackRetries.delete(key);
+          const current = getPublicationProof(proof.id);
+          if (!current || current.waybackStatus === "complete") return;
+          void finishPublicationProofOnce(current, services, false).catch((error: unknown) => {
+            console.error("Wayback retry failed", error);
+          });
+        }, WAYBACK_RETRY_DELAY_MS);
+        timer.unref();
+        proofRuntime.waybackRetries.set(key, timer);
+      }
+      return result;
+    })
+    .finally(() => {
+      proofRuntime.runs.delete(key);
+    });
+  proofRuntime.runs.set(key, run);
+  return run;
+}
+
 export async function createPublicationProof(article: Article, services: ProofServices = defaultServices) {
   if (article.status !== "published") return null;
   const content = articleContent(article);
@@ -288,7 +330,7 @@ export async function createPublicationProof(article: Article, services: ProofSe
   const duplicate = getDb()
     .prepare("select * from publication_proofs where article_id = ? and content_fingerprint = ?")
     .get(article.id, contentFingerprint) as ProofRow | undefined;
-  if (duplicate) return finishPublicationProof(mapProof(duplicate), services);
+  if (duplicate) return finishPublicationProofOnce(mapProof(duplicate), services);
 
   const createdAt = services.now().toISOString();
   const publicUrl = new URL(articlePath(article.category, article.slug), process.env.SITE_URL ?? "http://localhost:3000").toString();
@@ -319,5 +361,5 @@ export async function createPublicationProof(article: Article, services: ProofSe
     )
     .run(article.id, createdAt, publicUrl, contentFingerprint, documentSha256, documentPath);
   const id = Number(result.lastInsertRowid);
-  return finishPublicationProof(getPublicationProof(id)!, services);
+  return finishPublicationProofOnce(getPublicationProof(id)!, services);
 }
