@@ -120,7 +120,7 @@ describe("public cache invalidation", () => {
 
   it("keeps the internal revalidation endpoint off the public proxy", () => {
     const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
-    expect(caddy).toContain("@internal path /internal/*");
+    expect(caddy).toContain("@internal path /internal /internal/*");
     expect(caddy).toContain("respond @internal 404");
   });
 });
