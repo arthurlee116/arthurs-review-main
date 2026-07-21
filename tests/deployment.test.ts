@@ -442,6 +442,9 @@ describe("deployment scripts", () => {
     expect(workflow).toContain("load: true");
     expect(workflow).toContain("GIT_COMMIT_SHA=${{ github.sha }}");
     expect(workflow).toContain("${{ github.sha }}");
+    expect(workflow).toContain(
+      `docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}'`,
+    );
     expect(workflow).toContain("pnpm exec playwright install --with-deps chromium");
     expect(workflow).toContain('"$IMAGE_TAG" pnpm jobs:work');
     expect(workflow).toContain('docker network create "$E2E_NETWORK"');

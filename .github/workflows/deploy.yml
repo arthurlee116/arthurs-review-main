@@ -110,7 +110,7 @@ jobs:
             -e IMAGE_DIGEST="$E2E_DIGEST" \
             "$IMAGE_TAG"
 
-          test "$(docker image inspect --format '{{ index .Config.Labels \"org.opencontainers.image.revision\" }}' "$IMAGE_TAG")" = "$GITHUB_SHA"
+          test "$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE_TAG")" = "$GITHUB_SHA"
           healthy=0
           for attempt in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:3100/healthz | grep -q '"ok":true'; then
