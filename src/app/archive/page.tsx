@@ -3,10 +3,11 @@ import { io } from "next/cache";
 import { Suspense } from "react";
 
 import { PublicShell } from "@/app/_publicShell";
+import { PageNavigation } from "@/components/PageNavigation";
 import { categoryLabel } from "@/lib/content/categories";
 import { articlePath, categoryPath } from "@/lib/content/urls";
 import { publicPageMetadata } from "@/lib/metadata";
-import { listCachedPublishedArticles } from "@/lib/services/public-content";
+import { listCachedPublishedArticlePage } from "@/lib/services/public-content";
 import type { Article } from "@/lib/services/articles";
 
 export const metadata = publicPageMetadata({
@@ -26,9 +27,15 @@ function groupByYear(articles: Article[]) {
   return groups;
 }
 
-export async function ArchiveContent() {
+function pageNumber(value: string | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 1;
+}
+
+export async function ArchiveContent({ page = 1 }: { page?: number } = {}) {
   await io();
-  const groups = groupByYear(await listCachedPublishedArticles());
+  const articlePage = await listCachedPublishedArticlePage(page);
+  const groups = groupByYear(articlePage.items);
 
   return (
     <PublicShell mastheadHeadingLevel={2}>
@@ -67,15 +74,21 @@ export async function ArchiveContent() {
         ) : (
           <p className="sans py-10 text-sm text-[var(--muted)]">No published articles yet.</p>
         )}
+        <PageNavigation basePath="/archive" page={articlePage.page} totalPages={articlePage.totalPages} label="Archive pages" />
       </main>
     </PublicShell>
   );
 }
 
-export default function ArchivePage() {
+async function ArchiveContentFromParams({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const { page } = await searchParams;
+  return <ArchiveContent page={pageNumber(page)} />;
+}
+
+export default function ArchivePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   return (
     <Suspense fallback={<PublicShell mastheadHeadingLevel={2}><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
-      <ArchiveContent />
+      <ArchiveContentFromParams searchParams={searchParams} />
     </Suspense>
   );
 }

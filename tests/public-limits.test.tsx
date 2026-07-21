@@ -93,4 +93,15 @@ describe("public listing limits", () => {
     expect(cards[0]).toContainElement(screen.getByText("Featured"));
     expect(cards[0].querySelector("h2")).toHaveClass("text-4xl");
   });
+
+  it("limits RSS to the newest 50 articles", async () => {
+    await publishArticles(55);
+    const { GET } = await import("@/app/feed.xml/route");
+
+    const xml = await (await GET()).text();
+
+    expect(xml.match(/<item>/g)).toHaveLength(50);
+    expect(xml).toContain("文章 55");
+    expect(xml).not.toContain("文章 5</title>");
+  });
 });

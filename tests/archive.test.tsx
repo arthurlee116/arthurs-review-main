@@ -44,4 +44,20 @@ describe("archive page", () => {
     expect(within(previousYear).getByRole("link", { name: "去年文章" })).toHaveAttribute("href", "/society/last-year");
     expect(within(previousYear).getByRole("link", { name: "社会分析" })).toHaveAttribute("href", "/society");
   });
+
+  it("paginates the archive at 50 articles", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    migrate();
+    for (let index = 1; index <= 51; index += 1) {
+      publishArticle(createArticle(articleInput({ titleZh: `归档文章 ${index}`, slug: `archive-page-${index}` })).id);
+    }
+
+    render(await ArchiveContent({ page: 2 }));
+
+    expect(screen.getByRole("link", { name: "归档文章 1" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "归档文章 2" })).not.toBeInTheDocument();
+    expect(screen.getByText("Page 2 of 2")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute("href", "/archive");
+  });
 });

@@ -3,6 +3,8 @@ import { assertValidSlug } from "@/lib/content/slugs";
 import type { CategoryId } from "@/lib/content/categories";
 import { getDb } from "@/lib/db/connection";
 import { setSetting } from "@/lib/services/settings";
+import { pageWindow, type PageResult } from "@/lib/pagination";
+import { MAX_SEARCH_CODE_POINTS } from "@/lib/search-limits";
 import { deleteArticleFromFts, syncArticleToFts } from "./search";
 
 export type ArticleStatus = "draft" | "published";
@@ -323,6 +325,7 @@ export function getArticleUrlRedirect(category: CategoryId, slug: string) {
 export type PublishedArticleListOptions = {
   featuredFirst?: boolean;
   limit?: number;
+  offset?: number;
 };
 
 export function listPublishedArticles(category?: CategoryId, options: PublishedArticleListOptions = {}) {
@@ -330,9 +333,9 @@ export function listPublishedArticles(category?: CategoryId, options: PublishedA
   const order = options.featuredFirst
     ? "articles.is_featured desc, articles.published_at desc, articles.id desc"
     : "articles.published_at desc, articles.id desc";
-  const limit = options.limit === undefined ? "" : " limit ?";
+  const limit = options.limit === undefined ? "" : " limit ? offset ?";
   const params: Array<string | number> = category ? [category] : [];
-  if (options.limit !== undefined) params.push(options.limit);
+  if (options.limit !== undefined) params.push(options.limit, options.offset ?? 0);
   const rows = getDb()
     .prepare(
       `select ${selectArticleColumns}
@@ -345,6 +348,31 @@ export function listPublishedArticles(category?: CategoryId, options: PublishedA
   return mapArticleRows(rows);
 }
 
+export function listPublishedArticlePage({
+  category,
+  page,
+  pageSize = 50,
+}: {
+  category?: CategoryId;
+  page?: number;
+  pageSize?: number;
+} = {}): PageResult<Article> {
+  const countRow = getDb()
+    .prepare(
+      `select count(*) as total
+       from articles
+       join article_revisions as revisions on revisions.id = articles.published_revision_id
+       ${category ? "where revisions.category = ?" : ""}`,
+    )
+    .get(...(category ? [category] : [])) as { total: number };
+  const window = pageWindow(countRow.total, page, pageSize);
+  const { offset, ...pageInfo } = window;
+  return {
+    ...pageInfo,
+    items: listPublishedArticles(category, { limit: window.pageSize, offset }),
+  };
+}
+
 export function listStudioArticles() {
   const rows = getDb()
     .prepare(
@@ -355,6 +383,69 @@ export function listStudioArticles() {
     )
     .all() as ArticleRow[];
   return mapArticleRows(rows);
+}
+
+export type StudioArticleListOptions = {
+  page?: number;
+  pageSize?: number;
+  status?: "all" | ArticleStatus;
+  category?: "all" | CategoryId;
+  query?: string;
+};
+
+export function listStudioArticlePage({
+  page,
+  pageSize = 50,
+  status = "all",
+  category = "all",
+  query = "",
+}: StudioArticleListOptions = {}): PageResult<Article> {
+  const where: string[] = [];
+  const params: Array<string | number> = [];
+  if (status === "published") where.push("articles.published_revision_id is not null");
+  if (status === "draft") where.push("articles.published_revision_id is null");
+  if (category !== "all") {
+    where.push("revisions.category = ?");
+    params.push(category);
+  }
+  const normalizedQuery = Array.from(query.trim().toLowerCase()).slice(0, MAX_SEARCH_CODE_POINTS).join("");
+  if (normalizedQuery) {
+    where.push(
+      `(instr(lower(
+          revisions.title_zh || char(10) || coalesce(revisions.title_en, '') || char(10) || revisions.slug || char(10) ||
+          revisions.excerpt_zh || char(10) || coalesce(revisions.excerpt_en, '') || char(10) || revisions.category
+        ), ?) > 0
+        or exists (
+          select 1
+          from article_revision_tags
+          join tags on tags.id = article_revision_tags.tag_id
+          where article_revision_tags.revision_id = revisions.id and instr(lower(tags.name), ?) > 0
+        ))`,
+    );
+    params.push(normalizedQuery, normalizedQuery);
+  }
+  const clause = where.length ? `where ${where.join(" and ")}` : "";
+  const count = getDb()
+    .prepare(
+      `select count(*) as total
+       from articles
+       join article_revisions as revisions on revisions.id = articles.draft_revision_id
+       ${clause}`,
+    )
+    .get(...params) as { total: number };
+  const window = pageWindow(count.total, page, pageSize);
+  const { offset, ...pageInfo } = window;
+  const rows = getDb()
+    .prepare(
+      `select ${selectArticleColumns}
+       from articles
+       join article_revisions as revisions on revisions.id = articles.draft_revision_id
+       ${clause}
+       order by articles.updated_at desc, articles.id desc
+       limit ? offset ?`,
+    )
+    .all(...params, window.pageSize, offset) as ArticleRow[];
+  return { ...pageInfo, items: mapArticleRows(rows) };
 }
 
 export function listPublishedArticlesMissingEnglish() {

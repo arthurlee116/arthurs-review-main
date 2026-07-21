@@ -8,6 +8,7 @@ import type { Article } from "./articles";
 import { articlePath } from "@/lib/content/urls";
 import { getDb } from "@/lib/db/connection";
 import { getDataPaths } from "@/lib/env";
+import { pageWindow, type PageResult } from "@/lib/pagination";
 
 const execFileAsync = promisify(execFile);
 
@@ -66,6 +67,14 @@ type PublicProofRow = ProofRow & {
   article_category: CategoryId;
 };
 
+export type PublicProofPage = PageResult<PublicPublicationProof> & {
+  totalArticles: number;
+  totalProofs: number;
+  completeServices: number;
+  pendingServices: number;
+  failedServices: number;
+};
+
 type ProofServices = {
   now: () => Date;
   stamp: (documentPath: string) => Promise<Uint8Array>;
@@ -96,6 +105,23 @@ function mapProof(row: ProofRow): PublicationProof {
     waybackUrl: row.wayback_url,
     waybackStatus: row.wayback_status,
     waybackError: row.wayback_error,
+  };
+}
+
+function mapPublicProof(row: PublicProofRow): PublicPublicationProof {
+  return {
+    id: row.id,
+    articleId: row.article_id,
+    articleTitle: row.article_title,
+    articleSlug: row.article_slug,
+    articleCategory: row.article_category,
+    createdAt: row.created_at,
+    publicUrl: row.public_url,
+    documentSha256: row.document_sha256,
+    otsStatus: row.ots_status,
+    otsAvailable: row.ots_status === "complete" && row.ots_path !== null,
+    waybackUrl: row.wayback_url,
+    waybackStatus: row.wayback_status,
   };
 }
 
@@ -227,20 +253,70 @@ export function listPublicPublicationProofs(): PublicPublicationProof[] {
     )
     .all() as PublicProofRow[];
 
-  return rows.map((row) => ({
-    id: row.id,
-    articleId: row.article_id,
-    articleTitle: row.article_title,
-    articleSlug: row.article_slug,
-    articleCategory: row.article_category,
-    createdAt: row.created_at,
-    publicUrl: row.public_url,
-    documentSha256: row.document_sha256,
-    otsStatus: row.ots_status,
-    otsAvailable: row.ots_status === "complete" && row.ots_path !== null,
-    waybackUrl: row.wayback_url,
-    waybackStatus: row.wayback_status,
-  }));
+  return rows.map(mapPublicProof);
+}
+
+export function listPublicPublicationProofPage({ page, pageSize = 50 }: { page?: number; pageSize?: number } = {}): PublicProofPage {
+  const db = getDb();
+  const totals = db
+    .prepare(
+      `select count(*) as total,
+              count(distinct publication_proofs.article_id) as total_articles,
+              coalesce(sum((publication_proofs.ots_status = 'complete') + (publication_proofs.wayback_status = 'complete')), 0) as complete_services,
+              coalesce(sum((publication_proofs.ots_status = 'pending') + (publication_proofs.wayback_status = 'pending')), 0) as pending_services,
+              coalesce(sum((publication_proofs.ots_status = 'failed') + (publication_proofs.wayback_status = 'failed')), 0) as failed_services
+       from publication_proofs
+       join articles on articles.id = publication_proofs.article_id
+       where articles.published_revision_id is not null`,
+    )
+    .get() as {
+      total: number;
+      total_articles: number;
+      complete_services: number;
+      pending_services: number;
+      failed_services: number;
+    };
+  const window = pageWindow(totals.total_articles, page, pageSize);
+  const { offset, ...pageInfo } = window;
+  const articleIds = (
+    db
+      .prepare(
+        `select publication_proofs.article_id
+         from publication_proofs
+         join articles on articles.id = publication_proofs.article_id
+         where articles.published_revision_id is not null
+         group by publication_proofs.article_id
+         order by max(publication_proofs.created_at) desc, publication_proofs.article_id desc
+         limit ? offset ?`,
+      )
+      .all(window.pageSize, offset) as Array<{ article_id: number }>
+  ).map((row) => row.article_id);
+
+  const rows = articleIds.length
+    ? (db
+        .prepare(
+          `select publication_proofs.*,
+                  revisions.title_zh as article_title,
+                  revisions.slug as article_slug,
+                  revisions.category as article_category
+           from publication_proofs
+           join articles on articles.id = publication_proofs.article_id
+           join article_revisions as revisions on revisions.id = articles.published_revision_id
+           where publication_proofs.article_id in (${articleIds.map(() => "?").join(", ")})
+           order by publication_proofs.created_at desc, publication_proofs.id desc`,
+        )
+        .all(...articleIds) as PublicProofRow[])
+    : [];
+
+  return {
+    ...pageInfo,
+    items: rows.map(mapPublicProof),
+    totalArticles: totals.total_articles,
+    totalProofs: totals.total,
+    completeServices: totals.complete_services,
+    pendingServices: totals.pending_services,
+    failedServices: totals.failed_services,
+  };
 }
 
 export function resolveProofPath(relativePath: string) {

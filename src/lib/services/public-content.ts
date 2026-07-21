@@ -5,6 +5,7 @@ import type { CategoryId } from "@/lib/content/categories";
 import {
   getPublishedArticle,
   getArticleUrlRedirect,
+  listPublishedArticlePage,
   listPublishedArticles,
   type PublishedArticleListOptions,
 } from "@/lib/services/articles";
@@ -15,13 +16,19 @@ import {
   publicArticleProofsTag,
   publicArticleTag,
 } from "@/lib/services/public-cache";
-import { listPublicationProofs, listPublicPublicationProofs } from "@/lib/services/publication-proofs";
+import { listPublicationProofs, listPublicPublicationProofPage } from "@/lib/services/publication-proofs";
 import { getSetting, getSettings, type SettingKey } from "@/lib/services/settings";
 
 export async function listCachedPublishedArticles(category?: CategoryId, options?: PublishedArticleListOptions) {
   cacheLife("publicContent");
   cacheTag(PUBLIC_ARTICLE_LIST_TAG);
   return listPublishedArticles(category, options);
+}
+
+export async function listCachedPublishedArticlePage(page: number, pageSize = 50) {
+  cacheLife("publicContent");
+  cacheTag(PUBLIC_ARTICLE_LIST_TAG);
+  return listPublishedArticlePage({ page, pageSize });
 }
 
 export async function getCachedPublishedArticle(category: CategoryId, slug: string) {
@@ -48,10 +55,10 @@ export async function getCachedSetting(key: SettingKey) {
   return getSetting(key);
 }
 
-export async function listCachedPublicPublicationProofs() {
+export async function listCachedPublicPublicationProofPage(page: number, pageSize = 50) {
   cacheLife("publicContent");
   cacheTag(PUBLIC_PROOFS_TAG);
-  return listPublicPublicationProofs();
+  return listPublicPublicationProofPage({ page, pageSize });
 }
 
 export async function listCachedPublicationProofs(articleId: number) {

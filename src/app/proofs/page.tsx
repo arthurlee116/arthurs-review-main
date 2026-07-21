@@ -3,9 +3,10 @@ import { io } from "next/cache";
 import { Suspense } from "react";
 
 import { PublicShell } from "@/app/_publicShell";
+import { PageNavigation } from "@/components/PageNavigation";
 import { articlePath } from "@/lib/content/urls";
 import { publicPageMetadata } from "@/lib/metadata";
-import { listCachedPublicPublicationProofs } from "@/lib/services/public-content";
+import { listCachedPublicPublicationProofPage } from "@/lib/services/public-content";
 import type { PublicPublicationProof } from "@/lib/services/publication-proofs";
 
 export const metadata = publicPageMetadata({
@@ -34,14 +35,19 @@ function statusLabel(status: PublicPublicationProof["otsStatus"]) {
   return "failed";
 }
 
-export async function ProofsContent() {
+function pageNumber(value: string | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 1;
+}
+
+export async function ProofsContent({ page = 1 }: { page?: number } = {}) {
   await io();
-  const proofs = await listCachedPublicPublicationProofs();
+  const proofPage = await listCachedPublicPublicationProofPage(page);
+  const proofs = proofPage.items;
   const groups = groupByArticle(proofs);
-  const serviceStatuses = proofs.flatMap((proof) => [proof.otsStatus, proof.waybackStatus]);
-  const complete = serviceStatuses.filter((status) => status === "complete").length;
-  const pending = serviceStatuses.filter((status) => status === "pending").length;
-  const failed = serviceStatuses.filter((status) => status === "failed").length;
+  const complete = proofPage.completeServices;
+  const pending = proofPage.pendingServices;
+  const failed = proofPage.failedServices;
 
   return (
     <PublicShell mastheadHeadingLevel={2}>
@@ -56,11 +62,11 @@ export async function ProofsContent() {
 
         <section className="grid border-y border-[var(--rule)] md:grid-cols-12" aria-label="Proof totals">
           <div className="border-b border-[var(--rule)] py-6 md:col-span-5 md:border-b-0 md:border-r md:pr-8">
-            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{countLabel(proofs.length, "proof")}</strong>
+            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{countLabel(proofPage.totalProofs, "proof")}</strong>
             <span className="sans mt-2 block text-xs text-[var(--muted)]">Content versions recorded</span>
           </div>
           <div className="border-b border-[var(--rule)] py-6 md:col-span-7 md:border-b-0 md:pl-8">
-            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{countLabel(groups.length, "article")}</strong>
+            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{countLabel(proofPage.totalArticles, "article")}</strong>
             <span className="sans mt-2 block text-xs text-[var(--muted)]">Articles represented</span>
           </div>
           <div className="py-6 md:col-span-7 md:border-r md:border-t md:pr-8">
@@ -128,15 +134,21 @@ export async function ProofsContent() {
             <p className="mt-3 max-w-[55ch] text-[var(--muted)]">The first record will appear after a published article is saved.</p>
           </section>
         )}
+        <PageNavigation basePath="/proofs" page={proofPage.page} totalPages={proofPage.totalPages} label="Proof archive pages" />
       </main>
     </PublicShell>
   );
 }
 
-export default function ProofsPage() {
+async function ProofsContentFromParams({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const { page } = await searchParams;
+  return <ProofsContent page={pageNumber(page)} />;
+}
+
+export default function ProofsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   return (
     <Suspense fallback={<PublicShell mastheadHeadingLevel={2}><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
-      <ProofsContent />
+      <ProofsContentFromParams searchParams={searchParams} />
     </Suspense>
   );
 }

@@ -69,4 +69,26 @@ describe("featured article controls in Studio", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("Featured article updated");
     expect(router.refresh).toHaveBeenCalledOnce();
   });
+
+  it("filters in SQL and paginates the Studio list at 50 articles", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle } = await import("@/lib/services/articles");
+    const { default: ArticlesPage } = await import("@/app/studio/(protected)/articles/page");
+    migrate();
+    for (let index = 1; index <= 51; index += 1) {
+      createArticle(articleInput({ titleZh: `Studio 文章 ${index}`, slug: `studio-page-${index}` }));
+    }
+    const prepare = vi.spyOn(getDb(), "prepare");
+
+    render(await ArticlesPage({ searchParams: Promise.resolve({ status: "draft", category: "commentary", q: "Studio", page: "2" }) }));
+
+    expect(screen.getByRole("link", { name: "Studio 文章 1" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Studio 文章 2" })).not.toBeInTheDocument();
+    expect(screen.getByText("Page 2 of 2")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute("href", expect.stringContaining("status=draft"));
+    const pageQuery = prepare.mock.calls.map(([sql]) => String(sql)).find((sql) => /limit\s+\?\s+offset\s+\?/i.test(sql));
+    expect(pageQuery).toContain("article_revision_tags");
+    prepare.mockRestore();
+  });
 });

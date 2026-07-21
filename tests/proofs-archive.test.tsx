@@ -93,4 +93,35 @@ describe("public proof archive", () => {
 
     expect(listPublicPublicationProofs()).toEqual([]);
   });
+
+  it("paginates proof groups at 50 published articles", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    migrate();
+    const insert = getDb().prepare(
+      `insert into publication_proofs(
+         article_id, created_at, public_url, content_fingerprint, document_sha256, document_path,
+         ots_status, wayback_status
+       ) values (?, ?, ?, ?, ?, ?, 'pending', 'pending')`,
+    );
+    for (let index = 1; index <= 51; index += 1) {
+      const article = publishArticle(createArticle(articleInput({ titleZh: `证明文章 ${index}`, slug: `proof-page-${index}` })).id);
+      insert.run(
+        article.id,
+        `2026-07-${String(index % 28 + 1).padStart(2, "0")}T00:00:${String(index).padStart(2, "0")}.000Z`,
+        `https://blog.leesaitool.com/commentary/proof-page-${index}`,
+        `fingerprint-${index}`,
+        String(index).padStart(64, "0"),
+        `proofs/${index}.json`,
+      );
+    }
+
+    render(await ProofsContent({ page: 2 }));
+
+    expect(screen.getByText("51 proofs")).toBeVisible();
+    expect(screen.getByText("51 articles")).toBeVisible();
+    expect(screen.getAllByRole("region", { name: /证明文章/ })).toHaveLength(1);
+    expect(screen.getByText("Page 2 of 2")).toBeVisible();
+  });
 });

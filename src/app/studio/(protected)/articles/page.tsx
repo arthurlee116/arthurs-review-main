@@ -2,8 +2,9 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { FeaturedArticleButton } from "@/components/studio/FeaturedArticleButton";
 import { TranslateMissingEnglishButton } from "@/components/studio/TranslateMissingEnglishButton";
-import { listStudioArticles } from "@/lib/services/articles";
-import type { CategoryId } from "@/lib/content/categories";
+import { PageNavigation } from "@/components/PageNavigation";
+import { listStudioArticlePage } from "@/lib/services/articles";
+import { MAX_SEARCH_CODE_POINTS } from "@/lib/search-limits";
 
 export const instant = false;
 
@@ -11,16 +12,12 @@ type ArticleSearchParams = {
   status?: string;
   category?: string;
   q?: string;
+  page?: string;
 };
 
-function matchesQuery(article: ReturnType<typeof listStudioArticles>[number], query: string) {
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) return true;
-  return [article.titleZh, article.titleEn, article.slug, article.excerptZh, article.excerptEn, article.category, article.tags.map((tag) => tag.name).join(" ")]
-    .filter(Boolean)
-    .join("\n")
-    .toLowerCase()
-    .includes(normalized);
+function pageNumber(value: string | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 1;
 }
 
 export default async function ArticlesPage({ searchParams }: { searchParams: Promise<ArticleSearchParams> }) {
@@ -29,10 +26,11 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
   const status = params.status === "draft" || params.status === "published" ? params.status : "all";
   const category = params.category === "commentary" || params.category === "society" || params.category === "misc" ? params.category : "all";
   const query = params.q ?? "";
-  const articles = listStudioArticles().filter((article) => {
-    if (status !== "all" && article.status !== status) return false;
-    if (category !== "all" && article.category !== (category as CategoryId)) return false;
-    return matchesQuery(article, query);
+  const articlePage = listStudioArticlePage({
+    status,
+    category,
+    query,
+    page: pageNumber(params.page),
   });
   return (
     <section>
@@ -58,14 +56,14 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
         </label>
         <label className="grid gap-2">
           Search
-          <input className="border border-[var(--rule)] bg-white p-2" name="q" defaultValue={query} />
+          <input className="border border-[var(--rule)] bg-white p-2" name="q" defaultValue={query} maxLength={MAX_SEARCH_CODE_POINTS} />
         </label>
         <button type="submit" className="self-end border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]">
           Apply filters
         </button>
       </form>
       <ul className="sans mt-6" aria-label="Articles">
-        {articles.map((article) => (
+        {articlePage.items.map((article) => (
           <li key={article.id} className="grid min-w-0 gap-2 border-b border-[var(--rule)] py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Link className="font-medium underline-offset-4 hover:underline" href={`/studio/articles/${article.id}`}>
@@ -82,6 +80,17 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
           </li>
         ))}
       </ul>
+      <PageNavigation
+        basePath="/studio/articles"
+        page={articlePage.page}
+        totalPages={articlePage.totalPages}
+        label="Studio article pages"
+        params={{
+          status: status === "all" ? undefined : status,
+          category: category === "all" ? undefined : category,
+          q: query || undefined,
+        }}
+      />
     </section>
   );
 }
