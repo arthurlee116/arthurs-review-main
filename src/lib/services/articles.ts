@@ -151,7 +151,7 @@ export function mapArticleRow(row: ArticleRow, tags = articleTags(row.revision_i
   };
 }
 
-function mapArticleRows(rows: ArticleRow[]) {
+export function mapArticleRows(rows: ArticleRow[]) {
   const tags = articleTagsByRevisionId(rows.map((row) => row.revision_id));
   return rows.map((row) => mapArticleRow(row, tags.get(row.revision_id)));
 }

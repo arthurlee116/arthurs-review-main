@@ -25,6 +25,14 @@ afterEach(async () => {
 });
 
 describe("public search page", () => {
+  it("hints the same raw-query limit enforced by the server", async () => {
+    const { SearchBox } = await import("@/components/SearchBox");
+    const { MAX_SEARCH_CODE_POINTS } = await import("@/lib/services/search");
+    render(<SearchBox />);
+
+    expect(screen.getByRole("textbox", { name: "Search" })).toHaveAttribute("maxLength", String(MAX_SEARCH_CODE_POINTS));
+  });
+
   it("renders highlighted results and pagination links", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");

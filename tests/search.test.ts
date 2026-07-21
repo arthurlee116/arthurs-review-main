@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
@@ -23,6 +23,17 @@ afterEach(async () => {
 });
 
 describe("keyword search", () => {
+  it("bounds raw Unicode input and FTS prefix tokens on the server", async () => {
+    const { MAX_SEARCH_CODE_POINTS, MAX_SEARCH_TOKENS, buildFtsQuery, normalizeSearchQuery } = await import("@/lib/services/search");
+    const raw = `${"😀".repeat(MAX_SEARCH_CODE_POINTS + 5)} ignored`;
+    const normalized = normalizeSearchQuery(raw);
+
+    expect(Array.from(normalized)).toHaveLength(MAX_SEARCH_CODE_POINTS);
+    const fts = buildFtsQuery(Array.from({ length: MAX_SEARCH_TOKENS + 8 }, (_, index) => `t${index}`).join(" "));
+    expect(fts.split(" ")).toHaveLength(MAX_SEARCH_TOKENS);
+    expect(fts).not.toContain(`t${MAX_SEARCH_TOKENS}`);
+  });
+
   it("finds published articles by body text and ignores drafts", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
@@ -220,5 +231,23 @@ describe("keyword search", () => {
       hasPreviousPage: false,
       hasNextPage: false,
     });
+  });
+
+  it("batch-loads tags once for a page of search results", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticleResults } = await import("@/lib/services/search");
+    migrate();
+    for (let index = 1; index <= 4; index += 1) {
+      publishArticle(createArticle(articleInput({ titleZh: `批量标签 ${index}`, slug: `batch-tags-${index}`, bodyZh: "批量标签关键词" })).id);
+    }
+    const prepare = vi.spyOn(getDb(), "prepare");
+
+    expect(searchArticleResults("批量标签关键词").results).toHaveLength(4);
+
+    const tagQueries = prepare.mock.calls.filter(([sql]) => String(sql).includes("join article_revision_tags"));
+    expect(tagQueries).toHaveLength(1);
+    prepare.mockRestore();
   });
 });

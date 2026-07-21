@@ -1,9 +1,11 @@
 import { getDb } from "@/lib/db/connection";
 import { readMarkdownBody } from "@/lib/content/markdown";
-import { mapArticleRow } from "./articles";
+import { MAX_SEARCH_CODE_POINTS, MAX_SEARCH_TOKENS } from "@/lib/search-limits";
+import { mapArticleRows } from "./articles";
 import type { Article, ArticleRow } from "./articles";
 
 export const SEARCH_PAGE_SIZE = 10;
+export { MAX_SEARCH_CODE_POINTS, MAX_SEARCH_TOKENS };
 
 const highlightStart = "[[[mark]]]";
 const highlightEnd = "[[[/mark]]]";
@@ -49,8 +51,12 @@ function tokenizeForFts(text: string): string {
 // Escape FTS5 special characters and build a prefix-match query.
 // The input is pre-tokenized for CJK so whitespace-splitting yields individual
 // characters or words, each with a trailing * for prefix matching.
-function buildFtsQuery(raw: string): string {
-  const cjkReady = tokenizeForFts(raw);
+export function normalizeSearchQuery(raw: string) {
+  return Array.from(raw.trim()).slice(0, MAX_SEARCH_CODE_POINTS).join("");
+}
+
+export function buildFtsQuery(raw: string): string {
+  const cjkReady = tokenizeForFts(normalizeSearchQuery(raw));
   return cjkReady
     .split(/\s+/)
     .filter(Boolean)
@@ -60,6 +66,7 @@ function buildFtsQuery(raw: string): string {
       return `"${escaped}"*`;
     })
     .filter(Boolean)
+    .slice(0, MAX_SEARCH_TOKENS)
     .join(" ");
 }
 
@@ -193,7 +200,7 @@ export function splitHighlightParts(snippet: string): SearchHighlightPart[] {
 }
 
 export function searchArticleResults(query: string, options: { page?: number; pageSize?: number } = {}): SearchArticleResultsPage {
-  const normalized = query.trim();
+  const normalized = normalizeSearchQuery(query);
   const pageSize = Math.max(1, Math.floor(options.pageSize ?? SEARCH_PAGE_SIZE));
   if (!normalized) return emptySearchPage(normalized, pageSize);
 
@@ -246,6 +253,7 @@ export function searchArticleResults(query: string, options: { page?: number; pa
     )
     .all(ftsQuery, pageSize, offset) as SearchArticleRow[];
 
+  const articles = mapArticleRows(rows);
   return {
     query: normalized,
     page,
@@ -254,8 +262,8 @@ export function searchArticleResults(query: string, options: { page?: number; pa
     totalPages,
     hasPreviousPage: page > 1,
     hasNextPage: page < totalPages,
-    results: rows.map((row) => ({
-      article: mapArticleRow(row),
+    results: rows.map((row, index) => ({
+      article: articles[index]!,
       excerptParts: splitHighlightParts(row.snippet || row.excerpt_zh),
     })),
   };
