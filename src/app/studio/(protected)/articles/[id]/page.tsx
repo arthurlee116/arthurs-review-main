@@ -24,7 +24,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
             {proofs.map((proof) => (
               <div key={proof.id} className="border-l border-[var(--rule)] pl-3">
                 <time dateTime={proof.createdAt}>{new Date(proof.createdAt).toLocaleString("en-GB")}</time>
-                <p>OpenTimestamps: {proof.otsStatus}{proof.otsError ? ` — ${proof.otsError}` : ""}</p>
+                <p>OpenTimestamps: {proof.otsStatus.replaceAll("_", " ")}{proof.otsError ? ` — ${proof.otsError}` : ""}</p>
                 <p>Wayback: {proof.waybackStatus}{proof.waybackError ? ` — ${proof.waybackError}` : ""}</p>
               </div>
             ))}

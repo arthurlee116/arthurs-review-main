@@ -31,6 +31,19 @@ function createLegacyPublishedArticle({ writeBody = true }: { writeBody?: boolea
   db.prepare("insert into tags(id, name, slug, created_at) values (1, '迁移标签', 'migration-tag', ?)")
     .run("2026-07-21T00:00:00.000Z");
   db.prepare("insert into article_tags(article_id, tag_id) values (1, 1)").run();
+  db.prepare(
+    `insert into publication_proofs(
+       article_id, created_at, public_url, content_fingerprint, document_sha256, document_path,
+       ots_path, ots_status, wayback_status
+     ) values (1, ?, ?, ?, ?, ?, ?, 'complete', 'pending')`,
+  ).run(
+    "2026-07-21T00:00:00.000Z",
+    "https://blog.leesaitool.com/commentary/migration-test",
+    "legacy-fingerprint",
+    "a".repeat(64),
+    "proofs/1/legacy.json",
+    "proofs/1/legacy.json.ots",
+  );
   if (writeBody) {
     fs.mkdirSync(path.join(tmpDir, "markdown"), { recursive: true });
     fs.writeFileSync(path.join(tmpDir, "markdown", "1.zh.md"), "完整正文", "utf8");
@@ -64,6 +77,7 @@ describe("schema migrations", () => {
       { version: 2, name: "rebuild_fts_shadow" },
       { version: 3, name: "article_revisions" },
       { version: 4, name: "article_url_history" },
+      { version: 5, name: "ots_verification_states" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -83,6 +97,7 @@ describe("schema migrations", () => {
       { version: 2, name: "rebuild_fts_shadow" },
       { version: 3, name: "article_revisions" },
       { version: 4, name: "article_url_history" },
+      { version: 5, name: "ots_verification_states" },
     ]);
   });
 
@@ -155,6 +170,9 @@ describe("schema migrations", () => {
       titleZh: "迁移测试",
       bodyZh: "完整正文",
       tags: [{ id: 1, name: "迁移标签", slug: "migration-tag" }],
+    });
+    expect(db.prepare("select ots_status from publication_proofs where id = 1").get()).toEqual({
+      ots_status: "pending_confirmation",
     });
   });
 

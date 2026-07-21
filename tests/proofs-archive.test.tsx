@@ -43,7 +43,7 @@ describe("public proof archive", () => {
 
     const [publicProof] = listPublicPublicationProofs();
 
-    expect(publicProof).toMatchObject({ articleTitle: "可验证的文章", otsStatus: "failed", waybackStatus: "failed" });
+    expect(publicProof).toMatchObject({ articleTitle: "可验证的文章", otsStatus: "verification_failed", waybackStatus: "failed" });
     expect(publicProof).not.toHaveProperty("documentPath");
     expect(publicProof).not.toHaveProperty("otsPath");
     expect(publicProof).not.toHaveProperty("otsError");
@@ -59,6 +59,8 @@ describe("public proof archive", () => {
     const proof = await createPublicationProof(article, {
       now: () => new Date("2026-07-15T11:00:00.000Z"),
       stamp: async () => Uint8Array.of(1, 2, 3),
+      upgrade: async () => "complete",
+      verify: async () => "anchored",
       capture: async () => "https://web.archive.org/web/20260715110000/https://blog.leesaitool.com/commentary/public-proof",
     });
 
@@ -103,7 +105,7 @@ describe("public proof archive", () => {
       `insert into publication_proofs(
          article_id, created_at, public_url, content_fingerprint, document_sha256, document_path,
          ots_status, wayback_status
-       ) values (?, ?, ?, ?, ?, ?, 'pending', 'pending')`,
+       ) values (?, ?, ?, ?, ?, ?, 'submitted', 'pending')`,
     );
     for (let index = 1; index <= 51; index += 1) {
       const article = publishArticle(createArticle(articleInput({ titleZh: `证明文章 ${index}`, slug: `proof-page-${index}` })).id);

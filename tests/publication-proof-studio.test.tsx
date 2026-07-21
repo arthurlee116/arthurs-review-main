@@ -15,7 +15,7 @@ vi.mock("@/lib/services/publication-proofs", () => ({
     {
       id: 9,
       createdAt: "2026-07-13T15:00:00.000Z",
-      otsStatus: "complete",
+      otsStatus: "anchored",
       otsError: null,
       waybackStatus: "failed",
       waybackError: "Wayback unavailable",
@@ -29,7 +29,7 @@ describe("publication proof status in Studio", () => {
     render(await EditArticlePage({ params: Promise.resolve({ id: "12" }) }));
 
     expect(screen.getByText("Publication proofs")).toBeInTheDocument();
-    expect(screen.getByText("OpenTimestamps: complete")).toBeInTheDocument();
+    expect(screen.getByText("OpenTimestamps: anchored")).toBeInTheDocument();
     expect(screen.getByText("Wayback: failed — Wayback unavailable")).toBeInTheDocument();
   });
 });

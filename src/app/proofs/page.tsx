@@ -29,10 +29,11 @@ function countLabel(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
-function statusLabel(status: PublicPublicationProof["otsStatus"]) {
-  if (status === "complete") return "complete";
-  if (status === "pending") return "pending";
-  return "failed";
+function otsStatusLabel(status: PublicPublicationProof["otsStatus"]) {
+  if (status === "anchored") return "anchored";
+  if (status === "submitted") return "submitted";
+  if (status === "pending_confirmation") return "pending confirmation";
+  return "verification failed";
 }
 
 function pageNumber(value: string | undefined) {
@@ -106,9 +107,9 @@ export async function ProofsContent({ page = 1 }: { page?: number } = {}) {
                         </time>
                         <dl className="sans mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-xs">
                           <dt className="text-[var(--muted)]">OpenTimestamps</dt>
-                          <dd className="text-right font-bold">{statusLabel(proof.otsStatus)}</dd>
+                          <dd className="text-right font-bold">{otsStatusLabel(proof.otsStatus)}</dd>
                           <dt className="text-[var(--muted)]">Wayback</dt>
-                          <dd className="text-right font-bold">{statusLabel(proof.waybackStatus)}</dd>
+                          <dd className="text-right font-bold">{proof.waybackStatus}</dd>
                         </dl>
                         <p className="sans mt-5 text-[0.68rem] uppercase tracking-[0.08em] text-[var(--muted)]">SHA-256</p>
                         <code className="mt-2 block break-all text-xs leading-5">{proof.documentSha256}</code>

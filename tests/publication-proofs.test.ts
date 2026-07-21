@@ -32,6 +32,78 @@ async function publishedArticle() {
 }
 
 describe("publication proofs", () => {
+  it("keeps a newly stamped receipt pending until Bitcoin verification succeeds", async () => {
+    const article = await publishedArticle();
+    const verify = vi.fn(async () => "anchored" as const);
+    const { createPublicationProof } = await import("@/lib/services/publication-proofs");
+
+    const proof = await createPublicationProof(article, {
+      now: () => new Date("2026-07-13T14:00:00.000Z"),
+      stamp: async () => Uint8Array.of(1, 2, 3),
+      upgrade: async () => "pending_confirmation",
+      verify,
+      capture: async () => "https://web.archive.org/example",
+    });
+
+    expect(proof).toMatchObject({ otsStatus: "pending_confirmation", otsPath: expect.stringMatching(/\.ots$/) });
+    expect(verify).not.toHaveBeenCalled();
+  });
+
+  it("marks a receipt anchored only after upgrade and verify both succeed", async () => {
+    const article = await publishedArticle();
+    const upgrade = vi.fn(async () => "complete" as const);
+    const verify = vi.fn(async () => "anchored" as const);
+    const { createPublicationProof } = await import("@/lib/services/publication-proofs");
+
+    const proof = await createPublicationProof(article, {
+      now: () => new Date("2026-07-13T14:01:00.000Z"),
+      stamp: async () => Uint8Array.of(4, 5, 6),
+      upgrade,
+      verify,
+      capture: async () => "https://web.archive.org/example",
+    });
+
+    expect(proof?.otsStatus).toBe("anchored");
+    expect(upgrade).toHaveBeenCalledOnce();
+    expect(verify).toHaveBeenCalledOnce();
+  });
+
+  it("does not trust a partial receipt left by a failed stamp command", async () => {
+    const article = await publishedArticle();
+    const { createPublicationProof } = await import("@/lib/services/publication-proofs");
+
+    const proof = await createPublicationProof(article, {
+      now: () => new Date("2026-07-13T14:02:00.000Z"),
+      stamp: async (documentPath) => {
+        fs.writeFileSync(`${documentPath}.ots`, Uint8Array.of(9));
+        throw new Error("stamp failed after partial output");
+      },
+      upgrade: async () => "complete",
+      verify: async () => "anchored",
+      capture: async () => "https://web.archive.org/example",
+    });
+
+    expect(proof).toMatchObject({ otsStatus: "verification_failed", otsPath: null, otsError: "stamp failed after partial output" });
+    expect(fs.existsSync(`${path.join(tmpDir, proof!.documentPath)}.ots`)).toBe(false);
+  });
+
+  it("records a permanent verify error without claiming an anchor", async () => {
+    const article = await publishedArticle();
+    const { createPublicationProof } = await import("@/lib/services/publication-proofs");
+
+    const proof = await createPublicationProof(article, {
+      now: () => new Date("2026-07-13T14:03:00.000Z"),
+      stamp: async () => Uint8Array.of(7),
+      upgrade: async () => "complete",
+      verify: async () => {
+        throw new Error("receipt does not match source");
+      },
+      capture: async () => "https://web.archive.org/example",
+    });
+
+    expect(proof).toMatchObject({ otsStatus: "verification_failed", otsError: "receipt does not match source" });
+  });
+
   it("submits and polls an authenticated Wayback capture job", async () => {
     process.env.WAYBACK_ACCESS_KEY = "test-access";
     process.env.WAYBACK_SECRET_KEY = "test-secret";
@@ -80,6 +152,8 @@ describe("publication proofs", () => {
     const proof = await createPublicationProof(article, {
       now: () => new Date("2026-07-13T15:00:00.000Z"),
       stamp,
+      upgrade: async () => "complete",
+      verify: async () => "anchored",
       capture,
     });
 
@@ -87,7 +161,7 @@ describe("publication proofs", () => {
       articleId: article.id,
       publicUrl: "https://blog.leesaitool.com/commentary/short-note-with-warmth",
       waybackStatus: "complete",
-      otsStatus: "complete",
+      otsStatus: "anchored",
       waybackUrl: expect.stringContaining("web.archive.org/web/20260713150000"),
       documentSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
     });
@@ -149,7 +223,7 @@ describe("publication proofs", () => {
     });
 
     expect(proof).toMatchObject({
-      otsStatus: "complete",
+      otsStatus: "pending_confirmation",
       waybackStatus: "failed",
       waybackError: "Wayback unavailable",
     });
@@ -197,7 +271,7 @@ describe("publication proofs", () => {
     expect(retried?.id).toBe(failed?.id);
     expect(stamp).toHaveBeenCalledOnce();
     expect(capture).toHaveBeenCalledTimes(2);
-    expect(retried).toMatchObject({ otsStatus: "complete", waybackStatus: "complete" });
+    expect(retried).toMatchObject({ otsStatus: "pending_confirmation", waybackStatus: "complete" });
   });
 
   it("serves only the recorded OTS receipt as an attachment", async () => {
