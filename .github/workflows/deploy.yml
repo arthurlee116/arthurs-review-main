@@ -44,11 +44,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-next-${{ hashFiles('pnpm-lock.yaml') }}-
 
-      - name: Lint
+      - name: Lint JS and check TS/TSX with TypeScript 7 CLI
         run: pnpm lint
-
-      - name: Typecheck
-        run: pnpm typecheck
 
       - name: Test
         run: pnpm test

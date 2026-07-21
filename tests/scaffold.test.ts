@@ -13,9 +13,11 @@ describe("project scaffold", () => {
     expect(true).toBe(true);
   });
 
-  it("keeps ESLint and the TypeScript 7 CLI as separate CI steps", () => {
-    expect(packageJson.scripts.lint).toBe("eslint");
-    expect(packageJson.scripts.typecheck).toBe("tsc --noEmit");
+  it("runs the TypeScript 7 CLI from the lint gate", () => {
+    expect(packageJson.scripts.lint).toBe("pnpm lint:js && pnpm lint:ts");
+    expect(packageJson.scripts["lint:js"]).toBe("eslint");
+    expect(packageJson.scripts["lint:ts"]).toBe("tsc --noEmit");
+    expect(packageJson.scripts.typecheck).toBe("pnpm lint:ts");
   });
 
   it("enables the stable Next.js and React compiler upgrades", () => {
