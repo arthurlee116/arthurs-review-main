@@ -1,45 +1,66 @@
-import { SignJWT, jwtVerify } from "jose";
+import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getEnv } from "@/lib/env";
-import { csrfCookie, sessionCookie } from "./constants";
+import { getDb } from "@/lib/db/connection";
+import { sessionCookie } from "./constants";
 
-function key() {
-  return new TextEncoder().encode(getEnv().SESSION_SECRET);
+const DEFAULT_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function tokenHash(token: string) {
+  return createHash("sha256").update(token, "utf8").digest("hex");
+}
+
+export function createSessionRecord({
+  now = new Date(),
+  ttlMs = DEFAULT_SESSION_TTL_MS,
+}: {
+  now?: Date;
+  ttlMs?: number;
+} = {}) {
+  const db = getDb();
+  const token = randomBytes(32).toString("base64url");
+  const createdAt = now.toISOString();
+  const expiresAt = new Date(now.getTime() + ttlMs).toISOString();
+  db.transaction(() => {
+    db.prepare("delete from admin_sessions where expires_at <= ?").run(createdAt);
+    db.prepare("update admin_sessions set revoked_at = ? where revoked_at is null").run(createdAt);
+    db.prepare("insert into admin_sessions(token_hash, created_at, expires_at) values (?, ?, ?)")
+      .run(tokenHash(token), createdAt, expiresAt);
+  }).immediate();
+  return { token, expiresAt: new Date(expiresAt) };
 }
 
 export async function createSession() {
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const token = await new SignJWT({ role: "admin" })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(key());
+  const session = createSessionRecord();
   const store = await cookies();
-  store.set(sessionCookie, token, {
+  store.set(sessionCookie, session.token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    expires: expiresAt,
+    expires: session.expiresAt,
   });
-  return token;
+  return session.token;
 }
 
-export async function destroySession() {
-  const store = await cookies();
-  store.delete(sessionCookie);
-  store.delete(csrfCookie);
-}
-
-export async function verifySessionCookie(value?: string) {
+export function revokeSessionToken(value: string | undefined, now = new Date()) {
   if (!value) return false;
-  try {
-    const result = await jwtVerify(value, key(), { algorithms: ["HS256"] });
-    return result.payload.role === "admin";
-  } catch {
-    return false;
-  }
+  const result = getDb()
+    .prepare("update admin_sessions set revoked_at = ? where token_hash = ? and revoked_at is null")
+    .run(now.toISOString(), tokenHash(value));
+  return result.changes === 1;
+}
+
+export async function verifySessionCookie(value?: string, now = new Date()) {
+  if (!value) return false;
+  const row = getDb()
+    .prepare(
+      `select 1
+       from admin_sessions
+       where token_hash = ? and revoked_at is null and expires_at > ?`,
+    )
+    .get(tokenHash(value), now.toISOString());
+  return Boolean(row);
 }
 
 export async function isAdminSession() {

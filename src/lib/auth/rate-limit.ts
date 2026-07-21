@@ -1,21 +1,38 @@
-type Entry = { count: number; resetAt: number };
+import { createHmac } from "node:crypto";
+import { getDb } from "@/lib/db/connection";
+import { getEnv } from "@/lib/env";
 
-export function createRateLimiter({ max, windowMs }: { max: number; windowMs: number }) {
-  const hits = new Map<string, Entry>();
+function ipHash(ip: string) {
+  return createHmac("sha256", getEnv().SESSION_SECRET).update(ip.trim().toLowerCase(), "utf8").digest("hex");
+}
 
-  return {
-    hit(key: string) {
-      const now = Date.now();
-      const current = hits.get(key);
-      if (!current || current.resetAt <= now) {
-        hits.set(key, { count: 1, resetAt: now + windowMs });
-        return { allowed: true, remaining: max - 1 };
-      }
-      current.count += 1;
-      return { allowed: current.count <= max, remaining: Math.max(0, max - current.count) };
-    },
-    reset(key: string) {
-      hits.delete(key);
-    },
-  };
+export function checkLoginRateLimit(
+  ip: string,
+  {
+    max,
+    windowMs,
+    now = new Date(),
+  }: {
+    max: number;
+    windowMs: number;
+    now?: Date;
+  },
+) {
+  const db = getDb();
+  return db.transaction(() => {
+    const timestamp = now.toISOString();
+    const cutoff = new Date(now.getTime() - windowMs).toISOString();
+    const hash = ipHash(ip);
+    db.prepare("delete from login_attempts where attempted_at <= ?").run(cutoff);
+    const current = db
+      .prepare("select count(*) as count from login_attempts where ip_hash = ? and attempted_at > ?")
+      .get(hash, cutoff) as { count: number };
+    if (current.count >= max) return { allowed: false, remaining: 0 };
+    db.prepare("insert into login_attempts(ip_hash, attempted_at) values (?, ?)").run(hash, timestamp);
+    return { allowed: true, remaining: max - current.count - 1 };
+  }).immediate();
+}
+
+export function resetLoginRateLimit(ip: string) {
+  getDb().prepare("delete from login_attempts where ip_hash = ?").run(ipHash(ip));
 }
