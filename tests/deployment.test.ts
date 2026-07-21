@@ -183,6 +183,14 @@ describe("deployment scripts", () => {
     expect(workflow).not.toContain("backup-data.sh");
   });
 
+  it("runs the off-site copy after the server-local backup window", () => {
+    const bootstrap = fs.readFileSync("scripts/server-bootstrap.sh", "utf8");
+    const workflow = fs.readFileSync(".github/workflows/backup.yml", "utf8");
+
+    expect(bootstrap).toContain("0 3 * * * root");
+    expect(workflow).toContain('- cron: "30 3 * * *"\n      timezone: "America/New_York"');
+  });
+
   it("retries transient SSH failures while copying backups for verification", () => {
     for (const workflowPath of [".github/workflows/backup.yml", ".github/workflows/restore-drill.yml"]) {
       const workflow = fs.readFileSync(workflowPath, "utf8");

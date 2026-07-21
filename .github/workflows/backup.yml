@@ -3,6 +3,7 @@ name: Production backup
 on:
   schedule:
     - cron: "30 3 * * *"
+      timezone: "America/New_York"
   workflow_dispatch:
 
 concurrency:
