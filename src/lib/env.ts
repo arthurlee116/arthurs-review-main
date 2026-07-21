@@ -14,8 +14,22 @@ const DataEnvSchema = EnvSchema.pick({ DATA_DIR: true });
 
 export type AppEnv = z.infer<typeof EnvSchema>;
 
+const commitPattern = /^[0-9a-f]{40}$/;
+const digestPattern = /^sha256:[0-9a-f]{64}$/;
+
 export function getEnv() {
   return EnvSchema.parse(process.env);
+}
+
+export function getReleaseMetadata() {
+  const commit = process.env.BUILD_COMMIT_SHA?.trim() || "development";
+  const expectedCommit = process.env.DEPLOY_COMMIT_SHA?.trim();
+  const digest = process.env.IMAGE_DIGEST?.trim() || "development";
+  const configured = Boolean(process.env.BUILD_COMMIT_SHA || expectedCommit || process.env.IMAGE_DIGEST);
+  const valid = !configured && process.env.NODE_ENV !== "production"
+    ? true
+    : commitPattern.test(commit) && expectedCommit === commit && digestPattern.test(digest);
+  return { commit, digest, valid };
 }
 
 export function getDataPaths() {

@@ -2,12 +2,13 @@ import fs from "node:fs";
 import { connection } from "next/server";
 
 import { getDb } from "@/lib/db/connection";
-import { ensureDataDirectories } from "@/lib/env";
+import { ensureDataDirectories, getReleaseMetadata } from "@/lib/env";
 
 export async function GET() {
   await connection();
   let database: "ok" | "failed" = "failed";
   let storage: "ok" | "failed" = "failed";
+  const release = getReleaseMetadata().valid ? "ok" : "failed";
 
   try {
     const row = getDb()
@@ -28,6 +29,6 @@ export async function GET() {
     console.error("Health check storage probe failed", error);
   }
 
-  const ok = database === "ok" && storage === "ok";
-  return Response.json({ ok, checks: { database, storage } }, { status: ok ? 200 : 503 });
+  const ok = database === "ok" && storage === "ok" && release === "ok";
+  return Response.json({ ok, checks: { database, storage, release } }, { status: ok ? 200 : 503 });
 }

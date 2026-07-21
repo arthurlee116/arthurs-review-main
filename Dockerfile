@@ -21,9 +21,12 @@ RUN pnpm build
 
 FROM node:26-alpine AS runner
 WORKDIR /app
+ARG GIT_COMMIT_SHA=development
 ENV CI=true
 ENV NODE_ENV=production
 ENV OTS_CLI_PATH=/opt/opentimestamps/bin/ots
+ENV BUILD_COMMIT_SHA=$GIT_COMMIT_SHA
+LABEL org.opencontainers.image.revision=$GIT_COMMIT_SHA
 RUN apk add --no-cache python3 make g++ \
   && npm install --global corepack@0.35.0 \
   && corepack enable
