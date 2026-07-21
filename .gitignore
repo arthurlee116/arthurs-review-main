@@ -30,6 +30,7 @@ build/
 # misc
 .DS_Store
 *.pem
+!deploy/studio-client-ca.pem
 
 # debug
 npm-debug.log*

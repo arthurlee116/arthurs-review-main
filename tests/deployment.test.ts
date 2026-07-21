@@ -183,6 +183,22 @@ describe("deployment scripts", () => {
     expect(caddy).not.toContain("trusted_proxies");
   });
 
+  it("requires this Mac's trusted client certificate for every Studio route", () => {
+    const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
+    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
+    const clientCa = fs.readFileSync("deploy/studio-client-ca.pem", "utf8");
+
+    expect(caddy).toContain("studio.blog.leesaitool.com {");
+    expect(caddy).toContain("mode require_and_verify");
+    expect(caddy).toContain("trust_pool file");
+    expect(caddy).toContain("pem_file /etc/caddy/pki/studio-client-ca.pem");
+    expect(caddy).toContain("@studio path /studio /studio/*");
+    expect(caddy).toContain("respond @studio 404");
+    expect(compose).toContain("./studio-client-ca.pem:/etc/caddy/pki/studio-client-ca.pem:ro");
+    expect(clientCa).toContain("BEGIN CERTIFICATE");
+    expect(clientCa).not.toContain("PRIVATE KEY");
+  });
+
   it("validates and rolls back HAProxy config reloads without touching Xray", () => {
     const installer = fs.readFileSync("scripts/install-haproxy-config.sh", "utf8");
 

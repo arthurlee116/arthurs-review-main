@@ -31,7 +31,45 @@ blog.leesaitool.com {
     Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
     -X-Powered-By
   }
-  @internal path /internal/*
+  @studio path /studio /studio/*
+  respond @studio 404
+  @internal path /internal /internal/*
+  respond @internal 404
+  reverse_proxy app:3000 {
+    header_up X-Forwarded-For {remote_host}
+    header_up X-Real-IP {remote_host}
+    header_down -X-Powered-By
+  }
+}
+
+studio.blog.leesaitool.com {
+  tls {
+    client_auth {
+      mode require_and_verify
+      trust_pool file {
+        pem_file /etc/caddy/pki/studio-client-ca.pem
+      }
+    }
+  }
+  encode zstd gzip
+  log {
+    output file /var/log/caddy/studio-access.log {
+      roll_size 25MiB
+      roll_interval 24h
+      roll_keep 30
+      roll_keep_for 720h
+    }
+    format json
+  }
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+    Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+    Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    -X-Powered-By
+  }
+  @internal path /internal /internal/*
   respond @internal 404
   reverse_proxy app:3000 {
     header_up X-Forwarded-For {remote_host}
