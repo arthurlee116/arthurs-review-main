@@ -86,6 +86,31 @@ describe("MarkdownEditor", () => {
     expect(onChange).toHaveBeenCalledWith("正文\n\n![inline](/media/2026/05/inline.webp)");
   });
 
+  it("keeps text entered while an inline image is uploading", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    let finishUpload!: (response: Response) => void;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            finishUpload = resolve;
+          }),
+      ),
+    );
+
+    const { rerender } = render(<MarkdownEditor label="Chinese body" value="正文" onChange={onChange} />);
+    const upload = user.upload(screen.getByLabelText("Insert inline image"), new File(["image"], "inline.png", { type: "image/png" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+
+    rerender(<MarkdownEditor label="Chinese body" value={"正文\n上传期间新输入"} onChange={onChange} />);
+    finishUpload(Response.json({ publicPath: "/media/2026/05/inline.webp" }));
+    await upload;
+
+    expect(onChange).toHaveBeenLastCalledWith("正文\n上传期间新输入\n\n![inline](/media/2026/05/inline.webp)");
+  });
+
   it("accepts a dropped inline image and inserts the public markdown image link", async () => {
     const onChange = vi.fn();
     vi.stubGlobal(

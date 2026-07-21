@@ -67,6 +67,8 @@ function markdownIssues(markdown: string) {
 
 export function MarkdownEditor({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
   const extensions = useMemo(
     () => [markdown({ base: markdownLanguage }), EditorView.contentAttributes.of({ "aria-label": label })],
     [label],
@@ -86,7 +88,8 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
     if (!response.ok) return;
     const result = (await response.json()) as { publicPath: string };
     const insertion = `![${imageAlt(file.name)}](${result.publicPath})`;
-    onChange(value.trim() ? `${value}\n\n${insertion}` : insertion);
+    const latestValue = valueRef.current;
+    onChange(latestValue.trim() ? `${latestValue}\n\n${insertion}` : insertion);
   }
 
   async function upload(event: React.ChangeEvent<HTMLInputElement>) {
