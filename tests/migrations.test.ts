@@ -7,6 +7,34 @@ import type { Migration } from "@/lib/db/migrate";
 
 let tmpDir: string;
 
+function createLegacyPublishedArticle({ writeBody = true }: { writeBody?: boolean } = {}) {
+  const db = new Database(path.join(tmpDir, "arthurs-review.sqlite3"));
+  db.pragma("foreign_keys = ON");
+  db.exec(fs.readFileSync("tests/fixtures/legacy-schema.sql", "utf8"));
+  db.exec("drop table article_search");
+  db.exec(`
+    create virtual table article_search using fts5(
+      title_zh, title_en, excerpt_zh, excerpt_en, body_zh, body_en, category, tags,
+      content='', tokenize='unicode61'
+    )
+  `);
+  db.prepare(
+    `insert into articles(
+       id, title_zh, title_en, slug, category, status, published_at, updated_at,
+       excerpt_zh, excerpt_en, cover_image_path, is_featured, seo_description, body_zh_path, body_en_path
+     ) values (?, ?, null, ?, ?, 'published', ?, ?, ?, null, null, 0, ?, ?, null)`,
+  ).run(1, "迁移测试", "migration-test", "commentary", "2026-07-21T00:00:00.000Z", "2026-07-21T00:00:00.000Z", "旧索引摘要", "迁移 SEO", "markdown/1.zh.md");
+  db.prepare(
+    `insert into article_search(rowid, title_zh, title_en, excerpt_zh, excerpt_en, body_zh, body_en, category, tags)
+     values (1, '旧 索 引', '', '旧 摘 要', '', '旧 正 文', '', 'commentary', '')`,
+  ).run();
+  if (writeBody) {
+    fs.mkdirSync(path.join(tmpDir, "markdown"), { recursive: true });
+    fs.writeFileSync(path.join(tmpDir, "markdown", "1.zh.md"), "完整正文", "utf8");
+  }
+  db.close();
+}
+
 beforeEach(async () => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-migrations-"));
   process.env.DATA_DIR = tmpDir;
@@ -28,7 +56,10 @@ describe("schema migrations", () => {
     migrate();
     migrate();
 
-    expect(getDb().prepare("select version, name from schema_migrations order by version").all()).toEqual([{ version: 1, name: "initial" }]);
+    expect(getDb().prepare("select version, name from schema_migrations order by version").all()).toEqual([
+      { version: 1, name: "initial" },
+      { version: 2, name: "rebuild_fts_shadow" },
+    ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
 
@@ -42,7 +73,10 @@ describe("schema migrations", () => {
     migrate();
 
     expect(db.prepare("select value from settings where key = ?").get("site_name")).toEqual({ value: "Arthur's Review" });
-    expect(db.prepare("select version, name from schema_migrations").all()).toEqual([{ version: 1, name: "initial" }]);
+    expect(db.prepare("select version, name from schema_migrations order by version").all()).toEqual([
+      { version: 1, name: "initial" },
+      { version: 2, name: "rebuild_fts_shadow" },
+    ]);
   });
 
   it("rolls back a failed migration and can retry it", async () => {
@@ -86,5 +120,50 @@ describe("schema migrations", () => {
 
     expect(() => runMigrations(db, [migration])).toThrow("Migration filename must be 001_initial.sql");
     db.close();
+  });
+
+  it("fills and verifies a shadow FTS table before replacing a legacy contentless index", async () => {
+    createLegacyPublishedArticle();
+    const { migrate } = await import("@/lib/db/migrate");
+    const { getDb } = await import("@/lib/db/connection");
+
+    migrate();
+
+    const db = getDb();
+    const table = db.prepare("select sql from sqlite_master where name = 'article_search'").get() as { sql: string };
+    expect(table.sql).not.toContain("content=''");
+    expect(db.prepare("select rowid from article_search order by rowid").all()).toEqual([{ rowid: 1 }]);
+    expect(db.prepare("select rowid from article_search where article_search match ?").all('"正"')).toEqual([{ rowid: 1 }]);
+  });
+
+  it("keeps the old FTS table if rebuilding is interrupted before the swap", async () => {
+    createLegacyPublishedArticle();
+    const { closeDb, getDb } = await import("@/lib/db/connection");
+    closeDb();
+    const db = getDb();
+    const { rebuildArticleSearchWithShadow } = await import("@/lib/db/migrate");
+    const rebuild = db.transaction(() =>
+      rebuildArticleSearchWithShadow(db, () => {
+        throw new Error("interrupted before swap");
+      }),
+    );
+
+    expect(() => rebuild.immediate()).toThrow("interrupted before swap");
+    expect((db.prepare("select sql from sqlite_master where name = 'article_search'").get() as { sql: string }).sql).toContain("content='' ".trim());
+    expect(db.prepare("select rowid from article_search order by rowid").all()).toEqual([{ rowid: 1 }]);
+    expect(db.prepare("select name from sqlite_master where name = 'article_search_shadow'").get()).toBeUndefined();
+  });
+
+  it("refuses to replace the old FTS index when a Markdown body is missing", async () => {
+    createLegacyPublishedArticle({ writeBody: false });
+    const { migrate } = await import("@/lib/db/migrate");
+    const { getDb } = await import("@/lib/db/connection");
+
+    expect(() => migrate()).toThrow("Missing Markdown body file: markdown/1.zh.md");
+
+    const db = getDb();
+    expect(db.prepare("select version from schema_migrations order by version").all()).toEqual([{ version: 1 }]);
+    expect(db.prepare("select rowid from article_search order by rowid").all()).toEqual([{ rowid: 1 }]);
+    expect(db.prepare("select name from sqlite_master where name = 'article_search_shadow'").get()).toBeUndefined();
   });
 });

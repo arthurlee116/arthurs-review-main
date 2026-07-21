@@ -113,6 +113,7 @@ describe("keyword search", () => {
         content='',
         tokenize='unicode61'
       );
+      delete from schema_migrations where version = 2;
     `);
     migrate();
 

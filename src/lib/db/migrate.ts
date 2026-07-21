@@ -20,6 +20,12 @@ const migrations: Migration[] = [
     filename: "001_initial.sql",
     up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "001_initial.sql"), "utf8")),
   },
+  {
+    version: 2,
+    name: "rebuild_fts_shadow",
+    filename: "002_rebuild_fts_shadow.sql",
+    up: (db) => rebuildArticleSearchWithShadow(db),
+  },
 ];
 
 type ArticleSearchRow = {
@@ -49,28 +55,12 @@ function readDataFile(relativePath: string | null) {
   if (fullPath !== normalizedRoot && !fullPath.startsWith(normalizedRoot + path.sep)) {
     throw new Error("Path escapes DATA_DIR.");
   }
-  return fs.existsSync(fullPath) ? fs.readFileSync(fullPath, "utf8") : "";
+  if (!fs.existsSync(fullPath)) throw new Error(`Missing Markdown body file: ${relativePath}`);
+  return fs.readFileSync(fullPath, "utf8");
 }
 
-function createArticleSearchTable(db: ReturnType<typeof getDb>) {
-  db.exec(`
-    create virtual table article_search using fts5(
-      title_zh,
-      title_en,
-      excerpt_zh,
-      excerpt_en,
-      body_zh,
-      body_en,
-      category,
-      tags,
-      tokenize='unicode61'
-    );
-  `);
-}
-
-function rebuildArticleSearch(db: ReturnType<typeof getDb>) {
-  db.prepare("delete from article_search").run();
-  const rows = db
+function articleSearchRows(db: Database.Database) {
+  return db
     .prepare(
       `select articles.id, articles.title_zh, articles.title_en, articles.excerpt_zh, articles.excerpt_en,
               articles.body_zh_path, articles.body_en_path, articles.category, group_concat(tags.name, ' ') as tags
@@ -82,39 +72,41 @@ function rebuildArticleSearch(db: ReturnType<typeof getDb>) {
        order by articles.id`,
     )
     .all() as ArticleSearchRow[];
+}
 
+function populateArticleSearch(db: Database.Database, tableName: "article_search_shadow") {
+  const rows = articleSearchRows(db);
   const insert = db.prepare(
-    `insert or replace into article_search(rowid, title_zh, title_en, excerpt_zh, excerpt_en, body_zh, body_en, category, tags)
+    `insert into ${tableName}(rowid, title_zh, title_en, excerpt_zh, excerpt_en, body_zh, body_en, category, tags)
      values (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   );
 
-  const tx = db.transaction(() => {
-    for (const row of rows) {
-      insert.run(
-        row.id,
-        tokenizeForFts(row.title_zh),
-        row.title_en ?? "",
-        tokenizeForFts(row.excerpt_zh),
-        row.excerpt_en ?? "",
-        tokenizeForFts(readDataFile(row.body_zh_path)),
-        readDataFile(row.body_en_path),
-        tokenizeForFts(row.category),
-        tokenizeForFts(row.tags ?? ""),
-      );
-    }
-  });
-  tx();
+  for (const row of rows) {
+    insert.run(
+      row.id,
+      tokenizeForFts(row.title_zh),
+      row.title_en ?? "",
+      tokenizeForFts(row.excerpt_zh),
+      row.excerpt_en ?? "",
+      tokenizeForFts(readDataFile(row.body_zh_path)),
+      readDataFile(row.body_en_path),
+      tokenizeForFts(row.category),
+      tokenizeForFts(row.tags ?? ""),
+    );
+  }
+  return rows;
 }
 
-function migrateContentlessArticleSearch(db: ReturnType<typeof getDb>) {
-  const table = db.prepare("select sql from sqlite_master where type = 'table' and name = 'article_search'").get() as
-    | { sql: string }
-    | undefined;
-  if (!table?.sql.includes("content=''")) return;
+export function rebuildArticleSearchWithShadow(db: Database.Database, beforeSwap: () => void = () => undefined) {
+  db.exec(fs.readFileSync(path.join(dirname, "migrations", "002_rebuild_fts_shadow.sql"), "utf8"));
+  const expected = populateArticleSearch(db, "article_search_shadow").map((row) => row.id);
+  const actual = (db.prepare("select rowid from article_search_shadow order by rowid").all() as Array<{ rowid: number }>).map((row) => row.rowid);
+  if (actual.length !== expected.length || actual.some((rowid, index) => rowid !== expected[index])) {
+    throw new Error("Shadow FTS verification failed.");
+  }
 
-  db.exec("drop table article_search");
-  createArticleSearchTable(db);
-  rebuildArticleSearch(db);
+  beforeSwap();
+  db.exec("drop table article_search; alter table article_search_shadow rename to article_search");
 }
 
 function validateMigrations(orderedMigrations: Migration[]) {
@@ -156,7 +148,6 @@ export function migrate() {
   const db = getDb();
   db.pragma("journal_mode = WAL");
   runMigrations(db);
-  migrateContentlessArticleSearch(db);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
