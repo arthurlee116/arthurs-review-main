@@ -28,6 +28,9 @@ function createLegacyPublishedArticle({ writeBody = true }: { writeBody?: boolea
     `insert into article_search(rowid, title_zh, title_en, excerpt_zh, excerpt_en, body_zh, body_en, category, tags)
      values (1, '旧 索 引', '', '旧 摘 要', '', '旧 正 文', '', 'commentary', '')`,
   ).run();
+  db.prepare("insert into tags(id, name, slug, created_at) values (1, '迁移标签', 'migration-tag', ?)")
+    .run("2026-07-21T00:00:00.000Z");
+  db.prepare("insert into article_tags(article_id, tag_id) values (1, 1)").run();
   if (writeBody) {
     fs.mkdirSync(path.join(tmpDir, "markdown"), { recursive: true });
     fs.writeFileSync(path.join(tmpDir, "markdown", "1.zh.md"), "完整正文", "utf8");
@@ -59,6 +62,7 @@ describe("schema migrations", () => {
     expect(getDb().prepare("select version, name from schema_migrations order by version").all()).toEqual([
       { version: 1, name: "initial" },
       { version: 2, name: "rebuild_fts_shadow" },
+      { version: 3, name: "article_revisions" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -76,6 +80,7 @@ describe("schema migrations", () => {
     expect(db.prepare("select version, name from schema_migrations order by version").all()).toEqual([
       { version: 1, name: "initial" },
       { version: 2, name: "rebuild_fts_shadow" },
+      { version: 3, name: "article_revisions" },
     ]);
   });
 
@@ -126,6 +131,7 @@ describe("schema migrations", () => {
     createLegacyPublishedArticle();
     const { migrate } = await import("@/lib/db/migrate");
     const { getDb } = await import("@/lib/db/connection");
+    const { getPublishedArticle } = await import("@/lib/services/articles");
 
     migrate();
 
@@ -134,6 +140,20 @@ describe("schema migrations", () => {
     expect(table.sql).not.toContain("content=''");
     expect(db.prepare("select rowid from article_search order by rowid").all()).toEqual([{ rowid: 1 }]);
     expect(db.prepare("select rowid from article_search where article_search match ?").all('"正"')).toEqual([{ rowid: 1 }]);
+    const articleColumns = db.pragma("table_info(articles)") as Array<{ name: string }>;
+    expect(articleColumns.map((column) => column.name)).toEqual([
+      "id",
+      "draft_revision_id",
+      "published_revision_id",
+      "published_at",
+      "updated_at",
+      "is_featured",
+    ]);
+    expect(getPublishedArticle("commentary", "migration-test")).toMatchObject({
+      titleZh: "迁移测试",
+      bodyZh: "完整正文",
+      tags: [{ id: 1, name: "迁移标签", slug: "migration-tag" }],
+    });
   });
 
   it("keeps the old FTS table if rebuilding is interrupted before the swap", async () => {

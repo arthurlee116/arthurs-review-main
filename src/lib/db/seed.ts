@@ -107,7 +107,17 @@ export function seed() {
       }
 
       const timestamp = `2024-01-${String(14 - index).padStart(2, "0")}T00:00:00.000Z`;
-      getDb().prepare("update articles set published_at = ?, updated_at = ? where slug = ?").run(timestamp, timestamp, slug);
+      getDb()
+        .prepare(
+          `update articles set published_at = ?, updated_at = ?
+           where id = (
+             select articles.id
+             from articles
+             join article_revisions on article_revisions.id = articles.draft_revision_id
+             where article_revisions.slug = ?
+           )`,
+        )
+        .run(timestamp, timestamp, slug);
     }
   }
 }

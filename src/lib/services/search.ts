@@ -207,7 +207,7 @@ export function searchArticleResults(query: string, options: { page?: number; pa
        FROM articles a
        JOIN article_search s ON a.id = s.rowid
        WHERE article_search MATCH ?
-         AND a.status = 'published'`,
+         AND a.published_revision_id IS NOT NULL`,
     )
     .get(ftsQuery) as CountRow;
 
@@ -219,12 +219,28 @@ export function searchArticleResults(query: string, options: { page?: number; pa
 
   const rows = db
     .prepare(
-      `SELECT a.*,
+      `SELECT a.id,
+              r.id as revision_id,
+              a.draft_revision_id,
+              a.published_revision_id,
+              r.title_zh,
+              r.title_en,
+              r.slug,
+              r.category,
+              a.published_at,
+              a.updated_at,
+              r.excerpt_zh,
+              r.excerpt_en,
+              r.cover_image_path,
+              a.is_featured,
+              r.seo_description,
+              r.body_zh_path,
+              r.body_en_path,
               snippet(article_search, -1, '${highlightStart}', '${highlightEnd}', '...', 24) as snippet
        FROM articles a
+       JOIN article_revisions r ON r.id = a.published_revision_id
        JOIN article_search s ON a.id = s.rowid
        WHERE article_search MATCH ?
-         AND a.status = 'published'
        ORDER BY rank, coalesce(a.published_at, a.updated_at) DESC, a.id DESC
        LIMIT ? OFFSET ?`,
     )

@@ -40,7 +40,7 @@ afterEach(async () => {
 });
 
 describe("publication-proof mutation triggers", () => {
-  it("runs after first publication and later published edits, but not draft edits", async () => {
+  it("runs only when Publish switches the public revision", async () => {
     const { createArticle } = await import("@/lib/services/articles");
     const { createPublicationProof } = await import("@/lib/services/publication-proofs");
     const article = createArticle(articleInput());
@@ -48,19 +48,29 @@ describe("publication-proof mutation triggers", () => {
     const publishRoute = await import("@/app/studio/api/articles/[id]/publish/route");
     const context = { params: Promise.resolve({ id: String(article.id) }) };
 
-    await updateRoute.PUT(
-      new Request("http://localhost/studio/api/articles/1", { method: "PUT", body: JSON.stringify(articleInput({ bodyZh: "草稿修改" })) }),
+    const firstSave = await updateRoute.PUT(
+      new Request("http://localhost/studio/api/articles/1", {
+        method: "PUT",
+        body: JSON.stringify({ ...articleInput({ bodyZh: "草稿修改" }), expectedDraftRevisionId: article.draftRevisionId }),
+      }),
       context,
     );
+    const firstSavedArticle = (await firstSave.json() as { article: { draftRevisionId: number } }).article;
     expect(createPublicationProof).not.toHaveBeenCalled();
 
     await publishRoute.POST(new Request("http://localhost/studio/api/articles/1/publish", { method: "POST" }), context);
     expect(createPublicationProof).toHaveBeenCalledOnce();
 
     await updateRoute.PUT(
-      new Request("http://localhost/studio/api/articles/1", { method: "PUT", body: JSON.stringify(articleInput({ bodyZh: "发布后修改" })) }),
+      new Request("http://localhost/studio/api/articles/1", {
+        method: "PUT",
+        body: JSON.stringify({ ...articleInput({ bodyZh: "发布后修改" }), expectedDraftRevisionId: firstSavedArticle.draftRevisionId }),
+      }),
       context,
     );
+    expect(createPublicationProof).toHaveBeenCalledOnce();
+
+    await publishRoute.POST(new Request("http://localhost/studio/api/articles/1/publish", { method: "POST" }), context);
     expect(createPublicationProof).toHaveBeenCalledTimes(2);
   });
 

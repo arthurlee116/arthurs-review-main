@@ -11,7 +11,7 @@ export async function GET() {
 
   try {
     const row = getDb()
-      .prepare("select count(*) as published from articles where status = 'published'")
+      .prepare("select count(*) as published from articles where published_revision_id is not null")
       .get() as { published: number } | undefined;
     if (typeof row?.published === "number") database = "ok";
   } catch (error) {

@@ -44,7 +44,8 @@ describe("environment and database bootstrap", () => {
 
     expect(tables).toContain("articles");
     expect(tables).toContain("tags");
-    expect(tables).toContain("article_tags");
+    expect(tables).toContain("article_revisions");
+    expect(tables).toContain("article_revision_tags");
     expect(tables).toContain("settings");
   });
 });

@@ -113,9 +113,9 @@ describe("keyword search", () => {
         content='',
         tokenize='unicode61'
       );
-      delete from schema_migrations where version = 2;
     `);
-    migrate();
+    const { rebuildArticleSearchWithShadow } = await import("@/lib/db/migrate");
+    getDb().transaction(() => rebuildArticleSearchWithShadow(getDb())).immediate();
 
     const results = searchArticles("contentless");
     expect(results.map((article) => article.slug)).toEqual(["old-fts-migration"]);

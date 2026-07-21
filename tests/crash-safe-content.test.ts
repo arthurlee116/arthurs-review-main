@@ -24,10 +24,11 @@ afterEach(async () => {
 describe("crash-safe article bodies", () => {
   it("keeps the previous body when an article update transaction fails", async () => {
     const { createArticle, getArticleById, updateArticle } = await import("@/lib/services/articles");
+    const { getDb } = await import("@/lib/db/connection");
     const original = createArticle(articleInput({ slug: "original", bodyZh: "old body" }));
-    createArticle(articleInput({ slug: "taken", titleZh: "Taken" }));
+    getDb().exec("create trigger block_revision_insert before insert on article_revisions begin select raise(abort, 'blocked'); end");
 
-    expect(() => updateArticle(original.id, articleInput({ slug: "taken", bodyZh: "new body" }))).toThrow();
+    expect(() => updateArticle(original.id, articleInput({ slug: "changed", bodyZh: "new body" }), original.draftRevisionId)).toThrow("blocked");
 
     const reloaded = getArticleById(original.id, { includeDraft: true });
     expect(reloaded?.bodyZh).toBe("old body");
@@ -56,16 +57,32 @@ describe("crash-safe article bodies", () => {
     expect(getArticleById(article.id, { includeDraft: true })?.bodyEn).toBe("old English");
   });
 
-  it("switches to a new body version before cleaning up the old file", async () => {
+  it("retains body files referenced by immutable revisions", async () => {
     const { createArticle, updateArticle } = await import("@/lib/services/articles");
+    const { getDb } = await import("@/lib/db/connection");
     const article = createArticle(articleInput({ slug: "versioned", bodyZh: "first version" }));
     const oldPath = path.join(tmpDir, article.bodyZhPath);
 
-    const updated = updateArticle(article.id, articleInput({ slug: "versioned", bodyZh: "second version" }));
+    const updated = updateArticle(article.id, articleInput({ slug: "versioned", bodyZh: "second version" }), article.draftRevisionId);
 
     expect(updated.bodyZhPath).not.toBe(article.bodyZhPath);
     expect(updated.bodyZh).toBe("second version");
-    expect(fs.existsSync(oldPath)).toBe(false);
+    expect(fs.existsSync(oldPath)).toBe(true);
+    expect(getDb().prepare("select count(*) as count from article_revisions where article_id = ?").get(article.id)).toEqual({ count: 2 });
     expect(fs.readdirSync(path.join(tmpDir, "markdown")).some((name) => name.includes(".tmp"))).toBe(false);
+  });
+
+  it("removes every revision body only after the article delete commits", async () => {
+    const { createArticle, deleteArticle, updateArticle } = await import("@/lib/services/articles");
+    const article = createArticle(articleInput({ slug: "delete-revisions", bodyZh: "first version" }));
+    const updated = updateArticle(
+      article.id,
+      articleInput({ slug: "delete-revisions", bodyZh: "second version" }),
+      article.draftRevisionId,
+    );
+    const paths = [article.bodyZhPath, updated.bodyZhPath].map((bodyPath) => path.join(tmpDir, bodyPath));
+
+    expect(deleteArticle(article.id)).toBe(true);
+    expect(paths.every((bodyPath) => !fs.existsSync(bodyPath))).toBe(true);
   });
 });

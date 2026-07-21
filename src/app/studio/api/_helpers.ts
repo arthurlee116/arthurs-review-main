@@ -18,6 +18,10 @@ export const ArticleBodySchema = z.object({
   coverImagePath: z.string().nullable(),
 });
 
+export const ArticleUpdateBodySchema = ArticleBodySchema.extend({
+  expectedDraftRevisionId: z.number().int().positive(),
+});
+
 function cookieValue(request: Request, name: string) {
   const cookie = request.headers.get("cookie") ?? "";
   return cookie
@@ -54,6 +58,9 @@ export function apiError(error: unknown) {
   }
   if (typeof error === "object" && error && "code" in error && String((error as { code?: unknown }).code).startsWith("SQLITE_CONSTRAINT")) {
     return Response.json({ error: "A record with those unique fields already exists." }, { status: 409 });
+  }
+  if (typeof error === "object" && error && "code" in error && (error as { code?: unknown }).code === "ARTICLE_REVISION_CONFLICT") {
+    return Response.json({ error: error instanceof Error ? error.message : "Draft revision conflict." }, { status: 409 });
   }
   if (error instanceof Error) {
     const status = /not found/i.test(error.message) ? 404 : 400;

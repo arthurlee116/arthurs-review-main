@@ -19,6 +19,9 @@ vi.mock("next/navigation", () => ({
 function article(overrides: Partial<Article> = {}): Article {
   return {
     id: 7,
+    revisionId: 11,
+    draftRevisionId: 11,
+    publishedRevisionId: null,
     titleZh: "测试文章",
     titleEn: null,
     slug: "test-article",
@@ -236,6 +239,28 @@ describe("ArticleEditor", () => {
     render(<ArticleEditor article={article({ excerptEn: "English excerpt" })} />);
 
     expect(screen.getByRole("textbox", { name: "English excerpt" })).toHaveValue("English excerpt");
+  });
+
+  it("sends the draft revision pointer and keeps local edits after a conflict", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(async (..._args: Parameters<typeof fetch>) =>
+      Response.json({ error: "This draft changed in another tab. Reload before saving again." }, { status: 409 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ArticleEditor article={article({ draftRevisionId: 41 })} />);
+
+    const title = screen.getByRole("textbox", { name: "Chinese title" });
+    await user.clear(title);
+    await user.type(title, "本地未覆盖内容");
+    await user.click(screen.getByRole("button", { name: "Save draft" }));
+
+    expect(await screen.findByText("Save failed: This draft changed in another tab. Reload before saving again.")).toBeVisible();
+    expect(title).toHaveValue("本地未覆盖内容");
+    const request = fetchMock.mock.calls[0]?.[1];
+    expect(JSON.parse(String(request?.body))).toMatchObject({
+      titleZh: "本地未覆盖内容",
+      expectedDraftRevisionId: 41,
+    });
   });
 
   it("translates Chinese fields into English fields without saving", async () => {

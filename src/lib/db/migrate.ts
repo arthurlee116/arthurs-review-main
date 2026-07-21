@@ -26,6 +26,15 @@ const migrations: Migration[] = [
     filename: "002_rebuild_fts_shadow.sql",
     up: (db) => rebuildArticleSearchWithShadow(db),
   },
+  {
+    version: 3,
+    name: "article_revisions",
+    filename: "003_article_revisions.sql",
+    up: (db) => {
+      db.exec(fs.readFileSync(path.join(dirname, "migrations", "003_article_revisions.sql"), "utf8"));
+      rebuildArticleSearchWithShadow(db);
+    },
+  },
 ];
 
 type ArticleSearchRow = {
@@ -60,6 +69,22 @@ function readDataFile(relativePath: string | null) {
 }
 
 function articleSearchRows(db: Database.Database) {
+  const articleColumns = db.pragma("table_info(articles)") as Array<{ name: string }>;
+  if (!articleColumns.some((column) => column.name === "status")) {
+    return db
+      .prepare(
+        `select articles.id, revisions.title_zh, revisions.title_en, revisions.excerpt_zh, revisions.excerpt_en,
+                revisions.body_zh_path, revisions.body_en_path, revisions.category, group_concat(tags.name, ' ') as tags
+         from articles
+         join article_revisions as revisions on revisions.id = articles.published_revision_id
+         left join article_revision_tags on article_revision_tags.revision_id = revisions.id
+         left join tags on tags.id = article_revision_tags.tag_id
+         group by articles.id, revisions.id
+         order by articles.id`,
+      )
+      .all() as ArticleSearchRow[];
+  }
+
   return db
     .prepare(
       `select articles.id, articles.title_zh, articles.title_en, articles.excerpt_zh, articles.excerpt_en,

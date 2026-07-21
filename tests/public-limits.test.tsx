@@ -48,7 +48,7 @@ describe("public listing limits", () => {
     const { container } = render(await HomeContent());
 
     expect(container.querySelectorAll("main article")).toHaveLength(12);
-    const articleQuery = prepare.mock.calls.map(([sql]) => String(sql)).find((sql) => sql.includes("from articles where status"));
+    const articleQuery = prepare.mock.calls.map(([sql]) => String(sql)).find((sql) => sql.includes("join article_revisions"));
     expect(articleQuery).toMatch(/limit\s+\?/i);
     prepare.mockRestore();
   });
@@ -62,7 +62,7 @@ describe("public listing limits", () => {
     const { container } = render(await CategoryPage({ category: "commentary" }));
 
     expect(container.querySelectorAll("main article")).toHaveLength(8);
-    const articleQuery = prepare.mock.calls.map(([sql]) => String(sql)).find((sql) => sql.includes("from articles where status"));
+    const articleQuery = prepare.mock.calls.map(([sql]) => String(sql)).find((sql) => sql.includes("join article_revisions"));
     expect(articleQuery).toMatch(/limit\s+\?/i);
     prepare.mockRestore();
   });
@@ -75,7 +75,7 @@ describe("public listing limits", () => {
 
     listPublishedArticles();
 
-    const tagQueries = prepare.mock.calls.filter(([sql]) => String(sql).includes("join article_tags"));
+    const tagQueries = prepare.mock.calls.filter(([sql]) => String(sql).includes("join article_revision_tags"));
     expect(tagQueries).toHaveLength(1);
     prepare.mockRestore();
   });

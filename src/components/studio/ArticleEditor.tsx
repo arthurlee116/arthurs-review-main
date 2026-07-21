@@ -11,6 +11,7 @@ type TagOption = { id: number; name: string; slug: string };
 
 type FormState = {
   id?: number;
+  draftRevisionId?: number;
   status?: "draft" | "published";
   titleZh: string;
   titleEn: string;
@@ -41,6 +42,7 @@ import { csrfToken } from "@/lib/client/csrf";
 function initial(article?: Article): FormState {
   return {
     id: article?.id,
+    draftRevisionId: article?.draftRevisionId,
     status: article?.status,
     titleZh: article?.titleZh ?? "",
     titleEn: article?.titleEn ?? "",
@@ -137,6 +139,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
       bodyEn: form.bodyEn || null,
       tagIds: form.tagIds,
       coverImagePath: form.coverImagePath || null,
+      ...(form.id ? { expectedDraftRevisionId: form.draftRevisionId } : {}),
     };
     const response = await fetch(form.id ? `/studio/api/articles/${form.id}` : "/studio/api/articles", {
       method: form.id ? "PUT" : "POST",

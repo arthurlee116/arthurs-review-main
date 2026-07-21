@@ -217,12 +217,12 @@ export function listPublicPublicationProofs(): PublicPublicationProof[] {
   const rows = getDb()
     .prepare(
       `select publication_proofs.*,
-              articles.title_zh as article_title,
-              articles.slug as article_slug,
-              articles.category as article_category
+              revisions.title_zh as article_title,
+              revisions.slug as article_slug,
+              revisions.category as article_category
        from publication_proofs
        join articles on articles.id = publication_proofs.article_id
-       where articles.status = 'published'
+       join article_revisions as revisions on revisions.id = articles.published_revision_id
        order by publication_proofs.created_at desc, publication_proofs.id desc`,
     )
     .all() as PublicProofRow[];
