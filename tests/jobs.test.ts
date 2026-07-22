@@ -121,7 +121,7 @@ describe("durable jobs", () => {
       .prepare("select type, payload from jobs order by id")
       .all() as Array<{ type: string; payload: string }>;
 
-    expect(rows.map((row) => row.type)).toEqual(["proof.create", "cache.invalidate"]);
+    expect(rows.map((row) => row.type)).toEqual(["proof.create", "search.embed", "cache.invalidate"]);
     expect(JSON.parse(rows[0]!.payload)).toEqual({
       articleId: published.id,
       revisionId: published.revisionId,
@@ -129,6 +129,10 @@ describe("durable jobs", () => {
       updatedAt: published.updatedAt,
     });
     expect(JSON.parse(rows[1]!.payload)).toEqual({
+      articleId: published.id,
+      revisionId: published.revisionId,
+    });
+    expect(JSON.parse(rows[2]!.payload)).toEqual({
       tags: [
         "public:article-lists",
         "public:article:commentary:short-note-with-warmth",
@@ -221,11 +225,37 @@ describe("durable jobs", () => {
       (getDb().prepare("select type from jobs order by id").all() as Array<{ type: string }>).map((job) => job.type),
     ).toEqual([
       "proof.create",
+      "search.embed",
       "cache.invalidate",
       "proof.ots_upgrade_verify",
       "proof.wayback_capture",
       "cache.invalidate",
     ]);
+  });
+
+  it("dispatches an embedding job with the immutable article revision", async () => {
+    const indexPublishedArticleRevision = vi.fn().mockResolvedValue(undefined);
+    const { createJobHandlers } = await import("@/lib/jobs/handlers");
+    const handlers = createJobHandlers({ indexPublishedArticleRevision });
+
+    await handlers["search.embed"]!({
+      id: 91,
+      type: "search.embed",
+      payload: { articleId: 7, revisionId: 13 },
+      dedupeKey: "article:7:revision:13",
+      status: "running",
+      attempts: 1,
+      maxAttempts: 8,
+      runAt: "2026-07-21T00:00:00.000Z",
+      lockedAt: "2026-07-21T00:00:00.000Z",
+      lockedBy: "worker",
+      lastError: null,
+      createdAt: "2026-07-21T00:00:00.000Z",
+      updatedAt: "2026-07-21T00:00:00.000Z",
+    });
+
+    expect(indexPublishedArticleRevision).toHaveBeenCalledOnce();
+    expect(indexPublishedArticleRevision).toHaveBeenCalledWith(7, 13);
   });
 
   it("moves permanent failures directly to dead", async () => {

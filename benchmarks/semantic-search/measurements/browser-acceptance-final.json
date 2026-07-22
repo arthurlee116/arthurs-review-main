@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-07-22T01:53:09Z",
+  "environment": {
+    "baseUrl": "http://127.0.0.1:29100",
+    "isolatedProductionDataCopy": true,
+    "publishedArticles": 27,
+    "embeddingChunks": 281,
+    "appImageId": "sha256:9264e9a2c928c99cd8c809217bbafe85095a47d2e29d7e97114aa68fbd3056ba",
+    "semanticImageId": "sha256:52233666dc2492ce5e300ae922e7d112269635ecb041bb0c331c609f582080b7",
+    "productionTouched": false
+  },
+  "queries": [
+    {
+      "id": "lexical-memory",
+      "kind": "lexical",
+      "expectedRank": 1,
+      "marks": 4,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "lexical-kant",
+      "kind": "lexical",
+      "expectedRank": 1,
+      "marks": 7,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "lexical-youth",
+      "kind": "lexical",
+      "expectedRank": 1,
+      "marks": 6,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "lexical-language",
+      "kind": "lexical",
+      "expectedRank": 1,
+      "marks": 2,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "semantic-agent",
+      "kind": "semantic",
+      "expectedRank": 1,
+      "marks": 0,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "semantic-structure",
+      "kind": "semantic",
+      "expectedRank": 9,
+      "marks": 0,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "semantic-language",
+      "kind": "semantic",
+      "expectedRank": 6,
+      "marks": 0,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "semantic-path",
+      "kind": "semantic",
+      "expectedRank": 2,
+      "marks": 0,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "contrastive-kant",
+      "kind": "contrastive",
+      "expectedRank": 1,
+      "marks": 0,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "contrastive-poem",
+      "kind": "contrastive",
+      "expectedRank": 1,
+      "marks": 0,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "english-memory",
+      "kind": "cross_lingual",
+      "expectedRank": 1,
+      "marks": 0,
+      "page": "Page 1 of 3"
+    },
+    {
+      "id": "no-result-punctuation",
+      "kind": "no_result",
+      "expectedRank": null,
+      "resultCount": 0,
+      "noResultsVisible": true
+    }
+  ],
+  "benchmarkAlignment": {
+    "matchedQuestionIds": [
+      "0625-thought-about-agentic-ai-semantic-01",
+      "dont-give-everything-to-morals-semantic-02",
+      "flaws-of-our-language-semantic-02",
+      "why-nations-fail-perdictable-semantic-02",
+      "memory-system-of-codex-breaked-down-cross-lingual-01"
+    ],
+    "offlineRanks": [1, 9, 6, 2, 1],
+    "browserRanks": [1, 9, 6, 2, 1],
+    "exactMatch": true
+  },
+  "pagination": {
+    "clickedNext": true,
+    "urlPage": 2,
+    "visibleCards": 10,
+    "pageLabel": "Page 2 of 3",
+    "previousHrefStable": true,
+    "nextHrefStable": true,
+    "horizontalOverflow": false
+  },
+  "articleNavigation": {
+    "clickedResultHref": "/commentary/talk-but-vaguely",
+    "loadedHeading": "关于中文语境中用词模糊的讨论",
+    "bodyCharacters": 1248,
+    "paragraphs": 31,
+    "horizontalOverflow": false
+  },
+  "mobile": {
+    "viewport": {
+      "width": 393,
+      "height": 956
+    },
+    "semanticExpectedRank": 2,
+    "crossLingualExpectedRank": 1,
+    "visibleCards": 10,
+    "firstImageNaturalWidth": 356,
+    "horizontalOverflow": false
+  },
+  "sidecarFailureInBrowser": {
+    "stopped": {
+      "httpPageLoaded": true,
+      "expectedSemanticArticleVisible": false,
+      "ftsNoResultsVisible": true,
+      "horizontalOverflow": false
+    },
+    "restarted": {
+      "sidecarHealthy": true,
+      "visibleCards": 10,
+      "expectedSemanticArticleRank": 1,
+      "horizontalOverflow": false
+    }
+  },
+  "screenshots": [
+    "screenshots/desktop-semantic-search-final.jpg",
+    "screenshots/mobile-semantic-search-final.jpg"
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "embedding": {
+    "id": "jinaai/jina-embeddings-v5-text-nano-retrieval",
+    "revision": "ac5d898c8d382b17167c33e5c8af644a3519b47d",
+    "license": "CC-BY-NC-4.0",
+    "dimension": 768,
+    "pooling": "model-output",
+    "outputName": "sentence_embedding",
+    "maximumLength": 512,
+    "nativeMaximumLength": 8192,
+    "padToken": "<|end_of_text|>",
+    "queryPrefix": "Query: ",
+    "documentPrefix": "Document: ",
+    "files": [
+      {
+        "path": "config.json",
+        "url": "https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval/resolve/ac5d898c8d382b17167c33e5c8af644a3519b47d/config.json",
+        "size": 1361,
+        "sha256": "367857e3a726df6f1997bcb8443a4351e68b29c65f996e5874a4b3e7c5661a16"
+      },
+      {
+        "path": "tokenizer.json",
+        "url": "https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval/resolve/ac5d898c8d382b17167c33e5c8af644a3519b47d/tokenizer.json",
+        "size": 17210235,
+        "sha256": "98d4a1d32152d6cedf85b5e88f3b205106dca1fe72aaab34e0ac13c238421069"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "url": "https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval/resolve/ac5d898c8d382b17167c33e5c8af644a3519b47d/tokenizer_config.json",
+        "size": 487,
+        "sha256": "6c4640d432db970b2436a4386d3ee992b99e756b62c37446c3f581c8d09cbb05"
+      },
+      {
+        "path": "model.onnx",
+        "url": "https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval/resolve/ac5d898c8d382b17167c33e5c8af644a3519b47d/onnx/model_q4f16.onnx",
+        "size": 130307,
+        "sha256": "2f139a9c44942032ef6fff72e792e67ed06dc15d9badef261cb99e0ec25054ca"
+      },
+      {
+        "path": "model_q4f16.onnx_data",
+        "url": "https://huggingface.co/jinaai/jina-embeddings-v5-text-nano-retrieval/resolve/ac5d898c8d382b17167c33e5c8af644a3519b47d/onnx/model_q4f16.onnx_data",
+        "size": 123503104,
+        "sha256": "6857e07e7e93f4de8855904f86090c51a6117e855272530aaf559a284114229c"
+      }
+    ]
+  },
+  "reranker": {
+    "id": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "license": "Apache-2.0",
+    "maximumLength": 512,
+    "padToken": "<pad>",
+    "files": [
+      {
+        "path": "config.json",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/config.json",
+        "size": 891,
+        "sha256": "cc2cfe51aa3fd759d21d21acf5dfd6994aa67a3c9210636d22e143699d336c77"
+      },
+      {
+        "path": "tokenizer.json",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/tokenizer.json",
+        "size": 17082660,
+        "sha256": "62c24cdc13d4c9952d63718d6c9fa4c287974249e16b7ade6d5a85e7bbb75626"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/tokenizer_config.json",
+        "size": 435,
+        "sha256": "e7fbfbfa6347b4e414c1cee50d142e2c2f9a895dad68b068ae83a8b564c3837e"
+      },
+      {
+        "path": "special_tokens_map.json",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/special_tokens_map.json",
+        "size": 239,
+        "sha256": "378eb3bf733eb16e65792d7e3fda5b8a4631387ca04d2015199c4d4f22ae554d"
+      },
+      {
+        "path": "model.onnx",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/onnx/model_quint8_avx2.onnx",
+        "size": 118620016,
+        "sha256": "6c2513767fb63d008a4377bef7a7a3555433d9436342bb53e35a3a72ffc52d4b"
+      }
+    ]
+  }
+}

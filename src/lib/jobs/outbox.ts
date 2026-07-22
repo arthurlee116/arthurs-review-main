@@ -61,6 +61,20 @@ export function enqueuePublishedRevisionJobs(
     db,
   );
 
+  enqueueJob(
+    {
+      type: "search.embed",
+      payload: {
+        articleId: article.id,
+        revisionId: article.revisionId,
+      },
+      dedupeKey: `article:${article.id}:revision:${article.revisionId}`,
+      maxAttempts: 12,
+      now: new Date(article.updatedAt),
+    },
+    db,
+  );
+
   return enqueueCacheInvalidation(
     {
       tags: [

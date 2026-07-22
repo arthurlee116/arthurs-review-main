@@ -1,0 +1,2980 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "publishedArticleCount": 27,
+    "language": "zh-majority",
+    "preparedAt": "2026-07-21"
+  },
+  "questions": [
+    {
+      "id": "what-about-stereotypes-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "Outsiders 里的 Greasers 与 Socs 刻板印象",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "reliable source、bias 和两方辩论有什么问题",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "刻板印象为什么不是凭空出现，却仍然可能造成伤害",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "要求受压迫的一方无条件包容压迫者有什么问题",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "把任何争议都讲成双方各有一半道理会怎样",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "一个人做过伟大贡献是否意味着不能批判他的恶行",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "批判性思考的目标应当是保持中立还是作出判断",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇文章重点批评学校把独立思考训练成机械的正反方辩论",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的不是政治词语带来的恐惧，而是课堂如何误教 stereotypes",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "what-about-stereotypes-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why does forced fifty-fifty neutrality fail to teach genuine critical thinking?",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rationale": "对应文章讨论《局外人》课堂、刻板印象的事实基础，以及把批判性思维教成五五开所造成的判断失能。"
+    },
+    {
+      "id": "poem-for-korchagin-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "柯察金 钢铁是怎样炼成的 诗",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "年轻的心脏 战鼓 炙热崇高的真理",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "哪首诗写一个人即使反复失败也愿意为理想重新开始",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "寻找表达不愿再做左右逢源变色龙的诗",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "什么作品用地下传来的战鼓象征革命将至",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "愿意抛弃生命追求真理的短诗是哪一篇",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "读完苏联革命小说后受到巨大精神力量鼓舞的创作",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "不是寻找暴风雨中的避风港，而是写战斗与牺牲的那首诗",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "两首诗中哪首直接提到失败后一次次重来",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "poem-for-korchagin-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Which poem was inspired by How the Steel Was Tempered and calls for sacrifice for truth?",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rationale": "对应看完《钢铁是怎样炼成的》后写给保尔·柯察金的短诗，核心意象是理想、战鼓、牺牲与失败后重来。"
+    },
+    {
+      "id": "a-poem-for-someone-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "茫茫大海 暴虐雷电 避风港 诗",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "灯塔 冰冷海水 总有一个地方",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "哪首诗把安全感写成风暴无法冲破的港湾",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "寻找在黑暗狂暴日子里仍相信前方有庇护的作品",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "航海者为什么面对雷电和巨浪并不恐惧",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "用海上航行比喻奔向一个可以喘息的地方",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "哪篇诗歌表达忧愁不能进入某片水域",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "不是革命战鼓与牺牲，而是暴风雨、航船和安宁的诗",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "两首短诗中哪首把希望放在不远处的港口",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "a-poem-for-someone-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Find the poem where a sailor crosses a violent sea toward a safe harbor.",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rationale": "对应以海上风暴、航行、灯塔与避风港表达在黑暗日子里总有喘息之处的短诗。"
+    },
+    {
+      "id": "banned-by-the-internationale-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "班群 推荐 国际歌 害怕封号",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "骆驼祥子 Greasers 越努力越幸运",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "为什么同学会把一首共产主义歌曲误认成反共产主义内容",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "一谈政治就害怕却说不出具体风险说明了什么",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "底层个人再努力也无法抵消结构性压迫的例子",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "讨论复杂意识形态时为什么必须把概念说具体",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "把贫困与失败都归因于个人不够勤奋有什么问题",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇从一首歌在班级聊天中的遭遇谈政治恐惧，而非分析音乐全球化",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是推荐红色歌曲被排斥的经历，不是献给柯察金的诗",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "banned-by-the-internationale-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Which article starts with classmates fearing a recommendation of The Internationale?",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rationale": "对应因在班群推荐《国际歌》引发恐惧的经历，并批评模糊政治恐惧、个人主义和脱离结构谈努力。"
+    },
+    {
+      "id": "flaws-of-our-language-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "shell shock PTSD generality particularity",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "Ms. Joanna 薯条包装 辣条味 用词",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "医学缩写如何让人忘记创伤背后的具体经历",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "给大量相似事物起同一个名字会产生什么认知风险",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "把严重或荒唐的行为换成温和说法会造成什么后果",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "为什么每个词的选择都可能改变人对事件严重性的判断",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "语言抽象化怎样把战场恐惧和普通受惊混成同一标签",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇用 PTSD 的命名史解释语言遮蔽，而不是讨论规则解释权",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是委婉措辞降低事件严重性，不是空泛人生格言",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "flaws-of-our-language-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "How did the shift from shell shock to PTSD hide the concrete experience of trauma?",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rationale": "对应从抽象概念、shell shock 到 PTSD 和校园委婉语，分析语言如何遮蔽具体经历及事情严重性。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "张雪 努力 冰山 幸存者",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "生产关系约束生产力 骆驼祥子 励志",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "一个逆袭案例为什么不能证明人人只靠勤奋就能成功",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "只展示成功者结果而隐藏大量失败者属于什么叙事问题",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "为什么应当评价努力过程而不是只拿最终职位衡量人",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "励志故事如何剥夺底层解释失业和贫困的权利",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "社会要求出身卑微者付出异常代价才过上体面生活说明什么",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇专门拆解个人成功故事中的环境变量，而不是泛论人的市场价值",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是张雪案例与看不见的失败者，不是张雪峰批评文科",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "how-much-do-your-effort-count-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why can one exceptional success story not prove that effort alone determines outcomes?",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rationale": "对应以张雪的励志叙事为例，讨论幸存者偏差、环境变量、生产关系，以及底层解释自身处境的权利。"
+    },
+    {
+      "id": "what-about-the-iranian-war-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "德黑兰女孩 轰炸 反战 伊朗",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "伊朗政府 抗议 美国 以色列 石油",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "当地人宁愿承担空袭风险也希望推翻政权时应如何理解反战",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "为什么不能仅凭战争由美国发动就断定它不正义",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "远离冲突的人呼吁克制可能忽略了谁的声音",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "判断一场战争正义与否为何要区分发动者动机和实际结果",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "机械复制越战后的反战框架会漏掉哪些当地背景",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇讨论的是伊朗政权、外部军事打击与当地人的取舍，而不是一般道德动机",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是对无条件反战的批评，不是对国际歌被禁言的感想",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "what-about-the-iranian-war-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why does the author reject automatic opposition to a war merely because America is involved?",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rationale": "对应以德黑兰女孩的陈述为起点，主张判断战争需考察政权压迫和当地人选择，不能把反美机械等同反战。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "马克思 恩格斯 现代女权主义之父 道德",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "特朗普 明尼阿波利斯 中期选举 移民执法",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "性别不平等为什么更应从财产和社会地位解释",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "把压迫归因于坏男人会遮住什么结构因素",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "政治人物的行动可能服务选票和权力而非公开口号",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "为什么人类非理性不等于所有行为都没有利益计算",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "分析公共事件时怎样避免用好人坏人替代因果解释",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇强调不要用个人道德解释制度行为，而不是讨论家庭中的权力",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是理性利益如何解释政治行动，不是语言把坏事说轻",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "dont-give-everything-to-morals-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Which essay argues that structural interests explain oppression better than calling individuals evil?",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rationale": "对应主张用利益、权力和理性动机解释政治与性别压迫，不把系统性现象简化成某些人道德邪恶。"
+    },
+    {
+      "id": "relc-from-textbook-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "闻一多 古代典籍 衰微民族 解药",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "百家争鸣 市民文学 杨振宁父亲 鲁迅",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "传统文化复兴为什么无法直接解决工业时代的民族危机",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "近代知识分子急于和西方文化脱钩犯了什么方向错误",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "思想应当从古籍中寻找还是在现实实践与斗争中产生",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "上层知识分子鼓吹下层团结服从可能符合谁的利益",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "为什么奴隶时代的价值观不能直接套到工业化社会",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇批判以古代文化救国，而不是批判浪漫主义回到前工业社会",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是闻一多课文引出的历史唯物主义分析，不是古希腊神话里的边界",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "relc-from-textbook-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why cannot reviving ancient culture by itself cure a modern nation's decline?",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rationale": "对应反驳以复兴古代文化拯救近代中国，强调思想来自特定生产力、阶级位置、实践与斗争。"
+    },
+    {
+      "id": "blur-big-word-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "伊卡洛斯 宙斯 培根 支配自然 边界",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "顺应自然 癌细胞 洪水 真实的自己",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "一句人生大道理为什么在精确定义之后往往不再成立",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "谁有资格规定人类能力不可越过的界限",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "用自然等于善来指导生活为什么会遇到癌症和洪水的反例",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "做真实的自己这句话里的自我是现在、过去还是未来",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "模糊格言如何因为能适配任何场景而伪装成普世真理",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇用神话、自然和自我三个例子拆解空泛大道理，而不是分析行政规则的模糊",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是格言定义不清的问题，不是 PTSD 这种抽象标签",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "blur-big-word-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why do grand life lessons often collapse once their key words are precisely defined?",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rationale": "对应逐一追问边界、顺应自然和真实自我等宏大格言的定义，说明这些说法靠模糊才显得普遍正确。"
+    },
+    {
+      "id": "talk-but-vaguely-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "提高正确率 构建知识体系 有效利用时间",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "文言文 自由裁量权 话语解释权 规则",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "学习方法中那些听起来正确却无法执行的词有什么共同点",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "为什么宽泛表达不容易被证明错误",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "规则写得含糊会把权力交给哪一方",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "古代简略语言与自上而下治理之间有什么联系",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "人们为避免祸从口出为何偏爱不具体的说法",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇聚焦模糊规则带来的解释权，而不是宏大人生哲理是否成立",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是年级大会里的学习黑话，不是老师用委婉语淡化乱扔垃圾",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "talk-but-vaguely-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "How can vague wording in rules enlarge the discretion of whoever interprets them?",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rationale": "对应从考试经验话术、文言文和规则制定讨论模糊语言如何扩大自上而下的自由裁量与解释权。"
+    },
+    {
+      "id": "romance-vs-capital-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "浪漫主义 sublime 手搓工业 前工业社会",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "中世纪行会 湖边 乌托邦社会主义 道德化资本主义",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "浪漫主义指出资本主义问题后为什么给不出可行解决方案",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "回到自然和手工生产为何不是解放现代人的道路",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "理性分析让人不舒服是否足以说明它残酷或错误",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "劝资本家变成好人为什么不能解决资本主义矛盾",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "在纸上设计完美平等社会的方案缺少了什么",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇批评回到前工业时代的冲动，而不是批评用古籍拯救民族",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是浪漫主义对资本主义的错误药方，不是全球化压倒本土音乐",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "romance-vs-capital-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why is returning to nature and handmade production an inadequate answer to capitalism?",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rationale": "对应批评把浪漫主义当作革命、人文关怀和反资本主义答案，尤其反对回归自然、手工业与道德化资本。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "好奇心 痛苦 天堂 精神胜利法",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "DSM 精神疾病 100 300 心灵APP 制药巨头",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "如果人不再追问痛苦的原因，好奇心为什么会消失",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "宗教许诺死后补偿可能怎样削弱现实中的社会改变",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "资本如何把社会造成的痛苦转化成可收费的个人疗愈",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "针对底层女性销售心灵旅程为什么不是结构性解法",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "精神疾病分类不断增加与商业化的痛苦管理有什么联系",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇讨论的是痛苦被商品化消解，而不是努力成功叙事",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是好奇心消失与精神药物，不是 AI 让学习回归兴趣",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "win-in-your-life-with-a-good-heart-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "How can selling remedies for socially produced pain suppress curiosity and demands for change?",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rationale": "对应把精神胜利法理解为消解痛苦与好奇心的产业：宗教、药物、心灵课程和不断扩张的精神诊断。"
+    },
+    {
+      "id": "thanks-to-academia-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "Verizon 罢工 活劳动 死劳动 自动化",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "福特主义 机器 比蒙 阶级战争 宣言",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "高度自动化的生产系统为什么仍然离不开人的劳动",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "复杂技术工人增多如何带来新的团结可能",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "机器吸纳人类劳动为何同时埋下反抗的种子",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "历史没有预设终点时集体行动还有什么意义",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "理解资本主义结构怎样帮助工人制定更清晰的斗争策略",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇以诗性宣言讨论活劳动和机器，而不是预测 AI 的三种阶级结局",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是自动化工厂中的罢工与组织，不是个人努力改变命运",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "thanks-to-academia-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why does automation still leave room for worker power through indispensable living labor?",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rationale": "对应关于自动化、活劳动、工人组织和历史开放性的宣言，强调机器统治本身包含集体抵抗的条件。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "教室 摄像头 潜规则 丛林法则 证据",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "社会性死亡 告老师 共同沉默 秩序创造者",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "所有人都知道却没人承认的行为为什么很难被正式规则处理",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "群体沉默如何保护最不守规则但最会隐藏的人",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "受害者拿不出可采证据时校园秩序会落到谁手里",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "把别人牵连得足够深为什么能成为违规者的护身符",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "法庭知道媒体在暗示污蔑却无法定罪体现了什么困境",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇讨论证据与共同沉默制造的非正式秩序，而不是法律条文的年龄断崖",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是潜规则怎样运作，不是家庭用爱包装权力",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "hidden-unsaid-everywhere-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "How does collective silence allow hidden rule-breakers to become the makers of order?",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rationale": "对应校园和社会中因证据缺失、集体沉默与牵连关系形成的潜规则，并解释丛林秩序如何自我保护。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "AI 模式匹配 bullet point 礼貌邮件 荀子",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "杀猪盘 尼日利亚 情感连接 AI 教师",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "如果考试本来只训练题型套路，AI 取代这种训练损失了什么",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "能把要点扩写成礼貌长邮件是否仍代表良好素养",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "某项技能被机器削弱之前为什么应先问它是否重要",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "善假于物如何支持把 AI 当成人能力的延伸",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "没有自身利益动机的机器为何可能提供某种情感支持",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇评估 AI 对具体学习能力的取代，而不是预测劳动与收入完全脱钩",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是 AI 能否替代教师情感连接，不是 AI 被谁掌握的阶级未来",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "limitations-on-ai-doubted-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Before worrying that AI weakens a skill, why should we ask whether that skill still matters?",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rationale": "对应逐项反驳 AI 削弱思考、写作、内化与情感连接的常见质疑，核心标准是被替代能力是否仍有价值。"
+    },
+    {
+      "id": "i-love-soviet-music-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "苏联 70年代 摇滚 My Address is the Soviet Union",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "日本 韩国 八十年代 小调 英皇八级 乐理",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "为什么保留集体主义主题的摇滚不应被视为落后",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "苏联解体后本土乐队消失与商业文化扩张有什么关系",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "日韩流行音乐何时从本地编配转向复制美国模式",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "当歌手靠粉丝变现而非音乐能力成功说明产业发生了什么",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "全球化为什么可能带来文化单向输出而不是均衡交流",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇通过苏联、日韩和中国歌曲谈全球化，而不是讨论国际歌的政治象征",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是商业音乐造成的文化趋同，不是浪漫主义歌颂自然",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "i-love-soviet-music-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "How did global commercial culture weaken distinctive Soviet, Japanese, Korean, and Chinese music?",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rationale": "对应通过苏联摇滚、日韩与中国流行乐变化，论证全球化和美国商业文化使各地音乐趋同并衰退。"
+    },
+    {
+      "id": "gooooodddds-not-valid-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "雷神 白宫 三道雷 避雷针 无神论",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "启蒙运动 意义危机 信仰的飞跃",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "如果传说中的神真的出现，无神论者为什么未必会改信",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "一个超强存在只要服从物理规律还能否称为神",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "人类能力超过古人想象的神力会怎样改变神的概念",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "科学解释自然之后为什么同时留下了人生意义的空缺",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "无法证明信仰或无信仰后果时人还能怎样选择",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇用雷神和避雷设施讨论信仰，而不是用宙斯讨论模糊边界",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是科学革命后的意义危机，不是宗教如何安慰现实痛苦",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "gooooodddds-not-valid-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "If a thunder god obeyed physical laws, why would that not necessarily refute atheism?",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rationale": "对应雷神假设、科学可解释性、意义危机和信仰飞跃，主张可被物理研究的强大实体并不是宗教意义上的神。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "OpenClaw Codex Claude Code harness 脚手架",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "地理会考 里根 加州大学 学费 素质教育",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "模型能力之外的软件脚手架为什么决定智能体是否好用",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "所有工作都能自动化后人为什么仍可能主动劳动",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "物质分配不再取决于职业时失业概念会怎样变化",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "学生平时高分却在灵活考试失利暴露了什么教育缺陷",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "应试教育为何不是几项改革政策就能消除的偶然问题",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇强调 AI 后劳动仍是人的第一需要，而不是列出精英和无产者三种结局",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是学习如何摆脱就业回报，不是 AI 会不会削弱写邮件能力",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "0625-thought-about-agentic-ai-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why might people continue to work voluntarily after AI separates labor from material income?",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rationale": "对应把先进模型与 agent harness 纳入同一分析，预测 AI 普及后劳动、收入和教育将脱钩，学习回归兴趣。"
+    },
+    {
+      "id": "family-and-parents-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "三门峡 戒网瘾 21岁 女大学生 11天",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "监护权 家丑不可外扬 为你好 纪委",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "父母养育孩子为何不能自动换来要求服从的道德债权",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "把未成年人送入封闭矫治机构是否属于正常监护",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "掌权者决策而由孩子承担全部失败成本像什么权力结构",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "国家介入有风险是否足以证明家庭不应被监督",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "为什么好父母的存在不能证明所有家庭权力都无需制约",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇分析父母以爱包装处置权，而不是校园违规者的共同沉默",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是家庭作为权力单位，不是一般地把坏事归因于坏人",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "family-and-parents-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why should guardianship be treated as a duty rather than unlimited parental power?",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rationale": "对应成年女性被送进戒网瘾机构的案例，论证监护是义务而非无限处置权，家庭需要外部监督。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "Codex memory_summary.md MEMORY.md rollout JSONL",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "ad hoc notes raw_memories SQLite token 时间戳",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "Codex 如何从概览索引一路追溯到完整会话原始记录",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "哪一层记忆保存任务做法但通常省略工具输出",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "用户明确要求记住某件事时系统会创建什么文件",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "长期偏好记录为什么可能让助手把一次要求过度泛化",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "用户不知情时保存操作习惯会带来什么隐私和控制问题",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇是 AI 助手记忆架构的技术分析，而不是讨论 AI 教育应用",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是 Codex 过拟合历史偏好的问题，不是 agentic AI 对劳动的影响",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "memory-system-of-codex-breaked-down-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "What are the layers of Codex memory, and why can they cause overfitting to past requests?",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rationale": "对应技术拆解 Codex 的四层记忆、summary/registry/rollout/raw 数据，并批评过拟合和无意识记录。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "At+1 T(At,St,Pt,Rt) 制度",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "压力增长率 承诺增长率 可分配资源增长率",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "建国时有用的制度为何在环境改变后仍难被撤销",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "一个国家为什么通常只能从 A 演化成 A1 而难以跳到 B",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "经济下行时多个既得利益群体会怎样挤压政府改革空间",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "军事动员有效的信息系统为何可能不适合和平治理",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "仅凭早期制度设计和后续经济条件能否预见政治极化",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇用状态转移公式解释国家制度延续，而不是讨论社会科学公式是否严谨",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是制度路径依赖，不是家庭权力的代际延续",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "why-nations-fail-perdictable-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "How can founding institutions constrain a country's later reforms through path dependence?",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rationale": "对应建国制度的路径依赖模型，讨论利益集团、冲击、改革资源和承诺增长超过资源增长造成的制度压力。"
+    },
+    {
+      "id": "bad-teens-gone-bad-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "丹麦 最低刑事责任年龄 15岁 14岁",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "主观预期代价 被抓概率 处罚 未来后果",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "降低刑责年龄为什么未必能威慑冲动型严重犯罪",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "同一天生日两侧承担完全不同责任体现了什么法律问题",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "相同行为因受害者是否抓住栏杆而罪责骤变是否合理",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "把霸凌拆成勒索、伤害和网暴分别处理会漏掉什么",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "给法官常识裁量能补规则漏洞却又会引入什么风险",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇研究未成年人刑罚的年龄断崖，而不是批评法学论文的逻辑漏洞",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是青少年犯罪威慑模型，不是校园潜规则的证据困境",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "bad-teens-gone-bad-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why is simply lowering the age of criminal responsibility an inadequate response to youth violence?",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rationale": "对应反对保护或降龄的简单二分，分析威慑三因素、年龄与伤害结果断崖、霸凌复合行为和司法裁量。"
+    },
+    {
+      "id": "no-logic-in-social-science-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "张雪峰 文科 职业独立性 社会科学",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "无讼 杖断六十 最高检 诉诸多数",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "一篇论文用了统计数据为什么仍可能完全不科学",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "社会科学的严谨应当由公式数量还是前提到结论的逻辑决定",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "符合世界潮流为什么不能单独证明刑法政策正确",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "犯罪者来自问题家庭能否推出其行为不应负责",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "学者被要求证明预设正确的结论会怎样损害学科独立性",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇批评法学论文的论证漏洞，而不是提出自己的青少年刑罚方案",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是数学和统计不能挽救坏逻辑，不是模糊语言扩大解释权",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "no-logic-in-social-science-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why do statistics and equations fail to make a social-science argument rigorous by themselves?",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rationale": "对应区分科学性与数学装饰，以青少年刑责和无讼论文为例揭示诉诸多数、因果混淆及被迫证明既定结论。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "Kimi K3 2.8T 6个T 20万 140万",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "无用阶级 全能阶级 AI 三种场景",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "普通人只能订阅模型却不能掌握权重意味着什么生产资料问题",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "高薪技术人员为什么可能误把自己认同为资产阶级",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "国家像控制核武器一样控制 AI 会形成怎样的国内治理",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "少数精英用 AI 摆脱医疗能源和劳动依赖后资本主义为何也会终结",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "三种 AI 未来中作者认为最可能先出现哪一种权力结构",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇预测 AI 技术控制权导致三个阶级结局，而不是认为劳动会自然与收入脱钩",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是无产阶级能否掌握模型权重，不是 AI 在课堂里是否有情感",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "future-of-proletarians-in-ai-era-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "What three class futures could follow if advanced AI remains inaccessible as a means of production?",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rationale": "对应在四项前提下推演 AI 的三种阶级未来：无产阶级掌握技术、国家控制，以及脱离社会的超级精英。"
+    },
+    {
+      "id": "lets-welcome-kant-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "lower-value human capital 渣打 CEO Winters 康德",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "Gary Becker Human Capital 弗里德曼 尊严 价格",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "把员工和金融资本并列为什么侵犯了人的尊严",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "康德反对的是利用他人完成任务还是只按功能评估人的全部价值",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "有价格的东西与有尊严的人在可替换性上有什么区别",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "把低价值的人改口为低价值岗位是否解决了裁员逻辑的问题",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "如果未来 AI 能自我立法并按原则行动，它是否也可能成为目的",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇从一句银行高管发言解释人不能只是手段，而不是追溯价值焦虑的制度来源",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是康德尊严与人力资本，不是剩余价值和圈地运动",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "lets-welcome-kant-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "Why does calling workers lower-value human capital conflict with Kant's idea of dignity?",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rationale": "对应以渣打 CEO 的 lower-value human capital 为例解释康德的人、手段、目的、价格与尊严，并批判人力资本框架。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-lexical-01",
+      "kind": "lexical",
+      "split": "dev",
+      "query": "圈地法案 公地 剩余价值 麦当劳 Big Mac",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "葛兰西 霸权 失业人口 商品化 自我优化",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-semantic-01",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "人为什么在失去生产资料后必须通过市场证明自己值得生存",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-semantic-02",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "维持失业人口怎样压低工资并约束工人反抗",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-semantic-03",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "医疗教育情感都变成商品后人的价值观会怎样改变",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-semantic-04",
+      "kind": "semantic",
+      "split": "dev",
+      "query": "学校和媒体如何让结构性竞争看起来像个人美德",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "人为何会把被迫参与的市场竞争正当化成自己的价值来源",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-contrastive-01",
+      "kind": "contrastive",
+      "split": "dev",
+      "query": "哪篇系统追溯价值焦虑的资本主义形成机制，而不是解释某位 CEO 的一句话",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是圈地到文化霸权的完整链条，不是一个励志成功案例",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    },
+    {
+      "id": "once-again-on-the-value-of-us-cross-lingual-01",
+      "kind": "cross_lingual",
+      "split": "dev",
+      "query": "How do enclosure, wage labor, unemployment, commodification, and hegemony make people feel they must prove their worth?",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rationale": "对应从圈地、雇佣劳动、失业、商品化和葛兰西霸权解释人为何把市场产出内化成自我价值证明。"
+    }
+  ]
+}

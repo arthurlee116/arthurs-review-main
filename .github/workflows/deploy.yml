@@ -47,6 +47,7 @@ jobs:
         run: |
           image_name="ghcr.io/${GITHUB_REPOSITORY,,}"
           echo "IMAGE_TAG=${image_name}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "SEMANTIC_IMAGE_TAG=${image_name}-semantic:${GITHUB_SHA}" >> "$GITHUB_ENV"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -66,6 +67,21 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
 
+      - name: Build locked semantic image once
+        id: semantic-build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: semantic.Dockerfile
+          load: true
+          platforms: linux/amd64
+          tags: ${{ env.SEMANTIC_IMAGE_TAG }}
+          build-args: |
+            GIT_COMMIT_SHA=${{ github.sha }}
+          cache-from: type=gha,scope=semantic
+          cache-to: type=gha,mode=max,scope=semantic
+          provenance: false
+
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
@@ -76,10 +92,12 @@ jobs:
         run: |
           E2E_CONTAINER="arthurs-review-e2e-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           E2E_WORKER_CONTAINER="${E2E_CONTAINER}-worker"
+          E2E_SEMANTIC_CONTAINER="${E2E_CONTAINER}-semantic"
           E2E_DATA_VOLUME="${E2E_CONTAINER}-data"
           E2E_NETWORK="${E2E_CONTAINER}-network"
           echo "E2E_CONTAINER=$E2E_CONTAINER" >> "$GITHUB_ENV"
           echo "E2E_WORKER_CONTAINER=$E2E_WORKER_CONTAINER" >> "$GITHUB_ENV"
+          echo "E2E_SEMANTIC_CONTAINER=$E2E_SEMANTIC_CONTAINER" >> "$GITHUB_ENV"
           echo "E2E_DATA_VOLUME=$E2E_DATA_VOLUME" >> "$GITHUB_ENV"
           echo "E2E_NETWORK=$E2E_NETWORK" >> "$GITHUB_ENV"
           echo "E2E_DIGEST=$E2E_DIGEST" >> "$GITHUB_ENV"
@@ -87,6 +105,26 @@ jobs:
           test "$(docker run --rm --network none "$IMAGE_TAG" pnpm --version)" = "10.28.1"
           docker volume create "$E2E_DATA_VOLUME"
           docker network create "$E2E_NETWORK"
+          docker run -d \
+            --name "$E2E_SEMANTIC_CONTAINER" \
+            --network "$E2E_NETWORK" \
+            --network-alias semantic \
+            --memory 1200m \
+            --cpus 1 \
+            -e SEMANTIC_RERANK_ENABLED=1 \
+            "$SEMANTIC_IMAGE_TAG"
+          semantic_healthy=0
+          for attempt in $(seq 1 90); do
+            if docker exec "$E2E_SEMANTIC_CONTAINER" python -c 'import json,urllib.request; assert json.load(urllib.request.urlopen("http://127.0.0.1:8090/healthz", timeout=3))["ok"]' 2>/dev/null; then
+              semantic_healthy=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$semantic_healthy" != 1 ]; then
+            docker logs "$E2E_SEMANTIC_CONTAINER"
+            exit 1
+          fi
           docker run --rm \
             -v "$E2E_DATA_VOLUME:/data" \
             -e DATA_DIR=/data \
@@ -109,9 +147,17 @@ jobs:
             -e WORKER_REVALIDATE_SECRET=e2e-worker-revalidate-secret \
             -e DEPLOY_COMMIT_SHA="$GITHUB_SHA" \
             -e IMAGE_DIGEST="$E2E_DIGEST" \
+            -e SEMANTIC_SEARCH_URL=http://semantic:8090 \
+            -e SEMANTIC_SEARCH_MODEL_ID=ibm-granite/granite-embedding-97m-multilingual-r2 \
+            -e SEMANTIC_SEARCH_MODEL_REVISION=835ad14087e140460703cf0fae09f97d469d65c2 \
+            -e SEMANTIC_SEARCH_DIMENSION=384 \
+            -e SEMANTIC_RERANK_MODEL_ID=cross-encoder/mmarco-mMiniLMv2-L12-H384-v1 \
+            -e SEMANTIC_RERANK_MODEL_REVISION=1427fd652930e4ba29e8149678df786c240d8825 \
+            -e SEMANTIC_RERANK_ENABLED=1 \
             "$IMAGE_TAG"
 
           test "$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE_TAG")" = "$GITHUB_SHA"
+          test "$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$SEMANTIC_IMAGE_TAG")" = "$GITHUB_SHA"
           healthy=0
           for attempt in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:3100/healthz | grep -q '"ok":true'; then
@@ -125,6 +171,21 @@ jobs:
             exit 1
           fi
 
+          docker exec "$E2E_CONTAINER" node -e '
+            const health = await fetch("http://semantic:8090/healthz").then((response) => response.json());
+            if (!health.ok || health.embedding.dimension !== 384) process.exit(1);
+            const embedded = await fetch("http://semantic:8090/embed", {
+              method: "POST", headers: { "content-type": "application/json" },
+              body: JSON.stringify({ kind: "query", texts: ["人的价值是什么"] }),
+            }).then((response) => response.json());
+            if (embedded.vectors.length !== 1 || embedded.vectors[0].length !== 384) process.exit(1);
+            const reranked = await fetch("http://semantic:8090/rerank", {
+              method: "POST", headers: { "content-type": "application/json" },
+              body: JSON.stringify({ query: "人的价值", candidates: [{ id: "a", text: "人是目的，而不是工具。" }] }),
+            }).then((response) => response.json());
+            if (reranked.scores[0].id !== "a") process.exit(1);
+          '
+
           docker run -d \
             --name "$E2E_WORKER_CONTAINER" \
             --network "$E2E_NETWORK" \
@@ -136,19 +197,35 @@ jobs:
             -e WORKER_REVALIDATE_SECRET=e2e-worker-revalidate-secret \
             -e INTERNAL_APP_URL=http://app:3000 \
             -e OTS_CLI_PATH=/bin/false \
+            -e SEMANTIC_SEARCH_URL=http://semantic:8090 \
+            -e SEMANTIC_SEARCH_MODEL_ID=ibm-granite/granite-embedding-97m-multilingual-r2 \
+            -e SEMANTIC_SEARCH_MODEL_REVISION=835ad14087e140460703cf0fae09f97d469d65c2 \
+            -e SEMANTIC_SEARCH_DIMENSION=384 \
+            -e SEMANTIC_RERANK_MODEL_ID=cross-encoder/mmarco-mMiniLMv2-L12-H384-v1 \
+            -e SEMANTIC_RERANK_MODEL_REVISION=1427fd652930e4ba29e8149678df786c240d8825 \
+            -e SEMANTIC_RERANK_ENABLED=1 \
             "$IMAGE_TAG" pnpm jobs:work
 
-          cache_ready=0
-          for attempt in $(seq 1 60); do
+          indexed_and_cache_ready=0
+          for attempt in $(seq 1 120); do
             pending_cache_jobs="$(docker exec "$E2E_CONTAINER" node -e 'const Database = require("better-sqlite3"); const db = new Database("/data/arthurs-review.sqlite3", { readonly: true }); const row = db.prepare("select count(*) as count from jobs where type = ? and status in (?, ?)").get("cache.invalidate", "queued", "running"); console.log(row.count); db.close();')"
-            if [ "$pending_cache_jobs" = 0 ]; then
-              cache_ready=1
+            semantic_state="$(docker exec "$E2E_CONTAINER" node -e '
+              const Database = require("better-sqlite3");
+              const db = new Database("/data/arthurs-review.sqlite3", { readonly: true });
+              const pending = db.prepare("select count(*) as count from jobs where type = ? and status in (?, ?)").get("search.embed", "queued", "running").count;
+              const missing = db.prepare("select count(*) as count from articles where published_revision_id is not null and not exists (select 1 from article_embedding_chunks where article_id = articles.id and revision_id = articles.published_revision_id and model_id = ? and model_revision = ? and dimension = ?)").get("ibm-granite/granite-embedding-97m-multilingual-r2", "835ad14087e140460703cf0fae09f97d469d65c2", 384).count;
+              console.log(`${pending}:${missing}`);
+              db.close();
+            ')"
+            if [ "$pending_cache_jobs" = 0 ] && [ "$semantic_state" = "0:0" ]; then
+              indexed_and_cache_ready=1
               break
             fi
             sleep 1
           done
-          if [ "$cache_ready" != 1 ]; then
+          if [ "$indexed_and_cache_ready" != 1 ]; then
             docker logs "$E2E_WORKER_CONTAINER"
+            docker logs "$E2E_SEMANTIC_CONTAINER"
             exit 1
           fi
 
@@ -159,6 +236,7 @@ jobs:
           E2E_EXPECTED_COMMIT: ${{ github.sha }}
           E2E_EXPECTED_DIGEST: ${{ env.E2E_DIGEST }}
           E2E_ADMIN_PASSWORD: admin-password
+          E2E_EXPECT_SEMANTIC: "1"
         run: pnpm exec playwright test
 
       - name: Stop the E2E image
@@ -166,6 +244,7 @@ jobs:
         run: |
           docker rm -f "$E2E_WORKER_CONTAINER" >/dev/null 2>&1 || true
           docker rm -f "$E2E_CONTAINER" >/dev/null 2>&1 || true
+          docker rm -f "$E2E_SEMANTIC_CONTAINER" >/dev/null 2>&1 || true
           docker volume rm "$E2E_DATA_VOLUME" >/dev/null 2>&1 || true
           docker network rm "$E2E_NETWORK" >/dev/null 2>&1 || true
 
@@ -179,15 +258,22 @@ jobs:
       - name: Push the tested image and resolve its digest
         run: |
           docker push "$IMAGE_TAG"
+          docker push "$SEMANTIC_IMAGE_TAG"
           IMAGE_DIGEST="$(docker buildx imagetools inspect "$IMAGE_TAG" --format '{{json .Manifest}}' | jq -er '.digest')"
+          SEMANTIC_IMAGE_DIGEST="$(docker buildx imagetools inspect "$SEMANTIC_IMAGE_TAG" --format '{{json .Manifest}}' | jq -er '.digest')"
           [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          [[ "$SEMANTIC_IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
           EXPECTED_SCHEMA_VERSION="$(find src/lib/db/migrations -maxdepth 1 -name '[0-9][0-9][0-9]_*.sql' -print | wc -l | tr -d '[:space:]')"
           [[ "$EXPECTED_SCHEMA_VERSION" =~ ^[1-9][0-9]*$ ]]
           APP_IMAGE="${IMAGE_TAG%:*}@${IMAGE_DIGEST}"
+          SEMANTIC_IMAGE="${SEMANTIC_IMAGE_TAG%:*}@${SEMANTIC_IMAGE_DIGEST}"
           echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> "$GITHUB_ENV"
           echo "APP_IMAGE=$APP_IMAGE" >> "$GITHUB_ENV"
+          echo "SEMANTIC_IMAGE_DIGEST=$SEMANTIC_IMAGE_DIGEST" >> "$GITHUB_ENV"
+          echo "SEMANTIC_IMAGE=$SEMANTIC_IMAGE" >> "$GITHUB_ENV"
           echo "EXPECTED_SCHEMA_VERSION=$EXPECTED_SCHEMA_VERSION" >> "$GITHUB_ENV"
           printf 'Tested image: `%s`\n' "$APP_IMAGE" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Tested semantic image: `%s`\n' "$SEMANTIC_IMAGE" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Prepare deployment secrets
         env:
@@ -261,8 +347,10 @@ jobs:
           APP_DIR: ${{ vars.DEPLOY_APP_DIR }}
           REMOTE: ${{ vars.DEPLOY_REMOTE }}
           APP_IMAGE: ${{ env.APP_IMAGE }}
+          SEMANTIC_IMAGE: ${{ env.SEMANTIC_IMAGE }}
           DEPLOY_COMMIT_SHA: ${{ github.sha }}
           IMAGE_DIGEST: ${{ env.IMAGE_DIGEST }}
+          SEMANTIC_IMAGE_DIGEST: ${{ env.SEMANTIC_IMAGE_DIGEST }}
           EXPECTED_SCHEMA_VERSION: ${{ env.EXPECTED_SCHEMA_VERSION }}
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}

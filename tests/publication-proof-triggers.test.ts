@@ -49,6 +49,7 @@ describe("publication-proof mutation triggers", () => {
     await publishRoute.POST(new Request("http://localhost/studio/api/articles/1/publish", { method: "POST" }), context);
     expect(getDb().prepare("select type from jobs order by id").all()).toEqual([
       { type: "proof.create" },
+      { type: "search.embed" },
       { type: "cache.invalidate" },
     ]);
 
@@ -59,7 +60,7 @@ describe("publication-proof mutation triggers", () => {
       }),
       context,
     );
-    expect(getDb().prepare("select count(*) as count from jobs").get()).toEqual({ count: 2 });
+    expect(getDb().prepare("select count(*) as count from jobs").get()).toEqual({ count: 3 });
 
     await publishRoute.POST(new Request("http://localhost/studio/api/articles/1/publish", { method: "POST" }), context);
     const proofJobs = getDb().prepare("select payload from jobs where type = 'proof.create' order by id").all() as Array<{ payload: string }>;

@@ -81,6 +81,7 @@ describe("schema migrations", () => {
       { version: 6, name: "durable_jobs" },
       { version: 7, name: "translation_batches" },
       { version: 8, name: "admin_auth_state" },
+      { version: 9, name: "semantic_search" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -104,7 +105,65 @@ describe("schema migrations", () => {
       { version: 6, name: "durable_jobs" },
       { version: 7, name: "translation_batches" },
       { version: 8, name: "admin_auth_state" },
+      { version: 9, name: "semantic_search" },
     ]);
+  });
+
+  it("adds semantic chunks while preserving existing durable jobs and their ids", async () => {
+    const migrationModule = (await import("@/lib/db/migrate")) as typeof import("@/lib/db/migrate") & {
+      migrations: Migration[];
+    };
+    const db = new Database(":memory:");
+    db.pragma("foreign_keys = ON");
+    migrationModule.runMigrations(db, migrationModule.migrations.slice(0, 8));
+    db.prepare(
+      `insert into jobs(id, type, payload, dedupe_key, status, attempts, max_attempts, run_at, created_at, updated_at)
+       values (41, 'cache.invalidate', '{}', 'kept-job', 'queued', 0, 8, ?, ?, ?)`,
+    ).run("2026-07-21T00:00:00.000Z", "2026-07-21T00:00:00.000Z", "2026-07-21T00:00:00.000Z");
+
+    migrationModule.runMigrations(db, migrationModule.migrations);
+
+    expect(db.prepare("select id, type, dedupe_key from jobs where id = 41").get()).toEqual({
+      id: 41,
+      type: "cache.invalidate",
+      dedupe_key: "kept-job",
+    });
+    expect(() =>
+      db
+        .prepare(
+          `insert into jobs(type, payload, dedupe_key, run_at, created_at, updated_at)
+           values ('search.embed', '{}', 'semantic-job', ?, ?, ?)`,
+        )
+        .run("2026-07-21T00:00:00.000Z", "2026-07-21T00:00:00.000Z", "2026-07-21T00:00:00.000Z"),
+    ).not.toThrow();
+    expect(() =>
+      db
+        .prepare(
+          `insert into jobs(type, payload, dedupe_key, run_at, created_at, updated_at)
+           values ('made.up', '{}', 'bad-job', ?, ?, ?)`,
+        )
+        .run("2026-07-21T00:00:00.000Z", "2026-07-21T00:00:00.000Z", "2026-07-21T00:00:00.000Z"),
+    ).toThrow();
+    expect(db.prepare("select id from jobs where dedupe_key = 'semantic-job'").get()).toEqual({ id: 42 });
+
+    const columns = db.pragma("table_info(article_embedding_chunks)") as Array<{ name: string }>;
+    expect(columns.map((column) => column.name)).toEqual([
+      "id",
+      "article_id",
+      "revision_id",
+      "model_id",
+      "model_revision",
+      "dimension",
+      "chunk_index",
+      "language",
+      "content",
+      "token_count",
+      "embedding",
+      "created_at",
+    ]);
+    expect(db.pragma("foreign_key_check")).toEqual([]);
+    expect(db.pragma("integrity_check")).toEqual([{ integrity_check: "ok" }]);
+    db.close();
   });
 
   it("rolls back a failed migration and can retry it", async () => {

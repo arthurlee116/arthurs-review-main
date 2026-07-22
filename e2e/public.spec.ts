@@ -138,7 +138,7 @@ test("production runtime exposes health, immutable version metadata, and product
   expect(await version.json()).toEqual({
     commit: process.env.E2E_EXPECTED_COMMIT ?? "development",
     digest: process.env.E2E_EXPECTED_DIGEST ?? "development",
-    schemaVersion: 8,
+    schemaVersion: 9,
   });
 
   await page.goto("/");
@@ -152,4 +152,11 @@ test("production runtime exposes health, immutable version metadata, and product
 test("search returns matching published article", async ({ page }) => {
   await page.goto("/search?q=城市");
   await expect(page.getByRole("link", { name: /城市/ })).toBeVisible();
+});
+
+test("semantic search finds a published article without an FTS match", async ({ page }) => {
+  test.skip(process.env.E2E_EXPECT_SEMANTIC !== "1", "requires the locked real model and completed embeddings");
+
+  await page.goto(`/search?q=${encodeURIComponent("群居生活如何把袖手旁观塑造成得体行为")}`);
+  await expect(page.getByRole("link", { name: "一座城市如何把人训练成旁观者" })).toBeVisible();
 });

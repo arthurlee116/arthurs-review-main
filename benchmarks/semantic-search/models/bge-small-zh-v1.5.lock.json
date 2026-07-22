@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "embedding": {
+    "id": "onnx-community/bge-small-zh-v1.5-ONNX",
+    "baseModel": "BAAI/bge-small-zh-v1.5",
+    "revision": "9507db33464b5da99a532ac26b2a251767cbc62b",
+    "license": "MIT",
+    "dimension": 512,
+    "pooling": "cls",
+    "maximumLength": 512,
+    "padToken": "[PAD]",
+    "recommendedQueryPrefix": "为这个句子生成表示以用于检索相关文章：",
+    "files": [
+      {
+        "path": "config.json",
+        "url": "https://huggingface.co/onnx-community/bge-small-zh-v1.5-ONNX/resolve/9507db33464b5da99a532ac26b2a251767cbc62b/config.json",
+        "size": 904,
+        "sha256": "34fa1ea6278c257de3cc8ce7e9bdc48647b802145a9da0fc32e95db620efd04f"
+      },
+      {
+        "path": "tokenizer.json",
+        "url": "https://huggingface.co/onnx-community/bge-small-zh-v1.5-ONNX/resolve/9507db33464b5da99a532ac26b2a251767cbc62b/tokenizer.json",
+        "size": 362603,
+        "sha256": "3d09c84ebd10306706a79a8276b3ab736a40d8ec03251c7639f4e52c3a1a4f8e"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "url": "https://huggingface.co/onnx-community/bge-small-zh-v1.5-ONNX/resolve/9507db33464b5da99a532ac26b2a251767cbc62b/tokenizer_config.json",
+        "size": 414,
+        "sha256": "7e3bd6113f18c20975eaa8e8cc03c95b727fd83d6357f8e171e22b3736bf706d"
+      },
+      {
+        "path": "model.onnx",
+        "url": "https://huggingface.co/onnx-community/bge-small-zh-v1.5-ONNX/resolve/9507db33464b5da99a532ac26b2a251767cbc62b/onnx/model_quantized.onnx",
+        "size": 168002,
+        "sha256": "99a6e522710c00220c89f8c52e0cc5aa09d4cbb1c34c0e932eab3a9dfdc65df3"
+      },
+      {
+        "path": "model_quantized.onnx_data",
+        "url": "https://huggingface.co/onnx-community/bge-small-zh-v1.5-ONNX/resolve/9507db33464b5da99a532ac26b2a251767cbc62b/onnx/model_quantized.onnx_data",
+        "size": 23774208,
+        "sha256": "952623481ca8beea884e3d3c9ecaf8a3c7bf1d0c21de29e970cd31af9d37a90b"
+      }
+    ]
+  },
+  "reranker": {
+    "id": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "license": "Apache-2.0",
+    "maximumLength": 512,
+    "padToken": "<pad>",
+    "files": [
+      {
+        "path": "config.json",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/config.json",
+        "size": 891,
+        "sha256": "cc2cfe51aa3fd759d21d21acf5dfd6994aa67a3c9210636d22e143699d336c77"
+      },
+      {
+        "path": "tokenizer.json",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/tokenizer.json",
+        "size": 17082660,
+        "sha256": "62c24cdc13d4c9952d63718d6c9fa4c287974249e16b7ade6d5a85e7bbb75626"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/tokenizer_config.json",
+        "size": 435,
+        "sha256": "e7fbfbfa6347b4e414c1cee50d142e2c2f9a895dad68b068ae83a8b564c3837e"
+      },
+      {
+        "path": "special_tokens_map.json",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/special_tokens_map.json",
+        "size": 239,
+        "sha256": "378eb3bf733eb16e65792d7e3fda5b8a4631387ca04d2015199c4d4f22ae554d"
+      },
+      {
+        "path": "model.onnx",
+        "url": "https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1/resolve/1427fd652930e4ba29e8149678df786c240d8825/onnx/model_quint8_avx2.onnx",
+        "size": 118620016,
+        "sha256": "6c2513767fb63d008a4377bef7a7a3555433d9436342bb53e35a3a72ffc52d4b"
+      }
+    ]
+  }
+}

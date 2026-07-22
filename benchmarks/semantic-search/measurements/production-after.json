@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-22T02:05:23Z",
+  "host": "72.60.195.46",
+  "productionRoot": "/opt/arthurs-review/deploy",
+  "dataRoot": "/var/www/arthurs-review/data",
+  "containers": {
+    "app": {
+      "id": "fd8a3b14fa254771d0edd63e9862a98472d559e8fc96e0356f153481fbd937c2",
+      "image": "sha256:bbe68afff01120ef83e2edfd3594a694ee8a5924dd85ed283eaa951c9cf9120e",
+      "status": "running",
+      "oomKilled": false
+    },
+    "worker": {
+      "id": "c87b629e73833787667f5540746621b1e4b4641c2b46997d21c47d667f18f856",
+      "image": "sha256:bbe68afff01120ef83e2edfd3594a694ee8a5924dd85ed283eaa951c9cf9120e",
+      "status": "running",
+      "oomKilled": false
+    },
+    "caddy": {
+      "id": "77b1091b2346256d02be2aa7ce0c307492436b26688771a7a2cb339d3ff41081",
+      "image": "sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648",
+      "status": "running",
+      "oomKilled": false
+    }
+  },
+  "composeSha256": "4640dd293cb929af04c98347b1ad46934e7cfa7ff16b51f67cd7c61a22af5905",
+  "database": {
+    "sha256": "b39f564f2bcad48ba09e64aa5ee9931e16ab650b6614171ed7114597bb54518e",
+    "integrityCheck": "ok",
+    "foreignKeyViolations": 0,
+    "publishedArticles": 27
+  },
+  "publicHealth": {
+    "ok": true,
+    "checks": {
+      "database": "ok",
+      "storage": "ok",
+      "release": "ok"
+    }
+  },
+  "experimentCleanup": {
+    "activeSwapEntries": 0,
+    "temporarySwapFileExists": false,
+    "experimentContainers": 0,
+    "experimentNetworks": 0,
+    "experimentImageTags": 0,
+    "experimentRunsDirectoryExists": false,
+    "sshTunnelsClosed": true
+  },
+  "matchesBefore": {
+    "containerIds": true,
+    "imageDigests": true,
+    "composeSha256": true,
+    "databaseSha256": true,
+    "publishedArticles": true,
+    "publicHealth": true
+  },
+  "productionDeploymentPerformed": false
+}

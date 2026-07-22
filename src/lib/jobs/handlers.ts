@@ -9,6 +9,7 @@ import {
 } from "@/lib/services/publication-proofs";
 import { PUBLIC_PROOFS_TAG, publicArticleProofsTag } from "@/lib/services/public-cache-tags";
 import { translatePublishedRevision } from "@/lib/translation/service";
+import { indexPublishedArticleRevision } from "@/lib/semantic/indexing";
 import { invalidateCacheThroughApp } from "./cache-client";
 import { enqueueCacheInvalidation } from "./outbox";
 import { enqueueJob, PermanentJobError, type JobHandlers } from "./queue";
@@ -29,6 +30,10 @@ const TranslationPayload = z.object({
   sourceRevisionId: z.number().int().positive(),
   model: z.string().min(1),
 });
+const SearchEmbedPayload = z.object({
+  articleId: z.number().int().positive(),
+  revisionId: z.number().int().positive(),
+});
 
 type JobHandlerDependencies = {
   getArticleRevisionById: typeof getArticleRevisionById;
@@ -38,6 +43,7 @@ type JobHandlerDependencies = {
   getPublicationProof: typeof getPublicationProof;
   invalidateCache: typeof invalidateCacheThroughApp;
   translatePublishedRevision: typeof translatePublishedRevision;
+  indexPublishedArticleRevision: typeof indexPublishedArticleRevision;
 };
 
 function enqueueProofCache(articleId: number, proofId: number, state: string) {
@@ -56,6 +62,7 @@ export function createJobHandlers(overrides: Partial<JobHandlerDependencies> = {
     getPublicationProof,
     invalidateCache: invalidateCacheThroughApp,
     translatePublishedRevision,
+    indexPublishedArticleRevision,
     ...overrides,
   };
 
@@ -136,6 +143,11 @@ export function createJobHandlers(overrides: Partial<JobHandlerDependencies> = {
     "translation.article": async (job) => {
       const { articleId, sourceRevisionId, model } = TranslationPayload.parse(job.payload);
       await dependencies.translatePublishedRevision({ articleId, sourceRevisionId, model });
+    },
+
+    "search.embed": async (job) => {
+      const { articleId, revisionId } = SearchEmbedPayload.parse(job.payload);
+      await dependencies.indexPublishedArticleRevision(articleId, revisionId);
     },
   };
 }

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { SearchBox } from "@/components/SearchBox";
 import { SearchPagination } from "@/components/SearchPagination";
 import { SearchResultCard } from "@/components/SearchResultCard";
-import { searchArticleResults } from "@/lib/services/search";
+import { searchArticleResultsHybrid } from "@/lib/services/search";
 import { PublicShell } from "@/app/_publicShell";
 import { publicPageMetadata } from "@/lib/metadata";
 
@@ -21,7 +21,7 @@ function pageNumber(value: string | undefined) {
 
 export async function SearchResults({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
   const { q = "", page } = await searchParams;
-  const resultPage = searchArticleResults(q, { page: pageNumber(page) });
+  const resultPage = await searchArticleResultsHybrid(q, { page: pageNumber(page) });
 
   return (
     <>

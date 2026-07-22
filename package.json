@@ -21,6 +21,10 @@
     "db:migrate": "tsx src/lib/db/migrate.ts",
     "backup:database": "tsx scripts/backup-database.ts",
     "proofs:backfill": "tsx scripts/backfill-publication-proofs.ts",
+    "search:backfill": "tsx scripts/backfill-semantic-search.ts",
+    "search:benchmark:index": "tsx scripts/index-semantic-benchmark.ts",
+    "search:benchmark": "tsx scripts/run-semantic-benchmark.ts",
+    "search:benchmark:stress": "tsx scripts/create-semantic-stress-corpus.ts",
     "seed": "tsx scripts/seed.mjs",
     "hash-password": "node scripts/hash-password.mjs"
   },

@@ -1,0 +1,2400 @@
+{
+  "schemaVersion": 1,
+  "mode": "fts",
+  "requestedSplit": "held_out",
+  "model": null,
+  "queryPrefix": null,
+  "dataset": "benchmarks/semantic-search/questions.json",
+  "createdAt": "2026-07-22T00:14:56.583Z",
+  "durationMs": 78.36313500000006,
+  "latencyMs": {
+    "mean": 0.9558712345678984,
+    "p50": 0.4576829999999745,
+    "p95": 2.7576179999999795,
+    "max": 5.167693999999983
+  },
+  "summary": {
+    "count": 81,
+    "hitAt1": 0.32098765432098764,
+    "hitAt3": 0.32098765432098764,
+    "hitAt10": 0.32098765432098764,
+    "mrrAt10": 0.32098765432098764,
+    "ndcgAt10": 0.32098765432098764
+  },
+  "byKind": {
+    "lexical": {
+      "count": 27,
+      "hitAt1": 0.8888888888888888,
+      "hitAt3": 0.8888888888888888,
+      "hitAt10": 0.8888888888888888,
+      "mrrAt10": 0.8888888888888888,
+      "ndcgAt10": 0.8888888888888888
+    },
+    "semantic": {
+      "count": 27,
+      "hitAt1": 0.07407407407407407,
+      "hitAt3": 0.07407407407407407,
+      "hitAt10": 0.07407407407407407,
+      "mrrAt10": 0.07407407407407407,
+      "ndcgAt10": 0.07407407407407407
+    },
+    "contrastive": {
+      "count": 27,
+      "hitAt1": 0,
+      "hitAt3": 0,
+      "hitAt10": 0,
+      "mrrAt10": 0,
+      "ndcgAt10": 0
+    },
+    "cross_lingual": null
+  },
+  "results": [
+    {
+      "questionId": "what-about-stereotypes-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "reliable source、bias 和两方辩论有什么问题",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 5.167693999999983
+    },
+    {
+      "questionId": "what-about-stereotypes-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "批判性思考的目标应当是保持中立还是作出判断",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 1.8739430000000539
+    },
+    {
+      "questionId": "what-about-stereotypes-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的不是政治词语带来的恐惧，而是课堂如何误教 stereotypes",
+      "primarySlug": "what-about-stereotypes",
+      "relevantSlugs": [
+        "what-about-stereotypes"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 1.0733069999999998
+    },
+    {
+      "questionId": "poem-for-korchagin-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "年轻的心脏 战鼓 炙热崇高的真理",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rankedSlugs": [
+        "poem-for-korchagin"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "poem-for-korchagin",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "poem-for-korchagin",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 4.852702000000022
+    },
+    {
+      "questionId": "poem-for-korchagin-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "读完苏联革命小说后受到巨大精神力量鼓舞的创作",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.5967739999999822
+    },
+    {
+      "questionId": "poem-for-korchagin-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "两首诗中哪首直接提到失败后一次次重来",
+      "primarySlug": "poem-for-korchagin",
+      "relevantSlugs": [
+        "poem-for-korchagin"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.4289129999999659
+    },
+    {
+      "questionId": "a-poem-for-someone-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "灯塔 冰冷海水 总有一个地方",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rankedSlugs": [
+        "a-poem-for-someone"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "a-poem-for-someone",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "a-poem-for-someone",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.2220089999999573
+    },
+    {
+      "questionId": "a-poem-for-someone-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "哪篇诗歌表达忧愁不能进入某片水域",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.427483000000052
+    },
+    {
+      "questionId": "a-poem-for-someone-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "两首短诗中哪首把希望放在不远处的港口",
+      "primarySlug": "a-poem-for-someone",
+      "relevantSlugs": [
+        "a-poem-for-someone"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3234220000000505
+    },
+    {
+      "questionId": "banned-by-the-internationale-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "骆驼祥子 Greasers 越努力越幸运",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rankedSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "banned-by-the-internationale",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "banned-by-the-internationale",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.683010999999965
+    },
+    {
+      "questionId": "banned-by-the-internationale-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "把贫困与失败都归因于个人不够勤奋有什么问题",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3360530000001063
+    },
+    {
+      "questionId": "banned-by-the-internationale-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是推荐红色歌曲被排斥的经历，不是献给柯察金的诗",
+      "primarySlug": "banned-by-the-internationale",
+      "relevantSlugs": [
+        "banned-by-the-internationale"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.4576829999999745
+    },
+    {
+      "questionId": "flaws-of-our-language-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "Ms. Joanna 薯条包装 辣条味 用词",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rankedSlugs": [
+        "flaws-of-our-language"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "flaws-of-our-language",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "flaws-of-our-language",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.8005709999999908
+    },
+    {
+      "questionId": "flaws-of-our-language-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "语言抽象化怎样把战场恐惧和普通受惊混成同一标签",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.40539299999989
+    },
+    {
+      "questionId": "flaws-of-our-language-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是委婉措辞降低事件严重性，不是空泛人生格言",
+      "primarySlug": "flaws-of-our-language",
+      "relevantSlugs": [
+        "flaws-of-our-language"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3144720000000234
+    },
+    {
+      "questionId": "how-much-do-your-effort-count-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "生产关系约束生产力 骆驼祥子 励志",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.2524319999999989
+    },
+    {
+      "questionId": "how-much-do-your-effort-count-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "社会要求出身卑微者付出异常代价才过上体面生活说明什么",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 1.065417000000025
+    },
+    {
+      "questionId": "how-much-do-your-effort-count-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是张雪案例与看不见的失败者，不是张雪峰批评文科",
+      "primarySlug": "how-much-do-your-effort-count",
+      "relevantSlugs": [
+        "how-much-do-your-effort-count"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.41814399999998386
+    },
+    {
+      "questionId": "what-about-the-iranian-war-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "伊朗政府 抗议 美国 以色列 石油",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rankedSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "what-about-the-iranian-war",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "what-about-the-iranian-war",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.9695429999999305
+    },
+    {
+      "questionId": "what-about-the-iranian-war-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "机械复制越战后的反战框架会漏掉哪些当地背景",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.38216299999999137
+    },
+    {
+      "questionId": "what-about-the-iranian-war-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是对无条件反战的批评，不是对国际歌被禁言的感想",
+      "primarySlug": "what-about-the-iranian-war",
+      "relevantSlugs": [
+        "what-about-the-iranian-war"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.47610199999996894
+    },
+    {
+      "questionId": "dont-give-everything-to-morals-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "特朗普 明尼阿波利斯 中期选举 移民执法",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rankedSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "dont-give-everything-to-morals",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "dont-give-everything-to-morals",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.2746989999999414
+    },
+    {
+      "questionId": "dont-give-everything-to-morals-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "分析公共事件时怎样避免用好人坏人替代因果解释",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.40626300000008086
+    },
+    {
+      "questionId": "dont-give-everything-to-morals-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是理性利益如何解释政治行动，不是语言把坏事说轻",
+      "primarySlug": "dont-give-everything-to-morals",
+      "relevantSlugs": [
+        "dont-give-everything-to-morals"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.38373200000000907
+    },
+    {
+      "questionId": "relc-from-textbook-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "百家争鸣 市民文学 杨振宁父亲 鲁迅",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rankedSlugs": [
+        "relc-from-textbook"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "relc-from-textbook",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "relc-from-textbook",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.59862099999998
+    },
+    {
+      "questionId": "relc-from-textbook-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "为什么奴隶时代的价值观不能直接套到工业化社会",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3201129999999921
+    },
+    {
+      "questionId": "relc-from-textbook-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是闻一多课文引出的历史唯物主义分析，不是古希腊神话里的边界",
+      "primarySlug": "relc-from-textbook",
+      "relevantSlugs": [
+        "relc-from-textbook"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.4262019999999893
+    },
+    {
+      "questionId": "blur-big-word-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "顺应自然 癌细胞 洪水 真实的自己",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rankedSlugs": [
+        "blur-big-word"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "blur-big-word",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "blur-big-word",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.5778310000000602
+    },
+    {
+      "questionId": "blur-big-word-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "模糊格言如何因为能适配任何场景而伪装成普世真理",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 1.0130460000000312
+    },
+    {
+      "questionId": "blur-big-word-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是格言定义不清的问题，不是 PTSD 这种抽象标签",
+      "primarySlug": "blur-big-word",
+      "relevantSlugs": [
+        "blur-big-word"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3154630000000225
+    },
+    {
+      "questionId": "talk-but-vaguely-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "文言文 自由裁量权 话语解释权 规则",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rankedSlugs": [
+        "talk-but-vaguely"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "talk-but-vaguely",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "talk-but-vaguely",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.414939000000004
+    },
+    {
+      "questionId": "talk-but-vaguely-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "人们为避免祸从口出为何偏爱不具体的说法",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.29192199999999957
+    },
+    {
+      "questionId": "talk-but-vaguely-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是年级大会里的学习黑话，不是老师用委婉语淡化乱扔垃圾",
+      "primarySlug": "talk-but-vaguely",
+      "relevantSlugs": [
+        "talk-but-vaguely"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.34011199999997643
+    },
+    {
+      "questionId": "romance-vs-capital-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "中世纪行会 湖边 乌托邦社会主义 道德化资本主义",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rankedSlugs": [
+        "romance-vs-capital"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "romance-vs-capital",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "romance-vs-capital",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.1706679999999778
+    },
+    {
+      "questionId": "romance-vs-capital-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "在纸上设计完美平等社会的方案缺少了什么",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.32480200000009063
+    },
+    {
+      "questionId": "romance-vs-capital-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是浪漫主义对资本主义的错误药方，不是全球化压倒本土音乐",
+      "primarySlug": "romance-vs-capital",
+      "relevantSlugs": [
+        "romance-vs-capital"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.37369300000000294
+    },
+    {
+      "questionId": "win-in-your-life-with-a-good-heart-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "DSM 精神疾病 100 300 心灵APP 制药巨头",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.2551409999999805
+    },
+    {
+      "questionId": "win-in-your-life-with-a-good-heart-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "精神疾病分类不断增加与商业化的痛苦管理有什么联系",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.38007200000004104
+    },
+    {
+      "questionId": "win-in-your-life-with-a-good-heart-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是好奇心消失与精神药物，不是 AI 让学习回归兴趣",
+      "primarySlug": "win-in-your-life-with-a-good-heart",
+      "relevantSlugs": [
+        "win-in-your-life-with-a-good-heart"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3431830000000673
+    },
+    {
+      "questionId": "thanks-to-academia-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "福特主义 机器 比蒙 阶级战争 宣言",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rankedSlugs": [
+        "thanks-to-academia"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "thanks-to-academia",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "thanks-to-academia",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.200238000000013
+    },
+    {
+      "questionId": "thanks-to-academia-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "理解资本主义结构怎样帮助工人制定更清晰的斗争策略",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.35924199999999473
+    },
+    {
+      "questionId": "thanks-to-academia-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是自动化工厂中的罢工与组织，不是个人努力改变命运",
+      "primarySlug": "thanks-to-academia",
+      "relevantSlugs": [
+        "thanks-to-academia"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3118019999999433
+    },
+    {
+      "questionId": "hidden-unsaid-everywhere-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "社会性死亡 告老师 共同沉默 秩序创造者",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rankedSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "hidden-unsaid-everywhere",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "hidden-unsaid-everywhere",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.2722689999999375
+    },
+    {
+      "questionId": "hidden-unsaid-everywhere-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "法庭知道媒体在暗示污蔑却无法定罪体现了什么困境",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.46977400000002945
+    },
+    {
+      "questionId": "hidden-unsaid-everywhere-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是潜规则怎样运作，不是家庭用爱包装权力",
+      "primarySlug": "hidden-unsaid-everywhere",
+      "relevantSlugs": [
+        "hidden-unsaid-everywhere"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3749920000000202
+    },
+    {
+      "questionId": "limitations-on-ai-doubted-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "杀猪盘 尼日利亚 情感连接 AI 教师",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rankedSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "limitations-on-ai-doubted",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "limitations-on-ai-doubted",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.3166589999999587
+    },
+    {
+      "questionId": "limitations-on-ai-doubted-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "没有自身利益动机的机器为何可能提供某种情感支持",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rankedSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "future-of-proletarians-in-ai-era",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "future-of-proletarians-in-ai-era",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 3.578043999999977
+    },
+    {
+      "questionId": "limitations-on-ai-doubted-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是 AI 能否替代教师情感连接，不是 AI 被谁掌握的阶级未来",
+      "primarySlug": "limitations-on-ai-doubted",
+      "relevantSlugs": [
+        "limitations-on-ai-doubted"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.655104999999935
+    },
+    {
+      "questionId": "i-love-soviet-music-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "日本 韩国 八十年代 小调 英皇八级 乐理",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rankedSlugs": [
+        "i-love-soviet-music"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "i-love-soviet-music",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "i-love-soviet-music",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.4002899999999272
+    },
+    {
+      "questionId": "i-love-soviet-music-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "全球化为什么可能带来文化单向输出而不是均衡交流",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3202119999999695
+    },
+    {
+      "questionId": "i-love-soviet-music-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是商业音乐造成的文化趋同，不是浪漫主义歌颂自然",
+      "primarySlug": "i-love-soviet-music",
+      "relevantSlugs": [
+        "i-love-soviet-music"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.40361300000006395
+    },
+    {
+      "questionId": "gooooodddds-not-valid-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "启蒙运动 意义危机 信仰的飞跃",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rankedSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "gooooodddds-not-valid",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "gooooodddds-not-valid",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.2720190000000002
+    },
+    {
+      "questionId": "gooooodddds-not-valid-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "无法证明信仰或无信仰后果时人还能怎样选择",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.46213299999999435
+    },
+    {
+      "questionId": "gooooodddds-not-valid-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是科学革命后的意义危机，不是宗教如何安慰现实痛苦",
+      "primarySlug": "gooooodddds-not-valid",
+      "relevantSlugs": [
+        "gooooodddds-not-valid"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3180419999999913
+    },
+    {
+      "questionId": "0625-thought-about-agentic-ai-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "地理会考 里根 加州大学 学费 素质教育",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rankedSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "0625-thought-about-agentic-ai",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "0625-thought-about-agentic-ai",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.2819500000000517
+    },
+    {
+      "questionId": "0625-thought-about-agentic-ai-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "应试教育为何不是几项改革政策就能消除的偶然问题",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3470919999999751
+    },
+    {
+      "questionId": "0625-thought-about-agentic-ai-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是学习如何摆脱就业回报，不是 AI 会不会削弱写邮件能力",
+      "primarySlug": "0625-thought-about-agentic-ai",
+      "relevantSlugs": [
+        "0625-thought-about-agentic-ai"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.38417200000003504
+    },
+    {
+      "questionId": "family-and-parents-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "监护权 家丑不可外扬 为你好 纪委",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rankedSlugs": [
+        "family-and-parents"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "family-and-parents",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "family-and-parents",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.4936810000000378
+    },
+    {
+      "questionId": "family-and-parents-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "为什么好父母的存在不能证明所有家庭权力都无需制约",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rankedSlugs": [
+        "family-and-parents"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "family-and-parents",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "family-and-parents",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 2.7576179999999795
+    },
+    {
+      "questionId": "family-and-parents-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是家庭作为权力单位，不是一般地把坏事归因于坏人",
+      "primarySlug": "family-and-parents",
+      "relevantSlugs": [
+        "family-and-parents"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.4769129999999677
+    },
+    {
+      "questionId": "memory-system-of-codex-breaked-down-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "ad hoc notes raw_memories SQLite token 时间戳",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rankedSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "memory-system-of-codex-breaked-down",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "memory-system-of-codex-breaked-down",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.0246060000000625
+    },
+    {
+      "questionId": "memory-system-of-codex-breaked-down-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "用户不知情时保存操作习惯会带来什么隐私和控制问题",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.2990429999999833
+    },
+    {
+      "questionId": "memory-system-of-codex-breaked-down-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是 Codex 过拟合历史偏好的问题，不是 agentic AI 对劳动的影响",
+      "primarySlug": "memory-system-of-codex-breaked-down",
+      "relevantSlugs": [
+        "memory-system-of-codex-breaked-down"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3642330000000129
+    },
+    {
+      "questionId": "why-nations-fail-perdictable-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "压力增长率 承诺增长率 可分配资源增长率",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rankedSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "why-nations-fail-perdictable",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "why-nations-fail-perdictable",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.3345090000000255
+    },
+    {
+      "questionId": "why-nations-fail-perdictable-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "仅凭早期制度设计和后续经济条件能否预见政治极化",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.30096100000002934
+    },
+    {
+      "questionId": "why-nations-fail-perdictable-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是制度路径依赖，不是家庭权力的代际延续",
+      "primarySlug": "why-nations-fail-perdictable",
+      "relevantSlugs": [
+        "why-nations-fail-perdictable"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.35105299999997897
+    },
+    {
+      "questionId": "bad-teens-gone-bad-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "主观预期代价 被抓概率 处罚 未来后果",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rankedSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "bad-teens-gone-bad",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "bad-teens-gone-bad",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.0576970000000756
+    },
+    {
+      "questionId": "bad-teens-gone-bad-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "给法官常识裁量能补规则漏洞却又会引入什么风险",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3087120000000141
+    },
+    {
+      "questionId": "bad-teens-gone-bad-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是青少年犯罪威慑模型，不是校园潜规则的证据困境",
+      "primarySlug": "bad-teens-gone-bad",
+      "relevantSlugs": [
+        "bad-teens-gone-bad"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.3375419999999849
+    },
+    {
+      "questionId": "no-logic-in-social-science-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "无讼 杖断六十 最高检 诉诸多数",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rankedSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "no-logic-in-social-science",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "no-logic-in-social-science",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.0251869999999599
+    },
+    {
+      "questionId": "no-logic-in-social-science-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "学者被要求证明预设正确的结论会怎样损害学科独立性",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.31389199999989614
+    },
+    {
+      "questionId": "no-logic-in-social-science-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是数学和统计不能挽救坏逻辑，不是模糊语言扩大解释权",
+      "primarySlug": "no-logic-in-social-science",
+      "relevantSlugs": [
+        "no-logic-in-social-science"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.4119430000000648
+    },
+    {
+      "questionId": "future-of-proletarians-in-ai-era-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "无用阶级 全能阶级 AI 三种场景",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rankedSlugs": [
+        "future-of-proletarians-in-ai-era",
+        "0625-thought-about-agentic-ai"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "future-of-proletarians-in-ai-era",
+            "rank": 1,
+            "score": null
+          },
+          {
+            "slug": "0625-thought-about-agentic-ai",
+            "rank": 2,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "future-of-proletarians-in-ai-era",
+            "rank": 1,
+            "score": null
+          },
+          {
+            "slug": "0625-thought-about-agentic-ai",
+            "rank": 2,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 2.271466000000032
+    },
+    {
+      "questionId": "future-of-proletarians-in-ai-era-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "三种 AI 未来中作者认为最可能先出现哪一种权力结构",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rankedSlugs": [
+        "lets-welcome-kant"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "lets-welcome-kant",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "lets-welcome-kant",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 1.5159189999999398
+    },
+    {
+      "questionId": "future-of-proletarians-in-ai-era-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是无产阶级能否掌握模型权重，不是 AI 在课堂里是否有情感",
+      "primarySlug": "future-of-proletarians-in-ai-era",
+      "relevantSlugs": [
+        "future-of-proletarians-in-ai-era"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.37292199999990316
+    },
+    {
+      "questionId": "lets-welcome-kant-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "Gary Becker Human Capital 弗里德曼 尊严 价格",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rankedSlugs": [
+        "lets-welcome-kant"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "lets-welcome-kant",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "lets-welcome-kant",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.5537899999999354
+    },
+    {
+      "questionId": "lets-welcome-kant-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "如果未来 AI 能自我立法并按原则行动，它是否也可能成为目的",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.36618299999997816
+    },
+    {
+      "questionId": "lets-welcome-kant-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是康德尊严与人力资本，不是剩余价值和圈地运动",
+      "primarySlug": "lets-welcome-kant",
+      "relevantSlugs": [
+        "lets-welcome-kant"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.30121199999996406
+    },
+    {
+      "questionId": "once-again-on-the-value-of-us-lexical-02",
+      "kind": "lexical",
+      "split": "held_out",
+      "query": "葛兰西 霸权 失业人口 商品化 自我优化",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rankedSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "once-again-on-the-value-of-us",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "once-again-on-the-value-of-us",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 1.637679999999932
+    },
+    {
+      "questionId": "once-again-on-the-value-of-us-semantic-05",
+      "kind": "semantic",
+      "split": "held_out",
+      "query": "人为何会把被迫参与的市场竞争正当化成自己的价值来源",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rankedSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "trace": {
+        "fts": [
+          {
+            "slug": "once-again-on-the-value-of-us",
+            "rank": 1,
+            "score": null
+          }
+        ],
+        "dense": [],
+        "final": [
+          {
+            "slug": "once-again-on-the-value-of-us",
+            "rank": 1,
+            "score": null
+          }
+        ]
+      },
+      "metrics": {
+        "hitAt1": 1,
+        "hitAt3": 1,
+        "hitAt10": 1,
+        "reciprocalRankAt10": 1,
+        "ndcgAt10": 1
+      },
+      "durationMs": 3.584324000000038
+    },
+    {
+      "questionId": "once-again-on-the-value-of-us-contrastive-02",
+      "kind": "contrastive",
+      "split": "held_out",
+      "query": "我找的是圈地到文化霸权的完整链条，不是一个励志成功案例",
+      "primarySlug": "once-again-on-the-value-of-us",
+      "relevantSlugs": [
+        "once-again-on-the-value-of-us"
+      ],
+      "rankedSlugs": [],
+      "trace": {
+        "fts": [],
+        "dense": [],
+        "final": []
+      },
+      "metrics": {
+        "hitAt1": 0,
+        "hitAt3": 0,
+        "hitAt10": 0,
+        "reciprocalRankAt10": 0,
+        "ndcgAt10": 0
+      },
+      "durationMs": 0.49910299999999097
+    }
+  ]
+}

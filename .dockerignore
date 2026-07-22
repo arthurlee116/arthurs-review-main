@@ -9,6 +9,7 @@ uploads
 test-results
 playwright-report
 coverage
+benchmarks
 deploy/production.env
 .env*
 !.env.example

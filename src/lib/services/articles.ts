@@ -6,6 +6,7 @@ import { setSetting } from "@/lib/services/settings";
 import { pageWindow, type PageResult } from "@/lib/pagination";
 import { MAX_SEARCH_CODE_POINTS } from "@/lib/search-limits";
 import { enqueueCacheInvalidation, enqueuePublishedRevisionJobs } from "@/lib/jobs/outbox";
+import { deleteArticleEmbeddings } from "@/lib/semantic/storage";
 import { PUBLIC_ARTICLE_LIST_TAG, PUBLIC_PROOFS_TAG, PUBLIC_SETTINGS_TAG, publicArticleProofsTag, publicArticleTag } from "./public-cache-tags";
 import { deleteArticleFromFts, syncArticleToFts } from "./search";
 
@@ -345,6 +346,7 @@ export function deleteArticle(id: number) {
 
   db.transaction(() => {
     deleteArticleFromFts(id);
+    deleteArticleEmbeddings(id, db);
     if (article.isFeatured) clearFeaturedArticleState(db);
     enqueueCacheInvalidation(
       {
@@ -632,6 +634,7 @@ export function unpublishArticle(id: number) {
     db.prepare("update articles set published_revision_id = null, updated_at = ? where id = ?").run(timestamp, id);
     if (existing.isFeatured) clearFeaturedArticleState(db);
     deleteArticleFromFts(id);
+    deleteArticleEmbeddings(id, db);
     if (published) {
       enqueueCacheInvalidation(
         {

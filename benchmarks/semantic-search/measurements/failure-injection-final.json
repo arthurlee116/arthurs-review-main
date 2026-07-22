@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-07-22T01:27:00Z",
+  "isolatedStack": {
+    "appImageId": "sha256:9264e9a2c928c99cd8c809217bbafe85095a47d2e29d7e97114aa68fbd3056ba",
+    "semanticImageId": "sha256:52233666dc2492ce5e300ae922e7d112269635ecb041bb0c331c609f582080b7",
+    "publishedArticles": 27,
+    "embeddingChunks": 281,
+    "rerankerEnabled": true
+  },
+  "sidecarStopped": {
+    "httpStatus": 200,
+    "semanticOnlyExpectedArticleVisible": false,
+    "ftsNoResultsVisible": true,
+    "fallbackStage": "embed",
+    "fallbackReason": "network",
+    "recoveredExpectedArticleVisible": true
+  },
+  "embedTimeout": {
+    "timeoutMs": 200,
+    "httpStatus": 200,
+    "ftsExpectedArticleVisible": true,
+    "fallbackStage": "embed",
+    "fallbackReason": "timeout"
+  },
+  "badEmbedResponse": {
+    "response": "HTTP 200 with malformed JSON",
+    "httpStatus": 200,
+    "ftsExpectedArticleVisible": true,
+    "fallbackStage": "embed",
+    "fallbackReason": "response"
+  },
+  "workerRestartAndStaleJob": {
+    "workerRunningAfterRestart": true,
+    "workerOomKilled": false,
+    "staleRevisionId": 999999,
+    "staleJobFinalStatus": "succeeded",
+    "embeddingChunksBefore": 281,
+    "embeddingChunksAfter": 281,
+    "appHealthAfter": true
+  },
+  "productionHealthAfter": true
+}

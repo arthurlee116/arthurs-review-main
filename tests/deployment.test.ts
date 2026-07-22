@@ -40,16 +40,18 @@ run_forward_release
   return { status: result.status, stderr: result.stderr, events };
 }
 
-function validateReleaseInputs(appImage: string) {
+function validateReleaseInputs(appImage: string, semanticImage = `ghcr.io/arthurlee116/arthurs-review-main-semantic@sha256:${"c".repeat(64)}`) {
   return spawnSync("bash", ["-c", 'source scripts/remote-release.sh; if validate_release_inputs; then exit 0; else exit 1; fi'], {
     cwd: process.cwd(),
     encoding: "utf8",
     env: {
       ...process.env,
       APP_IMAGE: appImage,
+      SEMANTIC_IMAGE: semanticImage,
       DEPLOY_COMMIT_SHA: "a".repeat(40),
       IMAGE_DIGEST: `sha256:${"b".repeat(64)}`,
-      EXPECTED_SCHEMA_VERSION: "8",
+      SEMANTIC_IMAGE_DIGEST: `sha256:${"c".repeat(64)}`,
+      EXPECTED_SCHEMA_VERSION: "9",
       REGISTRY_USERNAME: "ci-user",
     },
   });
@@ -409,6 +411,36 @@ describe("deployment scripts", () => {
     expect(packageJson.scripts["jobs:work"]).toBe("tsx scripts/jobs-worker.ts");
   });
 
+  it("runs the locked semantic models as an internal, resource-bounded service shared by app and worker", () => {
+    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
+    const semanticDockerfile = fs.readFileSync("semantic.Dockerfile", "utf8");
+    const semanticSection = compose.slice(compose.indexOf("  semantic:"), compose.indexOf("  caddy:"));
+    const appSection = compose.slice(compose.indexOf("  app:"), compose.indexOf("  worker:"));
+    const workerSection = compose.slice(compose.indexOf("  worker:"), compose.indexOf("  semantic:"));
+
+    expect(semanticSection).toContain("image: ${SEMANTIC_IMAGE:?SEMANTIC_IMAGE must contain an immutable digest}");
+    expect(semanticSection).toContain('expose:\n      - "8090"');
+    expect(semanticSection).not.toContain("ports:");
+    expect(semanticSection).toContain("mem_limit:");
+    expect(semanticSection).toContain("cpus:");
+    expect(semanticSection).toContain("healthcheck:");
+    for (const service of [appSection, workerSection]) {
+      expect(service).toContain("SEMANTIC_SEARCH_URL: http://semantic:8090");
+      expect(service).toContain("SEMANTIC_SEARCH_MODEL_ID: ibm-granite/granite-embedding-97m-multilingual-r2");
+      expect(service).toContain("SEMANTIC_SEARCH_MODEL_REVISION: 835ad14087e140460703cf0fae09f97d469d65c2");
+      expect(service).toContain("SEMANTIC_SEARCH_DIMENSION: 384");
+      expect(service).toContain("SEMANTIC_RERANK_MODEL_ID: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1");
+      expect(service).toContain("SEMANTIC_RERANK_MODEL_REVISION: 1427fd652930e4ba29e8149678df786c240d8825");
+      expect(service).toContain('SEMANTIC_RERANK_ENABLED: "${SEMANTIC_RERANK_ENABLED:-1}"');
+    }
+    expect(semanticSection).toContain('SEMANTIC_RERANK_ENABLED: "${SEMANTIC_RERANK_ENABLED:-1}"');
+    expect(semanticDockerfile).toContain("semantic/models.lock.json");
+    expect(semanticDockerfile).toContain("python download_models.py");
+    expect(semanticDockerfile).toContain("USER semantic");
+    expect(semanticDockerfile).toContain("HEALTHCHECK");
+    expect(semanticDockerfile).not.toMatch(/(?:torch|transformers)/i);
+  });
+
   it("provides the production site URL while Next.js metadata is built", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
@@ -464,7 +496,7 @@ describe("deployment scripts", () => {
     expect(fs.readFileSync(".node-version", "utf8").trim()).toBe("26");
   });
 
-  it("builds one SHA-tagged production image, tests that image, and only then pushes it", () => {
+  it("builds SHA-tagged app and semantic images, tests both, and only then pushes them", () => {
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const playwright = fs.readFileSync("playwright.config.ts", "utf8");
@@ -473,7 +505,7 @@ describe("deployment scripts", () => {
     const push = workflow.indexOf('docker push "$IMAGE_TAG"');
 
     expect(workflow).toContain("packages: write");
-    expect(workflow.match(/docker\/build-push-action@v7/g)).toHaveLength(1);
+    expect(workflow.match(/docker\/build-push-action@v7/g)).toHaveLength(2);
     expect(workflow).toContain("load: true");
     expect(workflow).toContain("GIT_COMMIT_SHA=${{ github.sha }}");
     expect(workflow).toContain("${{ github.sha }}");
@@ -483,6 +515,11 @@ describe("deployment scripts", () => {
     expect(workflow).toContain("pnpm exec playwright install --with-deps chromium");
     expect(workflow).toContain('"$IMAGE_TAG" pnpm jobs:work');
     expect(workflow).toContain('docker network create "$E2E_NETWORK"');
+    expect(workflow).toContain("SEMANTIC_IMAGE_TAG");
+    expect(workflow).toContain("semantic.Dockerfile");
+    expect(workflow).toContain('docker push "$SEMANTIC_IMAGE_TAG"');
+    expect(workflow).toContain("SEMANTIC_IMAGE_DIGEST");
+    expect(workflow).toContain("http://semantic:8090/healthz");
     expect(workflow).toContain("pending_cache_jobs");
     expect(workflow).toContain("EXPECTED_SCHEMA_VERSION");
     expect(workflow).toContain("type = ? and status in (?, ?)");
@@ -556,8 +593,13 @@ describe("deployment scripts", () => {
   it("rejects moving image tags and accepts one exact digest", () => {
     const moving = validateReleaseInputs("ghcr.io/arthurlee116/arthurs-review-main:main");
     const immutable = validateReleaseInputs(`ghcr.io/arthurlee116/arthurs-review-main@sha256:${"b".repeat(64)}`);
+    const movingSemantic = validateReleaseInputs(
+      `ghcr.io/arthurlee116/arthurs-review-main@sha256:${"b".repeat(64)}`,
+      "ghcr.io/arthurlee116/arthurs-review-main-semantic:main",
+    );
 
     expect(moving.status).not.toBe(0);
+    expect(movingSemantic.status).not.toBe(0);
     expect(immutable.status, immutable.stderr).toBe(0);
   });
 
@@ -632,6 +674,7 @@ describe("deployment scripts", () => {
     expect(remoteRelease).toContain("--password-stdin");
     expect(remoteRelease.indexOf("docker login ghcr.io")).toBeLessThan(remoteRelease.indexOf('docker pull "${APP_IMAGE}"'));
     expect(remoteRelease.indexOf('docker pull "${APP_IMAGE}"')).toBeLessThan(remoteRelease.indexOf("docker logout ghcr.io"));
+    expect(remoteRelease).toContain('docker pull "${SEMANTIC_IMAGE}"');
     expect(remoteRelease).toContain("org.opencontainers.image.revision");
     expect(remoteRelease).toContain("current-release.env");
     expect(remoteRelease).toContain("previous-release.env");
@@ -641,6 +684,26 @@ describe("deployment scripts", () => {
     expect(remoteRelease).toContain('"commit":"${DEPLOY_COMMIT_SHA}"');
     expect(remoteRelease).toContain('"digest":"${IMAGE_DIGEST}"');
     expect(remoteRelease).toContain('"schemaVersion":${EXPECTED_SCHEMA_VERSION}');
+  });
+
+  it("runs feature-branch CI without production deployment permissions", () => {
+    const workflow = fs.readFileSync(".github/workflows/ci.yml", "utf8");
+
+    expect(workflow).toContain("pull_request:");
+    expect(workflow).toContain("branches-ignore:");
+    expect(workflow).toContain("pnpm lint");
+    expect(workflow).toContain("pnpm test");
+    expect(workflow).toContain('"./semantic[test]"');
+    expect(workflow).toContain("python -m pytest semantic/tests");
+    expect(workflow).not.toContain("unittest discover");
+    expect(workflow.match(/docker\/build-push-action@v7/g)).toHaveLength(2);
+    expect(workflow).toContain("semantic.Dockerfile");
+    expect(workflow).toContain('"http://127.0.0.1:8090/embed"');
+    expect(workflow).toContain('"dimension": 384');
+    expect(workflow).toContain("pnpm exec playwright test");
+    expect(workflow).not.toContain("packages: write");
+    expect(workflow).not.toContain("scripts/deploy.sh");
+    expect(workflow).not.toContain("DEPLOY_SSH_PRIVATE_KEY");
   });
 
   it("can recover the legacy app-only deployment without depending on legacy helper scripts", () => {

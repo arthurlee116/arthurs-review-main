@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "hostCpuQuota": 1,
+  "model": {
+    "id": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "revision": "1427fd652930e4ba29e8149678df786c240d8825"
+  },
+  "shortPassageProbe": {
+    "description": "Five warm requests for each candidate count using short Chinese passages.",
+    "1": {
+      "samplesMs": [53.50388027727604, 29.193036258220673, 30.380174051970243, 29.35763681307435, 30.16708279028535],
+      "p50Ms": 30.16708279028535,
+      "p95Ms": 53.50388027727604,
+      "maxMs": 53.50388027727604
+    },
+    "5": {
+      "samplesMs": [137.84752599895, 145.708367228508, 144.35013802722096, 137.8423236310482, 137.77431286871433],
+      "p50Ms": 137.84752599895,
+      "p95Ms": 145.708367228508,
+      "maxMs": 145.708367228508
+    },
+    "10": {
+      "samplesMs": [332.1783300489187, 356.37351078912616, 343.18671422079206, 379.3420451693237, 725.9308719076216],
+      "p50Ms": 356.37351078912616,
+      "p95Ms": 725.9308719076216,
+      "maxMs": 725.9308719076216
+    }
+  },
+  "realBlogDevTop10": {
+    "questionCount": 189,
+    "description": "End-to-end query embedding, exact dense scan, FTS, RRF, and reranking of ten real blog passages; passage length varies up to the production chunk cap.",
+    "p50Ms": 3333.7812730000005,
+    "p95Ms": 4628.043291000009,
+    "maxMs": 5070.603725000052,
+    "sidecarCgroupMemoryPeakBytes": 795054080
+  }
+}

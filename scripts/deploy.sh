@@ -4,8 +4,10 @@ set -Eeuo pipefail
 REMOTE="${REMOTE:-root@72.60.195.46}"
 APP_DIR="${APP_DIR:-/opt/arthurs-review}"
 APP_IMAGE="${APP_IMAGE:-}"
+SEMANTIC_IMAGE="${SEMANTIC_IMAGE:-}"
 DEPLOY_COMMIT_SHA="${DEPLOY_COMMIT_SHA:-}"
 IMAGE_DIGEST="${IMAGE_DIGEST:-}"
+SEMANTIC_IMAGE_DIGEST="${SEMANTIC_IMAGE_DIGEST:-}"
 EXPECTED_SCHEMA_VERSION="${EXPECTED_SCHEMA_VERSION:-}"
 REGISTRY_USERNAME="${REGISTRY_USERNAME:-}"
 REGISTRY_TOKEN="${REGISTRY_TOKEN:-}"
@@ -34,9 +36,15 @@ validate_deploy_inputs() {
     [[ -f deploy/production.env ]] || { fail "Missing deploy/production.env"; return; }
     [[ "${APP_IMAGE}" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$ ]] \
       || { fail "APP_IMAGE must be an immutable GHCR digest reference"; return; }
+    [[ "${SEMANTIC_IMAGE}" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$ ]] \
+      || { fail "SEMANTIC_IMAGE must be an immutable GHCR digest reference"; return; }
     [[ "${DEPLOY_COMMIT_SHA}" =~ ^[0-9a-f]{40}$ ]] || { fail "DEPLOY_COMMIT_SHA must be a full commit SHA"; return; }
     [[ "${IMAGE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] || { fail "IMAGE_DIGEST must be a sha256 digest"; return; }
     [[ "${APP_IMAGE##*@}" == "${IMAGE_DIGEST}" ]] || { fail "APP_IMAGE and IMAGE_DIGEST disagree"; return; }
+    [[ "${SEMANTIC_IMAGE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] \
+      || { fail "SEMANTIC_IMAGE_DIGEST must be a sha256 digest"; return; }
+    [[ "${SEMANTIC_IMAGE##*@}" == "${SEMANTIC_IMAGE_DIGEST}" ]] \
+      || { fail "SEMANTIC_IMAGE and SEMANTIC_IMAGE_DIGEST disagree"; return; }
     [[ "${EXPECTED_SCHEMA_VERSION}" =~ ^[1-9][0-9]*$ ]] || { fail "EXPECTED_SCHEMA_VERSION must be positive"; return; }
   fi
 }
@@ -84,13 +92,15 @@ stage_release_files() {
 
 run_remote_release() {
   local mode="$1"
-  local app_dir_quoted staging_quoted image_quoted commit_quoted digest_quoted schema_quoted
+  local app_dir_quoted staging_quoted image_quoted semantic_image_quoted commit_quoted digest_quoted semantic_digest_quoted schema_quoted
   local username_quoted lock_quoted wait_quoted script_quoted
   printf -v app_dir_quoted '%q' "${APP_DIR}"
   printf -v staging_quoted '%q' "${STAGING_DIR}"
   printf -v image_quoted '%q' "${APP_IMAGE}"
+  printf -v semantic_image_quoted '%q' "${SEMANTIC_IMAGE}"
   printf -v commit_quoted '%q' "${DEPLOY_COMMIT_SHA}"
   printf -v digest_quoted '%q' "${IMAGE_DIGEST}"
+  printf -v semantic_digest_quoted '%q' "${SEMANTIC_IMAGE_DIGEST}"
   printf -v schema_quoted '%q' "${EXPECTED_SCHEMA_VERSION}"
   printf -v username_quoted '%q' "${REGISTRY_USERNAME}"
   printf -v lock_quoted '%q' "${MAINTENANCE_LOCK_FILE}"
@@ -98,7 +108,7 @@ run_remote_release() {
   printf -v script_quoted '%q' "${STAGING_DIR}/scripts/remote-release.sh"
 
   printf '%s' "${REGISTRY_TOKEN}" | ssh "${REMOTE}" \
-    "APP_DIR=${app_dir_quoted} STAGING_DIR=${staging_quoted} APP_IMAGE=${image_quoted} DEPLOY_COMMIT_SHA=${commit_quoted} IMAGE_DIGEST=${digest_quoted} EXPECTED_SCHEMA_VERSION=${schema_quoted} REGISTRY_USERNAME=${username_quoted} MAINTENANCE_LOCK_FILE=${lock_quoted} MAINTENANCE_LOCK_WAIT_SECONDS=${wait_quoted} ${script_quoted} ${mode}"
+    "APP_DIR=${app_dir_quoted} STAGING_DIR=${staging_quoted} APP_IMAGE=${image_quoted} SEMANTIC_IMAGE=${semantic_image_quoted} DEPLOY_COMMIT_SHA=${commit_quoted} IMAGE_DIGEST=${digest_quoted} SEMANTIC_IMAGE_DIGEST=${semantic_digest_quoted} EXPECTED_SCHEMA_VERSION=${schema_quoted} REGISTRY_USERNAME=${username_quoted} MAINTENANCE_LOCK_FILE=${lock_quoted} MAINTENANCE_LOCK_WAIT_SECONDS=${wait_quoted} ${script_quoted} ${mode}"
 }
 
 main() {

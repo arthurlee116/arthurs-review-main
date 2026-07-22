@@ -1,0 +1,201 @@
+{
+  "model": {
+    "modelId": "ibm-granite/granite-embedding-97m-multilingual-r2",
+    "modelRevision": "835ad14087e140460703cf0fae09f97d469d65c2",
+    "dimension": 384
+  },
+  "articleCount": 27,
+  "chunkCount": 281,
+  "durationMs": 23533.292708,
+  "results": [
+    {
+      "status": "indexed",
+      "articleId": 1,
+      "revisionId": 1,
+      "chunkCount": 25,
+      "durationMs": 1662.295125
+    },
+    {
+      "status": "indexed",
+      "articleId": 2,
+      "revisionId": 2,
+      "chunkCount": 4,
+      "durationMs": 206.2450839999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 3,
+      "revisionId": 3,
+      "chunkCount": 4,
+      "durationMs": 176.99450000000002
+    },
+    {
+      "status": "indexed",
+      "articleId": 4,
+      "revisionId": 4,
+      "chunkCount": 19,
+      "durationMs": 1647.645708
+    },
+    {
+      "status": "indexed",
+      "articleId": 5,
+      "revisionId": 5,
+      "chunkCount": 18,
+      "durationMs": 1301.3909999999996
+    },
+    {
+      "status": "indexed",
+      "articleId": 6,
+      "revisionId": 6,
+      "chunkCount": 13,
+      "durationMs": 956.0317919999998
+    },
+    {
+      "status": "indexed",
+      "articleId": 7,
+      "revisionId": 7,
+      "chunkCount": 10,
+      "durationMs": 916.3863330000004
+    },
+    {
+      "status": "indexed",
+      "articleId": 8,
+      "revisionId": 8,
+      "chunkCount": 7,
+      "durationMs": 803.7374579999996
+    },
+    {
+      "status": "indexed",
+      "articleId": 9,
+      "revisionId": 9,
+      "chunkCount": 25,
+      "durationMs": 1610.5725000000011
+    },
+    {
+      "status": "indexed",
+      "articleId": 10,
+      "revisionId": 10,
+      "chunkCount": 20,
+      "durationMs": 1496.3166250000013
+    },
+    {
+      "status": "indexed",
+      "articleId": 11,
+      "revisionId": 11,
+      "chunkCount": 11,
+      "durationMs": 1136.6330829999988
+    },
+    {
+      "status": "indexed",
+      "articleId": 12,
+      "revisionId": 12,
+      "chunkCount": 3,
+      "durationMs": 297.6675830000004
+    },
+    {
+      "status": "indexed",
+      "articleId": 13,
+      "revisionId": 13,
+      "chunkCount": 3,
+      "durationMs": 322.41741600000023
+    },
+    {
+      "status": "indexed",
+      "articleId": 14,
+      "revisionId": 14,
+      "chunkCount": 10,
+      "durationMs": 891.3836659999997
+    },
+    {
+      "status": "indexed",
+      "articleId": 15,
+      "revisionId": 15,
+      "chunkCount": 3,
+      "durationMs": 329.7410839999993
+    },
+    {
+      "status": "indexed",
+      "articleId": 16,
+      "revisionId": 16,
+      "chunkCount": 9,
+      "durationMs": 900.8038329999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 17,
+      "revisionId": 17,
+      "chunkCount": 5,
+      "durationMs": 409.92833299999984
+    },
+    {
+      "status": "indexed",
+      "articleId": 18,
+      "revisionId": 18,
+      "chunkCount": 4,
+      "durationMs": 361.5420419999991
+    },
+    {
+      "status": "indexed",
+      "articleId": 19,
+      "revisionId": 19,
+      "chunkCount": 8,
+      "durationMs": 706.4760000000006
+    },
+    {
+      "status": "indexed",
+      "articleId": 20,
+      "revisionId": 20,
+      "chunkCount": 9,
+      "durationMs": 906.9995000000017
+    },
+    {
+      "status": "indexed",
+      "articleId": 22,
+      "revisionId": 21,
+      "chunkCount": 14,
+      "durationMs": 835.8765420000018
+    },
+    {
+      "status": "indexed",
+      "articleId": 23,
+      "revisionId": 22,
+      "chunkCount": 4,
+      "durationMs": 445.91183399999863
+    },
+    {
+      "status": "indexed",
+      "articleId": 24,
+      "revisionId": 23,
+      "chunkCount": 7,
+      "durationMs": 556.1686670000017
+    },
+    {
+      "status": "indexed",
+      "articleId": 25,
+      "revisionId": 24,
+      "chunkCount": 8,
+      "durationMs": 657.8019159999967
+    },
+    {
+      "status": "indexed",
+      "articleId": 26,
+      "revisionId": 25,
+      "chunkCount": 17,
+      "durationMs": 1983.8809159999983
+    },
+    {
+      "status": "indexed",
+      "articleId": 27,
+      "revisionId": 26,
+      "chunkCount": 12,
+      "durationMs": 1088.0342920000003
+    },
+    {
+      "status": "indexed",
+      "articleId": 28,
+      "revisionId": 27,
+      "chunkCount": 9,
+      "durationMs": 924.3244589999995
+    }
+  ]
+}

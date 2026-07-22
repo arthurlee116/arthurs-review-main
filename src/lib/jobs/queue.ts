@@ -6,7 +6,8 @@ export type JobType =
   | "proof.ots_upgrade_verify"
   | "proof.wayback_capture"
   | "cache.invalidate"
-  | "translation.article";
+  | "translation.article"
+  | "search.embed";
 
 export type JobStatus = "queued" | "running" | "succeeded" | "dead";
 

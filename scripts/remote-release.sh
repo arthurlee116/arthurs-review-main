@@ -11,8 +11,10 @@ MAINTENANCE_LOCK_WAIT_SECONDS="${MAINTENANCE_LOCK_WAIT_SECONDS:-1800}"
 PUBLIC_URL="${PUBLIC_URL:-https://blog.leesaitool.com}"
 STUDIO_URL="${STUDIO_URL:-https://studio.blog.leesaitool.com}"
 APP_IMAGE="${APP_IMAGE:-}"
+SEMANTIC_IMAGE="${SEMANTIC_IMAGE:-}"
 DEPLOY_COMMIT_SHA="${DEPLOY_COMMIT_SHA:-}"
 IMAGE_DIGEST="${IMAGE_DIGEST:-}"
+SEMANTIC_IMAGE_DIGEST="${SEMANTIC_IMAGE_DIGEST:-}"
 EXPECTED_SCHEMA_VERSION="${EXPECTED_SCHEMA_VERSION:-}"
 REGISTRY_USERNAME="${REGISTRY_USERNAME:-}"
 
@@ -28,8 +30,10 @@ HAPROXY_SNAPSHOT=""
 STATE_SNAPSHOT_DIR=""
 CURRENT_WAS_IMMUTABLE=0
 CURRENT_APP_IMAGE=""
+CURRENT_SEMANTIC_IMAGE=""
 CURRENT_COMMIT_SHA=""
 CURRENT_IMAGE_DIGEST=""
+CURRENT_SEMANTIC_IMAGE_DIGEST=""
 CURRENT_SCHEMA_VERSION=""
 APP_WAS_RUNNING=0
 WORKER_WAS_RUNNING=0
@@ -57,12 +61,18 @@ acquire_maintenance_lock() {
 validate_release_inputs() {
   [[ "${APP_IMAGE}" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$ ]] \
     || { fail "APP_IMAGE must be a lowercase GHCR reference pinned with @sha256"; return; }
+  [[ "${SEMANTIC_IMAGE}" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$ ]] \
+    || { fail "SEMANTIC_IMAGE must be a lowercase GHCR reference pinned with @sha256"; return; }
   [[ "${DEPLOY_COMMIT_SHA}" =~ ^[0-9a-f]{40}$ ]] \
     || { fail "DEPLOY_COMMIT_SHA must be a full commit SHA"; return; }
   [[ "${IMAGE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] \
     || { fail "IMAGE_DIGEST must be a sha256 digest"; return; }
   [[ "${APP_IMAGE##*@}" == "${IMAGE_DIGEST}" ]] \
     || { fail "APP_IMAGE and IMAGE_DIGEST disagree"; return; }
+  [[ "${SEMANTIC_IMAGE_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] \
+    || { fail "SEMANTIC_IMAGE_DIGEST must be a sha256 digest"; return; }
+  [[ "${SEMANTIC_IMAGE##*@}" == "${SEMANTIC_IMAGE_DIGEST}" ]] \
+    || { fail "SEMANTIC_IMAGE and SEMANTIC_IMAGE_DIGEST disagree"; return; }
   [[ "${EXPECTED_SCHEMA_VERSION}" =~ ^[1-9][0-9]*$ ]] \
     || { fail "EXPECTED_SCHEMA_VERSION must be a positive integer"; return; }
   [[ -n "${REGISTRY_USERNAME}" ]] || { fail "REGISTRY_USERNAME is required"; return; }
@@ -112,7 +122,7 @@ production_app_logs() {
 }
 
 write_compose_env() {
-  local directory="$1" image="$2" commit="$3" digest="$4"
+  local directory="$1" image="$2" commit="$3" digest="$4" semantic_image="${5:-}"
   local temporary
   temporary="$(mktemp "${directory}/.env.XXXXXX")" || return
   chmod 0600 "${temporary}" || return
@@ -120,6 +130,7 @@ write_compose_env() {
     printf 'APP_IMAGE=%s\n' "${image}"
     printf 'DEPLOY_COMMIT_SHA=%s\n' "${commit}"
     printf 'IMAGE_DIGEST=%s\n' "${digest}"
+    if [[ -n "${semantic_image}" ]]; then printf 'SEMANTIC_IMAGE=%s\n' "${semantic_image}"; fi
   } >"${temporary}" || return
   mv -f "${temporary}" "${directory}/.env"
 }
@@ -134,25 +145,33 @@ pull_target_image() {
   local pull_status=0 logout_status=0
   docker login ghcr.io --username "${REGISTRY_USERNAME}" --password-stdin >/dev/null || return
   docker pull "${APP_IMAGE}" >/dev/null || pull_status=$?
+  if [[ "${pull_status}" == "0" ]]; then
+    docker pull "${SEMANTIC_IMAGE}" >/dev/null || pull_status=$?
+  fi
   docker logout ghcr.io >/dev/null || logout_status=$?
   [[ "${pull_status}" == "0" ]] || return "${pull_status}"
   [[ "${logout_status}" == "0" ]] || return "${logout_status}"
-  verify_image_revision "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}"
+  verify_image_revision "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}" || return
+  verify_image_revision "${SEMANTIC_IMAGE}" "${DEPLOY_COMMIT_SHA}"
 }
 
 pull_recorded_image() {
-  local image="$1" commit="$2" pull_status=0 logout_status=0
+  local image="$1" commit="$2" semantic_image="${3:-}" pull_status=0 logout_status=0
   docker login ghcr.io --username "${REGISTRY_USERNAME}" --password-stdin >/dev/null || return
   docker pull "${image}" >/dev/null || pull_status=$?
+  if [[ "${pull_status}" == "0" && -n "${semantic_image}" ]]; then
+    docker pull "${semantic_image}" >/dev/null || pull_status=$?
+  fi
   docker logout ghcr.io >/dev/null || logout_status=$?
   [[ "${pull_status}" == "0" ]] || return "${pull_status}"
   [[ "${logout_status}" == "0" ]] || return "${logout_status}"
-  verify_image_revision "${image}" "${commit}"
+  verify_image_revision "${image}" "${commit}" || return
+  if [[ -n "${semantic_image}" ]]; then verify_image_revision "${semantic_image}" "${commit}"; fi
 }
 
 load_release_file() {
   local release_file="$1"
-  unset RELEASE_APP_IMAGE RELEASE_COMMIT_SHA RELEASE_IMAGE_DIGEST RELEASE_SCHEMA_VERSION
+  unset RELEASE_APP_IMAGE RELEASE_SEMANTIC_IMAGE RELEASE_COMMIT_SHA RELEASE_IMAGE_DIGEST RELEASE_SEMANTIC_IMAGE_DIGEST RELEASE_SCHEMA_VERSION
   unset RELEASE_CONFIG_SNAPSHOT RELEASE_DATABASE_SNAPSHOT RELEASE_HAPROXY_SNAPSHOT
   # The file is generated below, root-owned, mode 0600, and contains only shell-escaped scalar assignments.
   # shellcheck disable=SC1090
@@ -163,28 +182,41 @@ load_release_file() {
   [[ "${RELEASE_IMAGE_DIGEST:-}" =~ ^sha256:[0-9a-f]{64}$ ]] || { fail "Invalid digest in ${release_file}"; return; }
   [[ "${RELEASE_APP_IMAGE##*@}" == "${RELEASE_IMAGE_DIGEST}" ]] \
     || { fail "Release image and digest disagree in ${release_file}"; return; }
+  if [[ -n "${RELEASE_SEMANTIC_IMAGE:-}" || -n "${RELEASE_SEMANTIC_IMAGE_DIGEST:-}" ]]; then
+    [[ "${RELEASE_SEMANTIC_IMAGE:-}" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$ ]] \
+      || { fail "Invalid semantic image in ${release_file}"; return; }
+    [[ "${RELEASE_SEMANTIC_IMAGE_DIGEST:-}" =~ ^sha256:[0-9a-f]{64}$ ]] \
+      || { fail "Invalid semantic digest in ${release_file}"; return; }
+    [[ "${RELEASE_SEMANTIC_IMAGE##*@}" == "${RELEASE_SEMANTIC_IMAGE_DIGEST}" ]] \
+      || { fail "Release semantic image and digest disagree in ${release_file}"; return; }
+  fi
   [[ "${RELEASE_SCHEMA_VERSION:-}" =~ ^[1-9][0-9]*$ ]] || { fail "Invalid schema in ${release_file}"; return; }
 }
 
 load_current_release() {
   CURRENT_WAS_IMMUTABLE=0
   CURRENT_APP_IMAGE=""
+  CURRENT_SEMANTIC_IMAGE=""
   CURRENT_COMMIT_SHA=""
   CURRENT_IMAGE_DIGEST=""
+  CURRENT_SEMANTIC_IMAGE_DIGEST=""
   CURRENT_SCHEMA_VERSION=""
   if [[ -f "${CURRENT_RELEASE_FILE}" ]]; then
     load_release_file "${CURRENT_RELEASE_FILE}" || return
     CURRENT_WAS_IMMUTABLE=1
     CURRENT_APP_IMAGE="${RELEASE_APP_IMAGE}"
+    CURRENT_SEMANTIC_IMAGE="${RELEASE_SEMANTIC_IMAGE:-}"
     CURRENT_COMMIT_SHA="${RELEASE_COMMIT_SHA}"
     CURRENT_IMAGE_DIGEST="${RELEASE_IMAGE_DIGEST}"
+    CURRENT_SEMANTIC_IMAGE_DIGEST="${RELEASE_SEMANTIC_IMAGE_DIGEST:-}"
     CURRENT_SCHEMA_VERSION="${RELEASE_SCHEMA_VERSION}"
   fi
 }
 
 write_release_file() {
   local destination="$1" image="$2" commit="$3" digest="$4" schema="$5"
-  local config_snapshot="${6:-}" database_snapshot="${7:-}" haproxy_snapshot="${8:-}"
+  local semantic_image="${6:-}" semantic_digest="${7:-}"
+  local config_snapshot="${8:-}" database_snapshot="${9:-}" haproxy_snapshot="${10:-}"
   local temporary
   temporary="$(mktemp "${STATE_DIR}/.release-state.XXXXXX")" || return
   chmod 0600 "${temporary}" || return
@@ -192,6 +224,8 @@ write_release_file() {
     printf 'RELEASE_APP_IMAGE=%q\n' "${image}"
     printf 'RELEASE_COMMIT_SHA=%q\n' "${commit}"
     printf 'RELEASE_IMAGE_DIGEST=%q\n' "${digest}"
+    printf 'RELEASE_SEMANTIC_IMAGE=%q\n' "${semantic_image}"
+    printf 'RELEASE_SEMANTIC_IMAGE_DIGEST=%q\n' "${semantic_digest}"
     printf 'RELEASE_SCHEMA_VERSION=%q\n' "${schema}"
     printf 'RELEASE_CONFIG_SNAPSHOT=%q\n' "${config_snapshot}"
     printf 'RELEASE_DATABASE_SNAPSHOT=%q\n' "${database_snapshot}"
@@ -231,7 +265,7 @@ prepare_candidate() {
   [[ "${XRAY_FINGERPRINT}" =~ ^[0-9a-f]{64}$ ]] \
     || { fail "Production preflight returned an invalid Xray fingerprint"; return; }
   pull_target_image || return
-  write_compose_env "${STAGING_DIR}/deploy" "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}" "${IMAGE_DIGEST}" || return
+  write_compose_env "${STAGING_DIR}/deploy" "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}" "${IMAGE_DIGEST}" "${SEMANTIC_IMAGE}" || return
   chmod 0600 "${STAGING_DIR}/deploy/production.env" || return
   staging_compose config --quiet || return
   staging_compose pull caddy >/dev/null || return
@@ -295,7 +329,7 @@ install_target_configuration() {
   rsync -a --delete "${STAGING_DIR}/deploy/" "${APP_DIR}/deploy/" || return
   rsync -a --delete "${STAGING_DIR}/scripts/" "${APP_DIR}/scripts/" || return
   chmod 0600 "${COMPOSE_DIR}/production.env" || return
-  write_compose_env "${COMPOSE_DIR}" "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}" "${IMAGE_DIGEST}" || return
+  write_compose_env "${COMPOSE_DIR}" "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}" "${IMAGE_DIGEST}" "${SEMANTIC_IMAGE}" || return
   production_compose config --quiet || return
 }
 
@@ -308,7 +342,7 @@ migrate_target_database() {
 }
 
 start_target_app() {
-  production_compose up -d app >/dev/null
+  production_compose up -d semantic app >/dev/null
 }
 
 target_version_json() {
@@ -347,8 +381,32 @@ wait_for_internal_legacy_health() {
   fail "Legacy rollback app did not recover /healthz"
 }
 
+wait_for_semantic_health() {
+  local semantic_response
+  for _attempt in $(seq 1 60); do
+    semantic_response="$(production_compose exec -T semantic python -c 'import urllib.request; print(urllib.request.urlopen("http://127.0.0.1:8090/healthz", timeout=3).read().decode())' 2>/dev/null || true)"
+    if [[ "${semantic_response}" == *'"ok":true'* \
+      && "${semantic_response}" == *'ibm-granite/granite-embedding-97m-multilingual-r2'* \
+      && "${semantic_response}" == *'cross-encoder/mmarco-mMiniLMv2-L12-H384-v1'* ]]; then
+      return 0
+    fi
+    sleep 2
+  done
+  production_compose logs --tail=80 semantic >&2 || true
+  fail "Semantic /healthz identity verification failed"
+}
+
 verify_target_internal() {
-  wait_for_internal_release "$(target_version_json)"
+  wait_for_internal_release "$(target_version_json)" || return
+  wait_for_semantic_health
+}
+
+start_recovered_app() {
+  if service_exists semantic; then
+    production_compose up -d semantic app >/dev/null
+  else
+    production_compose up -d app >/dev/null
+  fi
 }
 
 activate_target_proxy() {
@@ -419,12 +477,14 @@ finalize_forward_release() {
   if [[ "${CURRENT_WAS_IMMUTABLE}" == "1" ]]; then
     write_release_file "${PREVIOUS_RELEASE_FILE}" \
       "${CURRENT_APP_IMAGE}" "${CURRENT_COMMIT_SHA}" "${CURRENT_IMAGE_DIGEST}" "${CURRENT_SCHEMA_VERSION}" \
+      "${CURRENT_SEMANTIC_IMAGE}" "${CURRENT_SEMANTIC_IMAGE_DIGEST}" \
       "${CONFIG_SNAPSHOT}" "${DATABASE_SNAPSHOT}" "${HAPROXY_SNAPSHOT}" || return
   else
     rm -f "${PREVIOUS_RELEASE_FILE}" || return
   fi
   write_release_file "${CURRENT_RELEASE_FILE}" \
-    "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}" "${IMAGE_DIGEST}" "${EXPECTED_SCHEMA_VERSION}" || return
+    "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}" "${IMAGE_DIGEST}" "${EXPECTED_SCHEMA_VERSION}" \
+    "${SEMANTIC_IMAGE}" "${SEMANTIC_IMAGE_DIGEST}" || return
 }
 
 restore_database() {
@@ -467,6 +527,7 @@ verify_previous_release() {
   if [[ "${CURRENT_WAS_IMMUTABLE}" == "1" ]]; then
     expected="$(release_version_json "${CURRENT_COMMIT_SHA}" "${CURRENT_IMAGE_DIGEST}" "${CURRENT_SCHEMA_VERSION}")"
     wait_for_internal_release "${expected}" || return
+    if service_exists semantic; then wait_for_semantic_health || return; fi
     activate_recovered_proxy || return
     wait_for_public_release "${expected}" || return
   else
@@ -480,6 +541,7 @@ rollback_candidate() {
   [[ "${TRANSACTION_MUTATED}" == "1" ]] || return 0
   production_compose stop worker >/dev/null 2>&1 || true
   production_compose stop app >/dev/null 2>&1 || true
+  if service_exists semantic; then production_compose stop semantic >/dev/null 2>&1 || true; fi
   if [[ -n "${CONFIG_SNAPSHOT}" && -f "${CONFIG_SNAPSHOT}" ]]; then
     restore_configuration "${CONFIG_SNAPSHOT}" "${HAPROXY_SNAPSHOT}" || return 1
   fi
@@ -487,7 +549,7 @@ rollback_candidate() {
     restore_database "${DATABASE_SNAPSHOT}" || return 1
   fi
   restore_release_state_files || return 1
-  production_compose up -d app >/dev/null || return 1
+  start_recovered_app || return 1
   verify_previous_release || return 1
   if [[ "${WORKER_WAS_RUNNING}" == "1" ]] && service_exists worker; then
     production_compose up -d worker >/dev/null || return 1
@@ -541,7 +603,7 @@ load_recorded_previous() {
 }
 
 run_recorded_rollback() {
-  local target_image target_commit target_digest target_schema
+  local target_image target_semantic_image target_commit target_digest target_semantic_digest target_schema
   local target_config target_database target_haproxy rollback_status
   local backout_config backout_database backout_haproxy
   [[ "$(id -u)" == "0" ]] || { fail "Remote rollback must run as root"; return; }
@@ -552,14 +614,16 @@ run_recorded_rollback() {
   [[ "${CURRENT_WAS_IMMUTABLE}" == "1" ]] || { fail "Current release is not an immutable recorded release"; return; }
   load_recorded_previous || return
   target_image="${RELEASE_APP_IMAGE}"
+  target_semantic_image="${RELEASE_SEMANTIC_IMAGE:-}"
   target_commit="${RELEASE_COMMIT_SHA}"
   target_digest="${RELEASE_IMAGE_DIGEST}"
+  target_semantic_digest="${RELEASE_SEMANTIC_IMAGE_DIGEST:-}"
   target_schema="${RELEASE_SCHEMA_VERSION}"
   target_config="${RELEASE_CONFIG_SNAPSHOT}"
   target_database="${RELEASE_DATABASE_SNAPSHOT}"
   target_haproxy="${RELEASE_HAPROXY_SNAPSHOT}"
   XRAY_FINGERPRINT="$(APP_DIR="${APP_DIR}" "${APP_DIR}/scripts/production-topology-preflight.sh" fingerprint)" || return
-  pull_recorded_image "${target_image}" "${target_commit}" || return
+  pull_recorded_image "${target_image}" "${target_commit}" "${target_semantic_image}" || return
 
   DEPLOY_COMMIT_SHA="manual-${CURRENT_COMMIT_SHA}"
   if quiesce_and_snapshot_database; then
@@ -574,8 +638,9 @@ run_recorded_rollback() {
   backout_haproxy="${HAPROXY_SNAPSHOT}"
   if restore_configuration "${target_config}" "${target_haproxy}" \
     && restore_database "${target_database}" \
-    && production_compose up -d app >/dev/null \
+    && start_recovered_app \
     && wait_for_internal_release "$(release_version_json "${target_commit}" "${target_digest}" "${target_schema}")" \
+    && { ! service_exists semantic || wait_for_semantic_health; } \
     && activate_recovered_proxy \
     && wait_for_public_release "$(release_version_json "${target_commit}" "${target_digest}" "${target_schema}")" \
     && production_compose up -d worker >/dev/null \
@@ -583,9 +648,11 @@ run_recorded_rollback() {
      && APP_DIR="${APP_DIR}" "${APP_DIR}/scripts/production-topology-preflight.sh" verify "${XRAY_FINGERPRINT}" --expect-topology; then
     if write_release_file "${PREVIOUS_RELEASE_FILE}" \
       "${CURRENT_APP_IMAGE}" "${CURRENT_COMMIT_SHA}" "${CURRENT_IMAGE_DIGEST}" "${CURRENT_SCHEMA_VERSION}" \
+      "${CURRENT_SEMANTIC_IMAGE}" "${CURRENT_SEMANTIC_IMAGE_DIGEST}" \
       "${backout_config}" "${backout_database}" "${backout_haproxy}" \
       && write_release_file "${CURRENT_RELEASE_FILE}" \
-        "${target_image}" "${target_commit}" "${target_digest}" "${target_schema}"; then
+        "${target_image}" "${target_commit}" "${target_digest}" "${target_schema}" \
+        "${target_semantic_image}" "${target_semantic_digest}"; then
       return 0
     else
       rollback_status=$?

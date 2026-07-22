@@ -1,0 +1,3513 @@
+{
+  "model": {
+    "modelId": "ibm-granite/granite-embedding-97m-multilingual-r2",
+    "modelRevision": "835ad14087e140460703cf0fae09f97d469d65c2",
+    "dimension": 384
+  },
+  "documentPrefix": null,
+  "articleCount": 500,
+  "chunkCount": 5230,
+  "durationMs": 822235.877342,
+  "results": [
+    {
+      "status": "indexed",
+      "articleId": 1,
+      "revisionId": 1,
+      "chunkCount": 25,
+      "durationMs": 2484.003138
+    },
+    {
+      "status": "indexed",
+      "articleId": 2,
+      "revisionId": 2,
+      "chunkCount": 4,
+      "durationMs": 424.26968499999975
+    },
+    {
+      "status": "indexed",
+      "articleId": 3,
+      "revisionId": 3,
+      "chunkCount": 4,
+      "durationMs": 403.837172
+    },
+    {
+      "status": "indexed",
+      "articleId": 4,
+      "revisionId": 4,
+      "chunkCount": 19,
+      "durationMs": 2253.139023
+    },
+    {
+      "status": "indexed",
+      "articleId": 5,
+      "revisionId": 5,
+      "chunkCount": 18,
+      "durationMs": 1868.7559090000004
+    },
+    {
+      "status": "indexed",
+      "articleId": 6,
+      "revisionId": 6,
+      "chunkCount": 13,
+      "durationMs": 1218.2124290000002
+    },
+    {
+      "status": "indexed",
+      "articleId": 7,
+      "revisionId": 7,
+      "chunkCount": 10,
+      "durationMs": 1206.1041000000005
+    },
+    {
+      "status": "indexed",
+      "articleId": 8,
+      "revisionId": 8,
+      "chunkCount": 7,
+      "durationMs": 1736.5149860000001
+    },
+    {
+      "status": "indexed",
+      "articleId": 9,
+      "revisionId": 9,
+      "chunkCount": 25,
+      "durationMs": 2412.884696000001
+    },
+    {
+      "status": "indexed",
+      "articleId": 10,
+      "revisionId": 10,
+      "chunkCount": 20,
+      "durationMs": 2226.5979910000005
+    },
+    {
+      "status": "indexed",
+      "articleId": 11,
+      "revisionId": 11,
+      "chunkCount": 11,
+      "durationMs": 1812.0343090000024
+    },
+    {
+      "status": "indexed",
+      "articleId": 12,
+      "revisionId": 12,
+      "chunkCount": 3,
+      "durationMs": 667.2633580000002
+    },
+    {
+      "status": "indexed",
+      "articleId": 13,
+      "revisionId": 13,
+      "chunkCount": 3,
+      "durationMs": 812.879396999997
+    },
+    {
+      "status": "indexed",
+      "articleId": 14,
+      "revisionId": 14,
+      "chunkCount": 10,
+      "durationMs": 1962.893770999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 15,
+      "revisionId": 15,
+      "chunkCount": 3,
+      "durationMs": 748.9212819999993
+    },
+    {
+      "status": "indexed",
+      "articleId": 16,
+      "revisionId": 16,
+      "chunkCount": 9,
+      "durationMs": 2136.2325820000005
+    },
+    {
+      "status": "indexed",
+      "articleId": 17,
+      "revisionId": 17,
+      "chunkCount": 5,
+      "durationMs": 921.7816270000003
+    },
+    {
+      "status": "indexed",
+      "articleId": 18,
+      "revisionId": 18,
+      "chunkCount": 4,
+      "durationMs": 827.5858029999981
+    },
+    {
+      "status": "indexed",
+      "articleId": 19,
+      "revisionId": 19,
+      "chunkCount": 8,
+      "durationMs": 1797.168271999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 20,
+      "revisionId": 20,
+      "chunkCount": 9,
+      "durationMs": 1807.7444300000025
+    },
+    {
+      "status": "indexed",
+      "articleId": 22,
+      "revisionId": 21,
+      "chunkCount": 14,
+      "durationMs": 1343.2096740000015
+    },
+    {
+      "status": "indexed",
+      "articleId": 23,
+      "revisionId": 22,
+      "chunkCount": 4,
+      "durationMs": 1295.2861609999964
+    },
+    {
+      "status": "indexed",
+      "articleId": 24,
+      "revisionId": 23,
+      "chunkCount": 7,
+      "durationMs": 1231.306835000003
+    },
+    {
+      "status": "indexed",
+      "articleId": 25,
+      "revisionId": 24,
+      "chunkCount": 8,
+      "durationMs": 1427.4029819999996
+    },
+    {
+      "status": "indexed",
+      "articleId": 26,
+      "revisionId": 25,
+      "chunkCount": 17,
+      "durationMs": 3493.134754999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 27,
+      "revisionId": 26,
+      "chunkCount": 12,
+      "durationMs": 1510.3060119999936
+    },
+    {
+      "status": "indexed",
+      "articleId": 28,
+      "revisionId": 27,
+      "chunkCount": 9,
+      "durationMs": 2507.2985810000027
+    },
+    {
+      "status": "indexed",
+      "articleId": 29,
+      "revisionId": 28,
+      "chunkCount": 25,
+      "durationMs": 2390.4522080000024
+    },
+    {
+      "status": "indexed",
+      "articleId": 30,
+      "revisionId": 29,
+      "chunkCount": 4,
+      "durationMs": 444.8402389999974
+    },
+    {
+      "status": "indexed",
+      "articleId": 31,
+      "revisionId": 30,
+      "chunkCount": 4,
+      "durationMs": 410.9747490000009
+    },
+    {
+      "status": "indexed",
+      "articleId": 32,
+      "revisionId": 31,
+      "chunkCount": 19,
+      "durationMs": 2641.639544999998
+    },
+    {
+      "status": "indexed",
+      "articleId": 33,
+      "revisionId": 32,
+      "chunkCount": 18,
+      "durationMs": 1949.5789650000006
+    },
+    {
+      "status": "indexed",
+      "articleId": 34,
+      "revisionId": 33,
+      "chunkCount": 13,
+      "durationMs": 1297.3913749999992
+    },
+    {
+      "status": "indexed",
+      "articleId": 35,
+      "revisionId": 34,
+      "chunkCount": 10,
+      "durationMs": 1286.5680950000024
+    },
+    {
+      "status": "indexed",
+      "articleId": 36,
+      "revisionId": 35,
+      "chunkCount": 7,
+      "durationMs": 1417.8021890000018
+    },
+    {
+      "status": "indexed",
+      "articleId": 37,
+      "revisionId": 36,
+      "chunkCount": 25,
+      "durationMs": 2527.6058520000006
+    },
+    {
+      "status": "indexed",
+      "articleId": 38,
+      "revisionId": 37,
+      "chunkCount": 20,
+      "durationMs": 2433.624640000002
+    },
+    {
+      "status": "indexed",
+      "articleId": 39,
+      "revisionId": 38,
+      "chunkCount": 11,
+      "durationMs": 1604.9082590000035
+    },
+    {
+      "status": "indexed",
+      "articleId": 40,
+      "revisionId": 39,
+      "chunkCount": 3,
+      "durationMs": 686.8445460000003
+    },
+    {
+      "status": "indexed",
+      "articleId": 41,
+      "revisionId": 40,
+      "chunkCount": 3,
+      "durationMs": 1118.2281270000021
+    },
+    {
+      "status": "indexed",
+      "articleId": 42,
+      "revisionId": 41,
+      "chunkCount": 10,
+      "durationMs": 2011.1939370000036
+    },
+    {
+      "status": "indexed",
+      "articleId": 43,
+      "revisionId": 42,
+      "chunkCount": 3,
+      "durationMs": 911.0478579999981
+    },
+    {
+      "status": "indexed",
+      "articleId": 44,
+      "revisionId": 43,
+      "chunkCount": 9,
+      "durationMs": 1853.5424590000039
+    },
+    {
+      "status": "indexed",
+      "articleId": 45,
+      "revisionId": 44,
+      "chunkCount": 5,
+      "durationMs": 956.67427399999
+    },
+    {
+      "status": "indexed",
+      "articleId": 46,
+      "revisionId": 45,
+      "chunkCount": 4,
+      "durationMs": 1137.4858530000056
+    },
+    {
+      "status": "indexed",
+      "articleId": 47,
+      "revisionId": 46,
+      "chunkCount": 8,
+      "durationMs": 1853.410830000008
+    },
+    {
+      "status": "indexed",
+      "articleId": 48,
+      "revisionId": 47,
+      "chunkCount": 9,
+      "durationMs": 2244.566368
+    },
+    {
+      "status": "indexed",
+      "articleId": 49,
+      "revisionId": 48,
+      "chunkCount": 14,
+      "durationMs": 1377.9441799999913
+    },
+    {
+      "status": "indexed",
+      "articleId": 50,
+      "revisionId": 49,
+      "chunkCount": 4,
+      "durationMs": 1155.9161719999975
+    },
+    {
+      "status": "indexed",
+      "articleId": 51,
+      "revisionId": 50,
+      "chunkCount": 7,
+      "durationMs": 1266.9841270000034
+    },
+    {
+      "status": "indexed",
+      "articleId": 52,
+      "revisionId": 51,
+      "chunkCount": 8,
+      "durationMs": 1547.1132030000008
+    },
+    {
+      "status": "indexed",
+      "articleId": 53,
+      "revisionId": 52,
+      "chunkCount": 17,
+      "durationMs": 3803.7549489999947
+    },
+    {
+      "status": "indexed",
+      "articleId": 54,
+      "revisionId": 53,
+      "chunkCount": 12,
+      "durationMs": 1686.2763290000003
+    },
+    {
+      "status": "indexed",
+      "articleId": 55,
+      "revisionId": 54,
+      "chunkCount": 9,
+      "durationMs": 2458.8837950000016
+    },
+    {
+      "status": "indexed",
+      "articleId": 56,
+      "revisionId": 55,
+      "chunkCount": 25,
+      "durationMs": 2703.1357270000008
+    },
+    {
+      "status": "indexed",
+      "articleId": 57,
+      "revisionId": 56,
+      "chunkCount": 4,
+      "durationMs": 439.48584399999527
+    },
+    {
+      "status": "indexed",
+      "articleId": 58,
+      "revisionId": 57,
+      "chunkCount": 4,
+      "durationMs": 408.24718100001337
+    },
+    {
+      "status": "indexed",
+      "articleId": 59,
+      "revisionId": 58,
+      "chunkCount": 19,
+      "durationMs": 2658.1151729999983
+    },
+    {
+      "status": "indexed",
+      "articleId": 60,
+      "revisionId": 59,
+      "chunkCount": 18,
+      "durationMs": 1928.5441979999887
+    },
+    {
+      "status": "indexed",
+      "articleId": 61,
+      "revisionId": 60,
+      "chunkCount": 13,
+      "durationMs": 1255.364981000006
+    },
+    {
+      "status": "indexed",
+      "articleId": 62,
+      "revisionId": 61,
+      "chunkCount": 10,
+      "durationMs": 1229.637103999994
+    },
+    {
+      "status": "indexed",
+      "articleId": 63,
+      "revisionId": 62,
+      "chunkCount": 7,
+      "durationMs": 1467.7144249999983
+    },
+    {
+      "status": "indexed",
+      "articleId": 64,
+      "revisionId": 63,
+      "chunkCount": 25,
+      "durationMs": 2649.050105000002
+    },
+    {
+      "status": "indexed",
+      "articleId": 65,
+      "revisionId": 64,
+      "chunkCount": 20,
+      "durationMs": 2168.0924289999966
+    },
+    {
+      "status": "indexed",
+      "articleId": 66,
+      "revisionId": 65,
+      "chunkCount": 11,
+      "durationMs": 1983.2566149999911
+    },
+    {
+      "status": "indexed",
+      "articleId": 67,
+      "revisionId": 66,
+      "chunkCount": 3,
+      "durationMs": 683.9235879999906
+    },
+    {
+      "status": "indexed",
+      "articleId": 68,
+      "revisionId": 67,
+      "chunkCount": 3,
+      "durationMs": 763.1081430000049
+    },
+    {
+      "status": "indexed",
+      "articleId": 69,
+      "revisionId": 68,
+      "chunkCount": 10,
+      "durationMs": 2022.8766730000061
+    },
+    {
+      "status": "indexed",
+      "articleId": 70,
+      "revisionId": 69,
+      "chunkCount": 3,
+      "durationMs": 788.608779000002
+    },
+    {
+      "status": "indexed",
+      "articleId": 71,
+      "revisionId": 70,
+      "chunkCount": 9,
+      "durationMs": 2244.648438000004
+    },
+    {
+      "status": "indexed",
+      "articleId": 72,
+      "revisionId": 71,
+      "chunkCount": 5,
+      "durationMs": 934.6180719999975
+    },
+    {
+      "status": "indexed",
+      "articleId": 73,
+      "revisionId": 72,
+      "chunkCount": 4,
+      "durationMs": 928.3579299999983
+    },
+    {
+      "status": "indexed",
+      "articleId": 74,
+      "revisionId": 73,
+      "chunkCount": 8,
+      "durationMs": 1611.4076610000047
+    },
+    {
+      "status": "indexed",
+      "articleId": 75,
+      "revisionId": 74,
+      "chunkCount": 9,
+      "durationMs": 1874.2341940000042
+    },
+    {
+      "status": "indexed",
+      "articleId": 76,
+      "revisionId": 75,
+      "chunkCount": 14,
+      "durationMs": 1364.3113719999965
+    },
+    {
+      "status": "indexed",
+      "articleId": 77,
+      "revisionId": 76,
+      "chunkCount": 4,
+      "durationMs": 1446.1881549999962
+    },
+    {
+      "status": "indexed",
+      "articleId": 78,
+      "revisionId": 77,
+      "chunkCount": 7,
+      "durationMs": 1252.1761289999995
+    },
+    {
+      "status": "indexed",
+      "articleId": 79,
+      "revisionId": 78,
+      "chunkCount": 8,
+      "durationMs": 1473.1027809999941
+    },
+    {
+      "status": "indexed",
+      "articleId": 80,
+      "revisionId": 79,
+      "chunkCount": 17,
+      "durationMs": 3812.3623450000014
+    },
+    {
+      "status": "indexed",
+      "articleId": 81,
+      "revisionId": 80,
+      "chunkCount": 12,
+      "durationMs": 1548.4714819999936
+    },
+    {
+      "status": "indexed",
+      "articleId": 82,
+      "revisionId": 81,
+      "chunkCount": 9,
+      "durationMs": 2310.9620089999953
+    },
+    {
+      "status": "indexed",
+      "articleId": 83,
+      "revisionId": 82,
+      "chunkCount": 25,
+      "durationMs": 2691.8655429999926
+    },
+    {
+      "status": "indexed",
+      "articleId": 84,
+      "revisionId": 83,
+      "chunkCount": 4,
+      "durationMs": 487.11485499999253
+    },
+    {
+      "status": "indexed",
+      "articleId": 85,
+      "revisionId": 84,
+      "chunkCount": 4,
+      "durationMs": 420.15884699998423
+    },
+    {
+      "status": "indexed",
+      "articleId": 86,
+      "revisionId": 85,
+      "chunkCount": 19,
+      "durationMs": 3452.002697000018
+    },
+    {
+      "status": "indexed",
+      "articleId": 87,
+      "revisionId": 86,
+      "chunkCount": 18,
+      "durationMs": 2011.6074610000069
+    },
+    {
+      "status": "indexed",
+      "articleId": 88,
+      "revisionId": 87,
+      "chunkCount": 13,
+      "durationMs": 1286.4378330000036
+    },
+    {
+      "status": "indexed",
+      "articleId": 89,
+      "revisionId": 88,
+      "chunkCount": 10,
+      "durationMs": 1474.879431999987
+    },
+    {
+      "status": "indexed",
+      "articleId": 90,
+      "revisionId": 89,
+      "chunkCount": 7,
+      "durationMs": 1710.2894359999918
+    },
+    {
+      "status": "indexed",
+      "articleId": 91,
+      "revisionId": 90,
+      "chunkCount": 25,
+      "durationMs": 3068.844840000005
+    },
+    {
+      "status": "indexed",
+      "articleId": 92,
+      "revisionId": 91,
+      "chunkCount": 20,
+      "durationMs": 2312.35076999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 93,
+      "revisionId": 92,
+      "chunkCount": 11,
+      "durationMs": 1925.0564850000083
+    },
+    {
+      "status": "indexed",
+      "articleId": 94,
+      "revisionId": 93,
+      "chunkCount": 3,
+      "durationMs": 683.1324019999884
+    },
+    {
+      "status": "indexed",
+      "articleId": 95,
+      "revisionId": 94,
+      "chunkCount": 3,
+      "durationMs": 767.7664839999925
+    },
+    {
+      "status": "indexed",
+      "articleId": 96,
+      "revisionId": 95,
+      "chunkCount": 10,
+      "durationMs": 2086.2410549999913
+    },
+    {
+      "status": "indexed",
+      "articleId": 97,
+      "revisionId": 96,
+      "chunkCount": 3,
+      "durationMs": 980.4063599999936
+    },
+    {
+      "status": "indexed",
+      "articleId": 98,
+      "revisionId": 97,
+      "chunkCount": 9,
+      "durationMs": 1904.5004509999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 99,
+      "revisionId": 98,
+      "chunkCount": 5,
+      "durationMs": 944.0309819999966
+    },
+    {
+      "status": "indexed",
+      "articleId": 100,
+      "revisionId": 99,
+      "chunkCount": 4,
+      "durationMs": 905.998454000015
+    },
+    {
+      "status": "indexed",
+      "articleId": 101,
+      "revisionId": 100,
+      "chunkCount": 8,
+      "durationMs": 1791.6420949999883
+    },
+    {
+      "status": "indexed",
+      "articleId": 102,
+      "revisionId": 101,
+      "chunkCount": 9,
+      "durationMs": 1933.9895839999954
+    },
+    {
+      "status": "indexed",
+      "articleId": 103,
+      "revisionId": 102,
+      "chunkCount": 14,
+      "durationMs": 1394.0652349999873
+    },
+    {
+      "status": "indexed",
+      "articleId": 104,
+      "revisionId": 103,
+      "chunkCount": 4,
+      "durationMs": 1225.0031730000046
+    },
+    {
+      "status": "indexed",
+      "articleId": 105,
+      "revisionId": 104,
+      "chunkCount": 7,
+      "durationMs": 1606.9337130000058
+    },
+    {
+      "status": "indexed",
+      "articleId": 106,
+      "revisionId": 105,
+      "chunkCount": 8,
+      "durationMs": 1476.6585729999933
+    },
+    {
+      "status": "indexed",
+      "articleId": 107,
+      "revisionId": 106,
+      "chunkCount": 17,
+      "durationMs": 3619.132596999989
+    },
+    {
+      "status": "indexed",
+      "articleId": 108,
+      "revisionId": 107,
+      "chunkCount": 12,
+      "durationMs": 1565.7188730000053
+    },
+    {
+      "status": "indexed",
+      "articleId": 109,
+      "revisionId": 108,
+      "chunkCount": 9,
+      "durationMs": 2289.49846100001
+    },
+    {
+      "status": "indexed",
+      "articleId": 110,
+      "revisionId": 109,
+      "chunkCount": 25,
+      "durationMs": 2408.8222689999966
+    },
+    {
+      "status": "indexed",
+      "articleId": 111,
+      "revisionId": 110,
+      "chunkCount": 4,
+      "durationMs": 428.024287999986
+    },
+    {
+      "status": "indexed",
+      "articleId": 112,
+      "revisionId": 111,
+      "chunkCount": 4,
+      "durationMs": 498.81291099998634
+    },
+    {
+      "status": "indexed",
+      "articleId": 113,
+      "revisionId": 112,
+      "chunkCount": 19,
+      "durationMs": 3383.881561999995
+    },
+    {
+      "status": "indexed",
+      "articleId": 114,
+      "revisionId": 113,
+      "chunkCount": 18,
+      "durationMs": 1942.2474369999836
+    },
+    {
+      "status": "indexed",
+      "articleId": 115,
+      "revisionId": 114,
+      "chunkCount": 13,
+      "durationMs": 1256.6960100000142
+    },
+    {
+      "status": "indexed",
+      "articleId": 116,
+      "revisionId": 115,
+      "chunkCount": 10,
+      "durationMs": 1285.388757000008
+    },
+    {
+      "status": "indexed",
+      "articleId": 117,
+      "revisionId": 116,
+      "chunkCount": 7,
+      "durationMs": 1459.7832240000134
+    },
+    {
+      "status": "indexed",
+      "articleId": 118,
+      "revisionId": 117,
+      "chunkCount": 25,
+      "durationMs": 2544.9292759999807
+    },
+    {
+      "status": "indexed",
+      "articleId": 119,
+      "revisionId": 118,
+      "chunkCount": 20,
+      "durationMs": 2180.2148990000132
+    },
+    {
+      "status": "indexed",
+      "articleId": 120,
+      "revisionId": 119,
+      "chunkCount": 11,
+      "durationMs": 1671.1044410000031
+    },
+    {
+      "status": "indexed",
+      "articleId": 121,
+      "revisionId": 120,
+      "chunkCount": 3,
+      "durationMs": 703.2829429999983
+    },
+    {
+      "status": "indexed",
+      "articleId": 122,
+      "revisionId": 121,
+      "chunkCount": 3,
+      "durationMs": 779.5846299999976
+    },
+    {
+      "status": "indexed",
+      "articleId": 123,
+      "revisionId": 122,
+      "chunkCount": 10,
+      "durationMs": 2393.103986000002
+    },
+    {
+      "status": "indexed",
+      "articleId": 124,
+      "revisionId": 123,
+      "chunkCount": 3,
+      "durationMs": 958.2848159999994
+    },
+    {
+      "status": "indexed",
+      "articleId": 125,
+      "revisionId": 124,
+      "chunkCount": 9,
+      "durationMs": 2035.9840369999874
+    },
+    {
+      "status": "indexed",
+      "articleId": 126,
+      "revisionId": 125,
+      "chunkCount": 5,
+      "durationMs": 1021.6852890000155
+    },
+    {
+      "status": "indexed",
+      "articleId": 127,
+      "revisionId": 126,
+      "chunkCount": 4,
+      "durationMs": 978.4656470000045
+    },
+    {
+      "status": "indexed",
+      "articleId": 128,
+      "revisionId": 127,
+      "chunkCount": 8,
+      "durationMs": 1766.003228000016
+    },
+    {
+      "status": "indexed",
+      "articleId": 129,
+      "revisionId": 128,
+      "chunkCount": 9,
+      "durationMs": 2276.21345499999
+    },
+    {
+      "status": "indexed",
+      "articleId": 130,
+      "revisionId": 129,
+      "chunkCount": 14,
+      "durationMs": 1675.2714869999909
+    },
+    {
+      "status": "indexed",
+      "articleId": 131,
+      "revisionId": 130,
+      "chunkCount": 4,
+      "durationMs": 1188.1105539999844
+    },
+    {
+      "status": "indexed",
+      "articleId": 132,
+      "revisionId": 131,
+      "chunkCount": 7,
+      "durationMs": 1354.517576000013
+    },
+    {
+      "status": "indexed",
+      "articleId": 133,
+      "revisionId": 132,
+      "chunkCount": 8,
+      "durationMs": 1839.498197000008
+    },
+    {
+      "status": "indexed",
+      "articleId": 134,
+      "revisionId": 133,
+      "chunkCount": 17,
+      "durationMs": 3802.2382489999873
+    },
+    {
+      "status": "indexed",
+      "articleId": 135,
+      "revisionId": 134,
+      "chunkCount": 12,
+      "durationMs": 1668.9836280000163
+    },
+    {
+      "status": "indexed",
+      "articleId": 136,
+      "revisionId": 135,
+      "chunkCount": 9,
+      "durationMs": 2368.841038000013
+    },
+    {
+      "status": "indexed",
+      "articleId": 137,
+      "revisionId": 136,
+      "chunkCount": 25,
+      "durationMs": 2433.9217019999924
+    },
+    {
+      "status": "indexed",
+      "articleId": 138,
+      "revisionId": 137,
+      "chunkCount": 4,
+      "durationMs": 439.5978350000223
+    },
+    {
+      "status": "indexed",
+      "articleId": 139,
+      "revisionId": 138,
+      "chunkCount": 4,
+      "durationMs": 419.5738640000054
+    },
+    {
+      "status": "indexed",
+      "articleId": 140,
+      "revisionId": 139,
+      "chunkCount": 19,
+      "durationMs": 2653.7710349999834
+    },
+    {
+      "status": "indexed",
+      "articleId": 141,
+      "revisionId": 140,
+      "chunkCount": 18,
+      "durationMs": 2359.649429000012
+    },
+    {
+      "status": "indexed",
+      "articleId": 142,
+      "revisionId": 141,
+      "chunkCount": 13,
+      "durationMs": 1192.3694599999872
+    },
+    {
+      "status": "indexed",
+      "articleId": 143,
+      "revisionId": 142,
+      "chunkCount": 10,
+      "durationMs": 1379.763661999983
+    },
+    {
+      "status": "indexed",
+      "articleId": 144,
+      "revisionId": 143,
+      "chunkCount": 7,
+      "durationMs": 1461.9111369999882
+    },
+    {
+      "status": "indexed",
+      "articleId": 145,
+      "revisionId": 144,
+      "chunkCount": 25,
+      "durationMs": 2607.779744999978
+    },
+    {
+      "status": "indexed",
+      "articleId": 146,
+      "revisionId": 145,
+      "chunkCount": 20,
+      "durationMs": 2135.291926999984
+    },
+    {
+      "status": "indexed",
+      "articleId": 147,
+      "revisionId": 146,
+      "chunkCount": 11,
+      "durationMs": 1680.7618240000156
+    },
+    {
+      "status": "indexed",
+      "articleId": 148,
+      "revisionId": 147,
+      "chunkCount": 3,
+      "durationMs": 719.5333089999913
+    },
+    {
+      "status": "indexed",
+      "articleId": 149,
+      "revisionId": 148,
+      "chunkCount": 3,
+      "durationMs": 788.9084309999889
+    },
+    {
+      "status": "indexed",
+      "articleId": 150,
+      "revisionId": 149,
+      "chunkCount": 10,
+      "durationMs": 2244.484607999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 151,
+      "revisionId": 150,
+      "chunkCount": 3,
+      "durationMs": 1111.357553000009
+    },
+    {
+      "status": "indexed",
+      "articleId": 152,
+      "revisionId": 151,
+      "chunkCount": 9,
+      "durationMs": 2221.6113590000023
+    },
+    {
+      "status": "indexed",
+      "articleId": 153,
+      "revisionId": 152,
+      "chunkCount": 5,
+      "durationMs": 983.961341999995
+    },
+    {
+      "status": "indexed",
+      "articleId": 154,
+      "revisionId": 153,
+      "chunkCount": 4,
+      "durationMs": 868.2653379999974
+    },
+    {
+      "status": "indexed",
+      "articleId": 155,
+      "revisionId": 154,
+      "chunkCount": 8,
+      "durationMs": 1481.8174270000018
+    },
+    {
+      "status": "indexed",
+      "articleId": 156,
+      "revisionId": 155,
+      "chunkCount": 9,
+      "durationMs": 1833.4038989999972
+    },
+    {
+      "status": "indexed",
+      "articleId": 157,
+      "revisionId": 156,
+      "chunkCount": 14,
+      "durationMs": 1446.0084329999809
+    },
+    {
+      "status": "indexed",
+      "articleId": 158,
+      "revisionId": 157,
+      "chunkCount": 4,
+      "durationMs": 1176.1128240000107
+    },
+    {
+      "status": "indexed",
+      "articleId": 159,
+      "revisionId": 158,
+      "chunkCount": 7,
+      "durationMs": 1390.688313999999
+    },
+    {
+      "status": "indexed",
+      "articleId": 160,
+      "revisionId": 159,
+      "chunkCount": 8,
+      "durationMs": 1527.2385129999893
+    },
+    {
+      "status": "indexed",
+      "articleId": 161,
+      "revisionId": 160,
+      "chunkCount": 17,
+      "durationMs": 4198.722513999994
+    },
+    {
+      "status": "indexed",
+      "articleId": 162,
+      "revisionId": 161,
+      "chunkCount": 12,
+      "durationMs": 1554.6674609999754
+    },
+    {
+      "status": "indexed",
+      "articleId": 163,
+      "revisionId": 162,
+      "chunkCount": 9,
+      "durationMs": 2302.5584759999765
+    },
+    {
+      "status": "indexed",
+      "articleId": 164,
+      "revisionId": 163,
+      "chunkCount": 25,
+      "durationMs": 2521.9711569999927
+    },
+    {
+      "status": "indexed",
+      "articleId": 165,
+      "revisionId": 164,
+      "chunkCount": 4,
+      "durationMs": 444.59694700001273
+    },
+    {
+      "status": "indexed",
+      "articleId": 166,
+      "revisionId": 165,
+      "chunkCount": 4,
+      "durationMs": 418.9795400000294
+    },
+    {
+      "status": "indexed",
+      "articleId": 167,
+      "revisionId": 166,
+      "chunkCount": 19,
+      "durationMs": 2654.161008999974
+    },
+    {
+      "status": "indexed",
+      "articleId": 168,
+      "revisionId": 167,
+      "chunkCount": 18,
+      "durationMs": 2066.4391060000053
+    },
+    {
+      "status": "indexed",
+      "articleId": 169,
+      "revisionId": 168,
+      "chunkCount": 13,
+      "durationMs": 1681.5844499999657
+    },
+    {
+      "status": "indexed",
+      "articleId": 170,
+      "revisionId": 169,
+      "chunkCount": 10,
+      "durationMs": 1225.1643540000077
+    },
+    {
+      "status": "indexed",
+      "articleId": 171,
+      "revisionId": 170,
+      "chunkCount": 7,
+      "durationMs": 1460.7529900000081
+    },
+    {
+      "status": "indexed",
+      "articleId": 172,
+      "revisionId": 171,
+      "chunkCount": 25,
+      "durationMs": 2718.460836000042
+    },
+    {
+      "status": "indexed",
+      "articleId": 173,
+      "revisionId": 172,
+      "chunkCount": 20,
+      "durationMs": 2190.337793999992
+    },
+    {
+      "status": "indexed",
+      "articleId": 174,
+      "revisionId": 173,
+      "chunkCount": 11,
+      "durationMs": 1710.4499380000052
+    },
+    {
+      "status": "indexed",
+      "articleId": 175,
+      "revisionId": 174,
+      "chunkCount": 3,
+      "durationMs": 677.2645730000222
+    },
+    {
+      "status": "indexed",
+      "articleId": 176,
+      "revisionId": 175,
+      "chunkCount": 3,
+      "durationMs": 767.7736140000052
+    },
+    {
+      "status": "indexed",
+      "articleId": 177,
+      "revisionId": 176,
+      "chunkCount": 10,
+      "durationMs": 2045.6920009999885
+    },
+    {
+      "status": "indexed",
+      "articleId": 178,
+      "revisionId": 177,
+      "chunkCount": 3,
+      "durationMs": 782.9447229999932
+    },
+    {
+      "status": "indexed",
+      "articleId": 179,
+      "revisionId": 178,
+      "chunkCount": 9,
+      "durationMs": 2268.6645140000037
+    },
+    {
+      "status": "indexed",
+      "articleId": 180,
+      "revisionId": 179,
+      "chunkCount": 5,
+      "durationMs": 945.7689039999968
+    },
+    {
+      "status": "indexed",
+      "articleId": 181,
+      "revisionId": 180,
+      "chunkCount": 4,
+      "durationMs": 899.4258799999952
+    },
+    {
+      "status": "indexed",
+      "articleId": 182,
+      "revisionId": 181,
+      "chunkCount": 8,
+      "durationMs": 1533.2235419999924
+    },
+    {
+      "status": "indexed",
+      "articleId": 183,
+      "revisionId": 182,
+      "chunkCount": 9,
+      "durationMs": 1911.5946969999932
+    },
+    {
+      "status": "indexed",
+      "articleId": 184,
+      "revisionId": 183,
+      "chunkCount": 14,
+      "durationMs": 1382.890073000046
+    },
+    {
+      "status": "indexed",
+      "articleId": 185,
+      "revisionId": 184,
+      "chunkCount": 4,
+      "durationMs": 1147.0630950000486
+    },
+    {
+      "status": "indexed",
+      "articleId": 186,
+      "revisionId": 185,
+      "chunkCount": 7,
+      "durationMs": 1278.3421809999854
+    },
+    {
+      "status": "indexed",
+      "articleId": 187,
+      "revisionId": 186,
+      "chunkCount": 8,
+      "durationMs": 1791.012621999951
+    },
+    {
+      "status": "indexed",
+      "articleId": 188,
+      "revisionId": 187,
+      "chunkCount": 17,
+      "durationMs": 3654.020794000011
+    },
+    {
+      "status": "indexed",
+      "articleId": 189,
+      "revisionId": 188,
+      "chunkCount": 12,
+      "durationMs": 1961.529653000005
+    },
+    {
+      "status": "indexed",
+      "articleId": 190,
+      "revisionId": 189,
+      "chunkCount": 9,
+      "durationMs": 2316.7926280000247
+    },
+    {
+      "status": "indexed",
+      "articleId": 191,
+      "revisionId": 190,
+      "chunkCount": 25,
+      "durationMs": 2438.296360999986
+    },
+    {
+      "status": "indexed",
+      "articleId": 192,
+      "revisionId": 191,
+      "chunkCount": 4,
+      "durationMs": 450.8259079999989
+    },
+    {
+      "status": "indexed",
+      "articleId": 193,
+      "revisionId": 192,
+      "chunkCount": 4,
+      "durationMs": 425.0960099999793
+    },
+    {
+      "status": "indexed",
+      "articleId": 194,
+      "revisionId": 193,
+      "chunkCount": 19,
+      "durationMs": 2298.2807180000236
+    },
+    {
+      "status": "indexed",
+      "articleId": 195,
+      "revisionId": 194,
+      "chunkCount": 18,
+      "durationMs": 1951.845169999986
+    },
+    {
+      "status": "indexed",
+      "articleId": 196,
+      "revisionId": 195,
+      "chunkCount": 13,
+      "durationMs": 1251.9832789999782
+    },
+    {
+      "status": "indexed",
+      "articleId": 197,
+      "revisionId": 196,
+      "chunkCount": 10,
+      "durationMs": 1284.3765789999743
+    },
+    {
+      "status": "indexed",
+      "articleId": 198,
+      "revisionId": 197,
+      "chunkCount": 7,
+      "durationMs": 1603.479869999981
+    },
+    {
+      "status": "indexed",
+      "articleId": 199,
+      "revisionId": 198,
+      "chunkCount": 25,
+      "durationMs": 2669.1297940000077
+    },
+    {
+      "status": "indexed",
+      "articleId": 200,
+      "revisionId": 199,
+      "chunkCount": 20,
+      "durationMs": 2148.693802999973
+    },
+    {
+      "status": "indexed",
+      "articleId": 201,
+      "revisionId": 200,
+      "chunkCount": 11,
+      "durationMs": 1651.69493399997
+    },
+    {
+      "status": "indexed",
+      "articleId": 202,
+      "revisionId": 201,
+      "chunkCount": 3,
+      "durationMs": 702.4641789999441
+    },
+    {
+      "status": "indexed",
+      "articleId": 203,
+      "revisionId": 202,
+      "chunkCount": 3,
+      "durationMs": 771.300866000005
+    },
+    {
+      "status": "indexed",
+      "articleId": 204,
+      "revisionId": 203,
+      "chunkCount": 10,
+      "durationMs": 2175.6876690000063
+    },
+    {
+      "status": "indexed",
+      "articleId": 205,
+      "revisionId": 204,
+      "chunkCount": 3,
+      "durationMs": 931.5872209999943
+    },
+    {
+      "status": "indexed",
+      "articleId": 206,
+      "revisionId": 205,
+      "chunkCount": 9,
+      "durationMs": 1915.3757420000038
+    },
+    {
+      "status": "indexed",
+      "articleId": 207,
+      "revisionId": 206,
+      "chunkCount": 5,
+      "durationMs": 967.6864259999711
+    },
+    {
+      "status": "indexed",
+      "articleId": 208,
+      "revisionId": 207,
+      "chunkCount": 4,
+      "durationMs": 877.9774210000178
+    },
+    {
+      "status": "indexed",
+      "articleId": 209,
+      "revisionId": 208,
+      "chunkCount": 8,
+      "durationMs": 1872.5675640000263
+    },
+    {
+      "status": "indexed",
+      "articleId": 210,
+      "revisionId": 209,
+      "chunkCount": 9,
+      "durationMs": 1994.6436690000119
+    },
+    {
+      "status": "indexed",
+      "articleId": 211,
+      "revisionId": 210,
+      "chunkCount": 14,
+      "durationMs": 1368.776790999982
+    },
+    {
+      "status": "indexed",
+      "articleId": 212,
+      "revisionId": 211,
+      "chunkCount": 4,
+      "durationMs": 1152.8620830000145
+    },
+    {
+      "status": "indexed",
+      "articleId": 213,
+      "revisionId": 212,
+      "chunkCount": 7,
+      "durationMs": 1251.5463159999927
+    },
+    {
+      "status": "indexed",
+      "articleId": 214,
+      "revisionId": 213,
+      "chunkCount": 8,
+      "durationMs": 1462.050588000042
+    },
+    {
+      "status": "indexed",
+      "articleId": 215,
+      "revisionId": 214,
+      "chunkCount": 17,
+      "durationMs": 3647.829701999959
+    },
+    {
+      "status": "indexed",
+      "articleId": 216,
+      "revisionId": 215,
+      "chunkCount": 12,
+      "durationMs": 1578.6075180000043
+    },
+    {
+      "status": "indexed",
+      "articleId": 217,
+      "revisionId": 216,
+      "chunkCount": 9,
+      "durationMs": 2628.594059999974
+    },
+    {
+      "status": "indexed",
+      "articleId": 218,
+      "revisionId": 217,
+      "chunkCount": 25,
+      "durationMs": 2431.0385430000024
+    },
+    {
+      "status": "indexed",
+      "articleId": 219,
+      "revisionId": 218,
+      "chunkCount": 4,
+      "durationMs": 440.9643539999961
+    },
+    {
+      "status": "indexed",
+      "articleId": 220,
+      "revisionId": 219,
+      "chunkCount": 4,
+      "durationMs": 409.07667600002605
+    },
+    {
+      "status": "indexed",
+      "articleId": 221,
+      "revisionId": 220,
+      "chunkCount": 19,
+      "durationMs": 2313.574808000005
+    },
+    {
+      "status": "indexed",
+      "articleId": 222,
+      "revisionId": 221,
+      "chunkCount": 18,
+      "durationMs": 1929.970176999981
+    },
+    {
+      "status": "indexed",
+      "articleId": 223,
+      "revisionId": 222,
+      "chunkCount": 13,
+      "durationMs": 1213.2019769999897
+    },
+    {
+      "status": "indexed",
+      "articleId": 224,
+      "revisionId": 223,
+      "chunkCount": 10,
+      "durationMs": 1396.4728009999963
+    },
+    {
+      "status": "indexed",
+      "articleId": 225,
+      "revisionId": 224,
+      "chunkCount": 7,
+      "durationMs": 1465.8244129999657
+    },
+    {
+      "status": "indexed",
+      "articleId": 226,
+      "revisionId": 225,
+      "chunkCount": 25,
+      "durationMs": 2528.3748370000394
+    },
+    {
+      "status": "indexed",
+      "articleId": 227,
+      "revisionId": 226,
+      "chunkCount": 20,
+      "durationMs": 2521.400832000014
+    },
+    {
+      "status": "indexed",
+      "articleId": 228,
+      "revisionId": 227,
+      "chunkCount": 11,
+      "durationMs": 1790.5839690000284
+    },
+    {
+      "status": "indexed",
+      "articleId": 229,
+      "revisionId": 228,
+      "chunkCount": 3,
+      "durationMs": 703.035281999968
+    },
+    {
+      "status": "indexed",
+      "articleId": 230,
+      "revisionId": 229,
+      "chunkCount": 3,
+      "durationMs": 979.7904339999659
+    },
+    {
+      "status": "indexed",
+      "articleId": 231,
+      "revisionId": 230,
+      "chunkCount": 10,
+      "durationMs": 2378.8984039999777
+    },
+    {
+      "status": "indexed",
+      "articleId": 232,
+      "revisionId": 231,
+      "chunkCount": 3,
+      "durationMs": 1001.0128629999817
+    },
+    {
+      "status": "indexed",
+      "articleId": 233,
+      "revisionId": 232,
+      "chunkCount": 9,
+      "durationMs": 2692.136083999998
+    },
+    {
+      "status": "indexed",
+      "articleId": 234,
+      "revisionId": 233,
+      "chunkCount": 5,
+      "durationMs": 1185.418915999995
+    },
+    {
+      "status": "indexed",
+      "articleId": 235,
+      "revisionId": 234,
+      "chunkCount": 4,
+      "durationMs": 956.3127319999621
+    },
+    {
+      "status": "indexed",
+      "articleId": 236,
+      "revisionId": 235,
+      "chunkCount": 8,
+      "durationMs": 1562.5677630000282
+    },
+    {
+      "status": "indexed",
+      "articleId": 237,
+      "revisionId": 236,
+      "chunkCount": 9,
+      "durationMs": 2257.0268499999656
+    },
+    {
+      "status": "indexed",
+      "articleId": 238,
+      "revisionId": 237,
+      "chunkCount": 14,
+      "durationMs": 1390.4619909999892
+    },
+    {
+      "status": "indexed",
+      "articleId": 239,
+      "revisionId": 238,
+      "chunkCount": 4,
+      "durationMs": 1195.9729339999612
+    },
+    {
+      "status": "indexed",
+      "articleId": 240,
+      "revisionId": 239,
+      "chunkCount": 7,
+      "durationMs": 1289.2939730000217
+    },
+    {
+      "status": "indexed",
+      "articleId": 241,
+      "revisionId": 240,
+      "chunkCount": 8,
+      "durationMs": 1566.2074980000034
+    },
+    {
+      "status": "indexed",
+      "articleId": 242,
+      "revisionId": 241,
+      "chunkCount": 17,
+      "durationMs": 3739.3775989999995
+    },
+    {
+      "status": "indexed",
+      "articleId": 243,
+      "revisionId": 242,
+      "chunkCount": 12,
+      "durationMs": 1588.4098020000383
+    },
+    {
+      "status": "indexed",
+      "articleId": 244,
+      "revisionId": 243,
+      "chunkCount": 9,
+      "durationMs": 2354.595453999995
+    },
+    {
+      "status": "indexed",
+      "articleId": 245,
+      "revisionId": 244,
+      "chunkCount": 25,
+      "durationMs": 2783.831162000017
+    },
+    {
+      "status": "indexed",
+      "articleId": 246,
+      "revisionId": 245,
+      "chunkCount": 4,
+      "durationMs": 438.8212090000161
+    },
+    {
+      "status": "indexed",
+      "articleId": 247,
+      "revisionId": 246,
+      "chunkCount": 4,
+      "durationMs": 424.1587929999805
+    },
+    {
+      "status": "indexed",
+      "articleId": 248,
+      "revisionId": 247,
+      "chunkCount": 19,
+      "durationMs": 2772.3878780000377
+    },
+    {
+      "status": "indexed",
+      "articleId": 249,
+      "revisionId": 248,
+      "chunkCount": 18,
+      "durationMs": 1999.7937530000345
+    },
+    {
+      "status": "indexed",
+      "articleId": 250,
+      "revisionId": 249,
+      "chunkCount": 13,
+      "durationMs": 1231.29675400001
+    },
+    {
+      "status": "indexed",
+      "articleId": 251,
+      "revisionId": 250,
+      "chunkCount": 10,
+      "durationMs": 1230.4819789999747
+    },
+    {
+      "status": "indexed",
+      "articleId": 252,
+      "revisionId": 251,
+      "chunkCount": 7,
+      "durationMs": 1496.695493999985
+    },
+    {
+      "status": "indexed",
+      "articleId": 253,
+      "revisionId": 252,
+      "chunkCount": 25,
+      "durationMs": 2564.500742999953
+    },
+    {
+      "status": "indexed",
+      "articleId": 254,
+      "revisionId": 253,
+      "chunkCount": 20,
+      "durationMs": 2495.093120000034
+    },
+    {
+      "status": "indexed",
+      "articleId": 255,
+      "revisionId": 254,
+      "chunkCount": 11,
+      "durationMs": 1821.554472000047
+    },
+    {
+      "status": "indexed",
+      "articleId": 256,
+      "revisionId": 255,
+      "chunkCount": 3,
+      "durationMs": 714.5833459999994
+    },
+    {
+      "status": "indexed",
+      "articleId": 257,
+      "revisionId": 256,
+      "chunkCount": 3,
+      "durationMs": 813.2922299999627
+    },
+    {
+      "status": "indexed",
+      "articleId": 258,
+      "revisionId": 257,
+      "chunkCount": 10,
+      "durationMs": 2051.1293780000415
+    },
+    {
+      "status": "indexed",
+      "articleId": 259,
+      "revisionId": 258,
+      "chunkCount": 3,
+      "durationMs": 1133.635467999964
+    },
+    {
+      "status": "indexed",
+      "articleId": 260,
+      "revisionId": 259,
+      "chunkCount": 9,
+      "durationMs": 2278.5982990000048
+    },
+    {
+      "status": "indexed",
+      "articleId": 261,
+      "revisionId": 260,
+      "chunkCount": 5,
+      "durationMs": 988.6759440000169
+    },
+    {
+      "status": "indexed",
+      "articleId": 262,
+      "revisionId": 261,
+      "chunkCount": 4,
+      "durationMs": 869.0110239999485
+    },
+    {
+      "status": "indexed",
+      "articleId": 263,
+      "revisionId": 262,
+      "chunkCount": 8,
+      "durationMs": 1594.3036200000206
+    },
+    {
+      "status": "indexed",
+      "articleId": 264,
+      "revisionId": 263,
+      "chunkCount": 9,
+      "durationMs": 1972.1481019999483
+    },
+    {
+      "status": "indexed",
+      "articleId": 265,
+      "revisionId": 264,
+      "chunkCount": 14,
+      "durationMs": 1742.7061669999966
+    },
+    {
+      "status": "indexed",
+      "articleId": 266,
+      "revisionId": 265,
+      "chunkCount": 4,
+      "durationMs": 1408.361847000022
+    },
+    {
+      "status": "indexed",
+      "articleId": 267,
+      "revisionId": 266,
+      "chunkCount": 7,
+      "durationMs": 1419.2234789999784
+    },
+    {
+      "status": "indexed",
+      "articleId": 268,
+      "revisionId": 267,
+      "chunkCount": 8,
+      "durationMs": 1696.6642560000182
+    },
+    {
+      "status": "indexed",
+      "articleId": 269,
+      "revisionId": 268,
+      "chunkCount": 17,
+      "durationMs": 3737.0938650000026
+    },
+    {
+      "status": "indexed",
+      "articleId": 270,
+      "revisionId": 269,
+      "chunkCount": 12,
+      "durationMs": 1579.261462000024
+    },
+    {
+      "status": "indexed",
+      "articleId": 271,
+      "revisionId": 270,
+      "chunkCount": 9,
+      "durationMs": 2326.148210000014
+    },
+    {
+      "status": "indexed",
+      "articleId": 272,
+      "revisionId": 271,
+      "chunkCount": 25,
+      "durationMs": 2818.1828359999927
+    },
+    {
+      "status": "indexed",
+      "articleId": 273,
+      "revisionId": 272,
+      "chunkCount": 4,
+      "durationMs": 435.3011969999643
+    },
+    {
+      "status": "indexed",
+      "articleId": 274,
+      "revisionId": 273,
+      "chunkCount": 4,
+      "durationMs": 412.67072900000494
+    },
+    {
+      "status": "indexed",
+      "articleId": 275,
+      "revisionId": 274,
+      "chunkCount": 19,
+      "durationMs": 2718.3560749999597
+    },
+    {
+      "status": "indexed",
+      "articleId": 276,
+      "revisionId": 275,
+      "chunkCount": 18,
+      "durationMs": 1995.3722139999736
+    },
+    {
+      "status": "indexed",
+      "articleId": 277,
+      "revisionId": 276,
+      "chunkCount": 13,
+      "durationMs": 1240.7742360000266
+    },
+    {
+      "status": "indexed",
+      "articleId": 278,
+      "revisionId": 277,
+      "chunkCount": 10,
+      "durationMs": 1249.542592999991
+    },
+    {
+      "status": "indexed",
+      "articleId": 279,
+      "revisionId": 278,
+      "chunkCount": 7,
+      "durationMs": 1548.0999789999914
+    },
+    {
+      "status": "indexed",
+      "articleId": 280,
+      "revisionId": 279,
+      "chunkCount": 25,
+      "durationMs": 2571.63241000002
+    },
+    {
+      "status": "indexed",
+      "articleId": 281,
+      "revisionId": 280,
+      "chunkCount": 20,
+      "durationMs": 2163.7210599999526
+    },
+    {
+      "status": "indexed",
+      "articleId": 282,
+      "revisionId": 281,
+      "chunkCount": 11,
+      "durationMs": 1945.132626000035
+    },
+    {
+      "status": "indexed",
+      "articleId": 283,
+      "revisionId": 282,
+      "chunkCount": 3,
+      "durationMs": 673.2850680000265
+    },
+    {
+      "status": "indexed",
+      "articleId": 284,
+      "revisionId": 283,
+      "chunkCount": 3,
+      "durationMs": 752.8537260000012
+    },
+    {
+      "status": "indexed",
+      "articleId": 285,
+      "revisionId": 284,
+      "chunkCount": 10,
+      "durationMs": 2057.4754590000375
+    },
+    {
+      "status": "indexed",
+      "articleId": 286,
+      "revisionId": 285,
+      "chunkCount": 3,
+      "durationMs": 935.2471050000167
+    },
+    {
+      "status": "indexed",
+      "articleId": 287,
+      "revisionId": 286,
+      "chunkCount": 9,
+      "durationMs": 2304.777839999995
+    },
+    {
+      "status": "indexed",
+      "articleId": 288,
+      "revisionId": 287,
+      "chunkCount": 5,
+      "durationMs": 950.3068140000105
+    },
+    {
+      "status": "indexed",
+      "articleId": 289,
+      "revisionId": 288,
+      "chunkCount": 4,
+      "durationMs": 882.2169590000412
+    },
+    {
+      "status": "indexed",
+      "articleId": 290,
+      "revisionId": 289,
+      "chunkCount": 8,
+      "durationMs": 1495.025622999994
+    },
+    {
+      "status": "indexed",
+      "articleId": 291,
+      "revisionId": 290,
+      "chunkCount": 9,
+      "durationMs": 1876.3245079999906
+    },
+    {
+      "status": "indexed",
+      "articleId": 292,
+      "revisionId": 291,
+      "chunkCount": 14,
+      "durationMs": 1382.9883629999822
+    },
+    {
+      "status": "indexed",
+      "articleId": 293,
+      "revisionId": 292,
+      "chunkCount": 4,
+      "durationMs": 1484.5221149999998
+    },
+    {
+      "status": "indexed",
+      "articleId": 294,
+      "revisionId": 293,
+      "chunkCount": 7,
+      "durationMs": 1263.087790999969
+    },
+    {
+      "status": "indexed",
+      "articleId": 295,
+      "revisionId": 294,
+      "chunkCount": 8,
+      "durationMs": 1608.5235530000064
+    },
+    {
+      "status": "indexed",
+      "articleId": 296,
+      "revisionId": 295,
+      "chunkCount": 17,
+      "durationMs": 3596.8284309999435
+    },
+    {
+      "status": "indexed",
+      "articleId": 297,
+      "revisionId": 296,
+      "chunkCount": 12,
+      "durationMs": 1547.8503260000143
+    },
+    {
+      "status": "indexed",
+      "articleId": 298,
+      "revisionId": 297,
+      "chunkCount": 9,
+      "durationMs": 1963.9115989999846
+    },
+    {
+      "status": "indexed",
+      "articleId": 299,
+      "revisionId": 298,
+      "chunkCount": 25,
+      "durationMs": 2425.2429550000234
+    },
+    {
+      "status": "indexed",
+      "articleId": 300,
+      "revisionId": 299,
+      "chunkCount": 4,
+      "durationMs": 435.15639499999816
+    },
+    {
+      "status": "indexed",
+      "articleId": 301,
+      "revisionId": 300,
+      "chunkCount": 4,
+      "durationMs": 413.61563600000227
+    },
+    {
+      "status": "indexed",
+      "articleId": 302,
+      "revisionId": 301,
+      "chunkCount": 19,
+      "durationMs": 2977.9896880000015
+    },
+    {
+      "status": "indexed",
+      "articleId": 303,
+      "revisionId": 302,
+      "chunkCount": 18,
+      "durationMs": 2030.689532999997
+    },
+    {
+      "status": "indexed",
+      "articleId": 304,
+      "revisionId": 303,
+      "chunkCount": 13,
+      "durationMs": 1210.3365470000426
+    },
+    {
+      "status": "indexed",
+      "articleId": 305,
+      "revisionId": 304,
+      "chunkCount": 10,
+      "durationMs": 1241.219987999997
+    },
+    {
+      "status": "indexed",
+      "articleId": 306,
+      "revisionId": 305,
+      "chunkCount": 7,
+      "durationMs": 1542.959215000039
+    },
+    {
+      "status": "indexed",
+      "articleId": 307,
+      "revisionId": 306,
+      "chunkCount": 25,
+      "durationMs": 2568.5004790000385
+    },
+    {
+      "status": "indexed",
+      "articleId": 308,
+      "revisionId": 307,
+      "chunkCount": 20,
+      "durationMs": 2202.9677870000014
+    },
+    {
+      "status": "indexed",
+      "articleId": 309,
+      "revisionId": 308,
+      "chunkCount": 11,
+      "durationMs": 1697.9092050000327
+    },
+    {
+      "status": "indexed",
+      "articleId": 310,
+      "revisionId": 309,
+      "chunkCount": 3,
+      "durationMs": 690.377249000012
+    },
+    {
+      "status": "indexed",
+      "articleId": 311,
+      "revisionId": 310,
+      "chunkCount": 3,
+      "durationMs": 763.5181960000191
+    },
+    {
+      "status": "indexed",
+      "articleId": 312,
+      "revisionId": 311,
+      "chunkCount": 10,
+      "durationMs": 2419.727538999985
+    },
+    {
+      "status": "indexed",
+      "articleId": 313,
+      "revisionId": 312,
+      "chunkCount": 3,
+      "durationMs": 1018.3977979999618
+    },
+    {
+      "status": "indexed",
+      "articleId": 314,
+      "revisionId": 313,
+      "chunkCount": 9,
+      "durationMs": 2560.1333539999905
+    },
+    {
+      "status": "indexed",
+      "articleId": 315,
+      "revisionId": 314,
+      "chunkCount": 5,
+      "durationMs": 957.3521300000139
+    },
+    {
+      "status": "indexed",
+      "articleId": 316,
+      "revisionId": 315,
+      "chunkCount": 4,
+      "durationMs": 864.1048910000245
+    },
+    {
+      "status": "indexed",
+      "articleId": 317,
+      "revisionId": 316,
+      "chunkCount": 8,
+      "durationMs": 1519.088499000005
+    },
+    {
+      "status": "indexed",
+      "articleId": 318,
+      "revisionId": 317,
+      "chunkCount": 9,
+      "durationMs": 1859.1717070000013
+    },
+    {
+      "status": "indexed",
+      "articleId": 319,
+      "revisionId": 318,
+      "chunkCount": 14,
+      "durationMs": 1373.535000999982
+    },
+    {
+      "status": "indexed",
+      "articleId": 320,
+      "revisionId": 319,
+      "chunkCount": 4,
+      "durationMs": 1154.3423940000357
+    },
+    {
+      "status": "indexed",
+      "articleId": 321,
+      "revisionId": 320,
+      "chunkCount": 7,
+      "durationMs": 1279.8188599999994
+    },
+    {
+      "status": "indexed",
+      "articleId": 322,
+      "revisionId": 321,
+      "chunkCount": 8,
+      "durationMs": 1756.2049649999244
+    },
+    {
+      "status": "indexed",
+      "articleId": 323,
+      "revisionId": 322,
+      "chunkCount": 17,
+      "durationMs": 3632.7900549999904
+    },
+    {
+      "status": "indexed",
+      "articleId": 324,
+      "revisionId": 323,
+      "chunkCount": 12,
+      "durationMs": 1589.217995999963
+    },
+    {
+      "status": "indexed",
+      "articleId": 325,
+      "revisionId": 324,
+      "chunkCount": 9,
+      "durationMs": 2356.8146389999893
+    },
+    {
+      "status": "indexed",
+      "articleId": 326,
+      "revisionId": 325,
+      "chunkCount": 25,
+      "durationMs": 2441.3263009999646
+    },
+    {
+      "status": "indexed",
+      "articleId": 327,
+      "revisionId": 326,
+      "chunkCount": 4,
+      "durationMs": 437.4098910000175
+    },
+    {
+      "status": "indexed",
+      "articleId": 328,
+      "revisionId": 327,
+      "chunkCount": 4,
+      "durationMs": 408.58175200002734
+    },
+    {
+      "status": "indexed",
+      "articleId": 329,
+      "revisionId": 328,
+      "chunkCount": 19,
+      "durationMs": 2649.0466730000917
+    },
+    {
+      "status": "indexed",
+      "articleId": 330,
+      "revisionId": 329,
+      "chunkCount": 18,
+      "durationMs": 2332.8848330000183
+    },
+    {
+      "status": "indexed",
+      "articleId": 331,
+      "revisionId": 330,
+      "chunkCount": 13,
+      "durationMs": 1257.6116860000184
+    },
+    {
+      "status": "indexed",
+      "articleId": 332,
+      "revisionId": 331,
+      "chunkCount": 10,
+      "durationMs": 1504.3834739999147
+    },
+    {
+      "status": "indexed",
+      "articleId": 333,
+      "revisionId": 332,
+      "chunkCount": 7,
+      "durationMs": 1459.6151520001004
+    },
+    {
+      "status": "indexed",
+      "articleId": 334,
+      "revisionId": 333,
+      "chunkCount": 25,
+      "durationMs": 2528.798429999966
+    },
+    {
+      "status": "indexed",
+      "articleId": 335,
+      "revisionId": 334,
+      "chunkCount": 20,
+      "durationMs": 2196.5246749999933
+    },
+    {
+      "status": "indexed",
+      "articleId": 336,
+      "revisionId": 335,
+      "chunkCount": 11,
+      "durationMs": 1719.5331269999733
+    },
+    {
+      "status": "indexed",
+      "articleId": 337,
+      "revisionId": 336,
+      "chunkCount": 3,
+      "durationMs": 761.010639000102
+    },
+    {
+      "status": "indexed",
+      "articleId": 338,
+      "revisionId": 337,
+      "chunkCount": 3,
+      "durationMs": 980.0961680000182
+    },
+    {
+      "status": "indexed",
+      "articleId": 339,
+      "revisionId": 338,
+      "chunkCount": 10,
+      "durationMs": 2517.9765490000136
+    },
+    {
+      "status": "indexed",
+      "articleId": 340,
+      "revisionId": 339,
+      "chunkCount": 3,
+      "durationMs": 965.145589999971
+    },
+    {
+      "status": "indexed",
+      "articleId": 341,
+      "revisionId": 340,
+      "chunkCount": 9,
+      "durationMs": 2266.7114029999357
+    },
+    {
+      "status": "indexed",
+      "articleId": 342,
+      "revisionId": 341,
+      "chunkCount": 5,
+      "durationMs": 933.8799550000113
+    },
+    {
+      "status": "indexed",
+      "articleId": 343,
+      "revisionId": 342,
+      "chunkCount": 4,
+      "durationMs": 898.2233540000161
+    },
+    {
+      "status": "indexed",
+      "articleId": 344,
+      "revisionId": 343,
+      "chunkCount": 8,
+      "durationMs": 1583.4972599999746
+    },
+    {
+      "status": "indexed",
+      "articleId": 345,
+      "revisionId": 344,
+      "chunkCount": 9,
+      "durationMs": 2098.348844000022
+    },
+    {
+      "status": "indexed",
+      "articleId": 346,
+      "revisionId": 345,
+      "chunkCount": 14,
+      "durationMs": 1421.600114999921
+    },
+    {
+      "status": "indexed",
+      "articleId": 347,
+      "revisionId": 346,
+      "chunkCount": 4,
+      "durationMs": 1169.1744789999211
+    },
+    {
+      "status": "indexed",
+      "articleId": 348,
+      "revisionId": 347,
+      "chunkCount": 7,
+      "durationMs": 1264.3936299999477
+    },
+    {
+      "status": "indexed",
+      "articleId": 349,
+      "revisionId": 348,
+      "chunkCount": 8,
+      "durationMs": 1455.1562639999902
+    },
+    {
+      "status": "indexed",
+      "articleId": 350,
+      "revisionId": 349,
+      "chunkCount": 17,
+      "durationMs": 4068.285353000043
+    },
+    {
+      "status": "indexed",
+      "articleId": 351,
+      "revisionId": 350,
+      "chunkCount": 12,
+      "durationMs": 1560.0711260000244
+    },
+    {
+      "status": "indexed",
+      "articleId": 352,
+      "revisionId": 351,
+      "chunkCount": 9,
+      "durationMs": 1956.9025240000337
+    },
+    {
+      "status": "indexed",
+      "articleId": 353,
+      "revisionId": 352,
+      "chunkCount": 25,
+      "durationMs": 2405.960669999942
+    },
+    {
+      "status": "indexed",
+      "articleId": 354,
+      "revisionId": 353,
+      "chunkCount": 4,
+      "durationMs": 443.81480199994985
+    },
+    {
+      "status": "indexed",
+      "articleId": 355,
+      "revisionId": 354,
+      "chunkCount": 4,
+      "durationMs": 421.7246270000469
+    },
+    {
+      "status": "indexed",
+      "articleId": 356,
+      "revisionId": 355,
+      "chunkCount": 19,
+      "durationMs": 2647.692185000051
+    },
+    {
+      "status": "indexed",
+      "articleId": 357,
+      "revisionId": 356,
+      "chunkCount": 18,
+      "durationMs": 1945.0990959999617
+    },
+    {
+      "status": "indexed",
+      "articleId": 358,
+      "revisionId": 357,
+      "chunkCount": 13,
+      "durationMs": 1229.497321999981
+    },
+    {
+      "status": "indexed",
+      "articleId": 359,
+      "revisionId": 358,
+      "chunkCount": 10,
+      "durationMs": 1537.941094000009
+    },
+    {
+      "status": "indexed",
+      "articleId": 360,
+      "revisionId": 359,
+      "chunkCount": 7,
+      "durationMs": 1431.5254179999465
+    },
+    {
+      "status": "indexed",
+      "articleId": 361,
+      "revisionId": 360,
+      "chunkCount": 25,
+      "durationMs": 2505.9207709999755
+    },
+    {
+      "status": "indexed",
+      "articleId": 362,
+      "revisionId": 361,
+      "chunkCount": 20,
+      "durationMs": 2209.821271999972
+    },
+    {
+      "status": "indexed",
+      "articleId": 363,
+      "revisionId": 362,
+      "chunkCount": 11,
+      "durationMs": 1875.6467330000596
+    },
+    {
+      "status": "indexed",
+      "articleId": 364,
+      "revisionId": 363,
+      "chunkCount": 3,
+      "durationMs": 765.4970580000663
+    },
+    {
+      "status": "indexed",
+      "articleId": 365,
+      "revisionId": 364,
+      "chunkCount": 3,
+      "durationMs": 756.8299230000703
+    },
+    {
+      "status": "indexed",
+      "articleId": 366,
+      "revisionId": 365,
+      "chunkCount": 10,
+      "durationMs": 2008.4109180000378
+    },
+    {
+      "status": "indexed",
+      "articleId": 367,
+      "revisionId": 366,
+      "chunkCount": 3,
+      "durationMs": 788.5674799999688
+    },
+    {
+      "status": "indexed",
+      "articleId": 368,
+      "revisionId": 367,
+      "chunkCount": 9,
+      "durationMs": 2735.0974540000316
+    },
+    {
+      "status": "indexed",
+      "articleId": 369,
+      "revisionId": 368,
+      "chunkCount": 5,
+      "durationMs": 957.3004580000415
+    },
+    {
+      "status": "indexed",
+      "articleId": 370,
+      "revisionId": 369,
+      "chunkCount": 4,
+      "durationMs": 862.4751199999591
+    },
+    {
+      "status": "indexed",
+      "articleId": 371,
+      "revisionId": 370,
+      "chunkCount": 8,
+      "durationMs": 1487.2575230000075
+    },
+    {
+      "status": "indexed",
+      "articleId": 372,
+      "revisionId": 371,
+      "chunkCount": 9,
+      "durationMs": 1855.4291919999523
+    },
+    {
+      "status": "indexed",
+      "articleId": 373,
+      "revisionId": 372,
+      "chunkCount": 14,
+      "durationMs": 1354.9160200000042
+    },
+    {
+      "status": "indexed",
+      "articleId": 374,
+      "revisionId": 373,
+      "chunkCount": 4,
+      "durationMs": 1134.6811250000028
+    },
+    {
+      "status": "indexed",
+      "articleId": 375,
+      "revisionId": 374,
+      "chunkCount": 7,
+      "durationMs": 1247.8870530000422
+    },
+    {
+      "status": "indexed",
+      "articleId": 376,
+      "revisionId": 375,
+      "chunkCount": 8,
+      "durationMs": 1501.3287929999642
+    },
+    {
+      "status": "indexed",
+      "articleId": 377,
+      "revisionId": 376,
+      "chunkCount": 17,
+      "durationMs": 3750.4434020000044
+    },
+    {
+      "status": "indexed",
+      "articleId": 378,
+      "revisionId": 377,
+      "chunkCount": 12,
+      "durationMs": 2105.054727999959
+    },
+    {
+      "status": "indexed",
+      "articleId": 379,
+      "revisionId": 378,
+      "chunkCount": 9,
+      "durationMs": 2280.0675389999524
+    },
+    {
+      "status": "indexed",
+      "articleId": 380,
+      "revisionId": 379,
+      "chunkCount": 25,
+      "durationMs": 2372.0414580000797
+    },
+    {
+      "status": "indexed",
+      "articleId": 381,
+      "revisionId": 380,
+      "chunkCount": 4,
+      "durationMs": 441.6297580000246
+    },
+    {
+      "status": "indexed",
+      "articleId": 382,
+      "revisionId": 381,
+      "chunkCount": 4,
+      "durationMs": 418.9704609999899
+    },
+    {
+      "status": "indexed",
+      "articleId": 383,
+      "revisionId": 382,
+      "chunkCount": 19,
+      "durationMs": 2726.5420690000756
+    },
+    {
+      "status": "indexed",
+      "articleId": 384,
+      "revisionId": 383,
+      "chunkCount": 18,
+      "durationMs": 2067.9554870000575
+    },
+    {
+      "status": "indexed",
+      "articleId": 385,
+      "revisionId": 384,
+      "chunkCount": 13,
+      "durationMs": 1243.472574000014
+    },
+    {
+      "status": "indexed",
+      "articleId": 386,
+      "revisionId": 385,
+      "chunkCount": 10,
+      "durationMs": 1242.2106259999564
+    },
+    {
+      "status": "indexed",
+      "articleId": 387,
+      "revisionId": 386,
+      "chunkCount": 7,
+      "durationMs": 1507.8606760000112
+    },
+    {
+      "status": "indexed",
+      "articleId": 388,
+      "revisionId": 387,
+      "chunkCount": 25,
+      "durationMs": 2818.9974820000352
+    },
+    {
+      "status": "indexed",
+      "articleId": 389,
+      "revisionId": 388,
+      "chunkCount": 20,
+      "durationMs": 2174.8920540000545
+    },
+    {
+      "status": "indexed",
+      "articleId": 390,
+      "revisionId": 389,
+      "chunkCount": 11,
+      "durationMs": 1636.202782999957
+    },
+    {
+      "status": "indexed",
+      "articleId": 391,
+      "revisionId": 390,
+      "chunkCount": 3,
+      "durationMs": 692.1626010000473
+    },
+    {
+      "status": "indexed",
+      "articleId": 392,
+      "revisionId": 391,
+      "chunkCount": 3,
+      "durationMs": 757.2488649999723
+    },
+    {
+      "status": "indexed",
+      "articleId": 393,
+      "revisionId": 392,
+      "chunkCount": 10,
+      "durationMs": 2015.6692659999244
+    },
+    {
+      "status": "indexed",
+      "articleId": 394,
+      "revisionId": 393,
+      "chunkCount": 3,
+      "durationMs": 773.5238009999739
+    },
+    {
+      "status": "indexed",
+      "articleId": 395,
+      "revisionId": 394,
+      "chunkCount": 9,
+      "durationMs": 2226.6467310000444
+    },
+    {
+      "status": "indexed",
+      "articleId": 396,
+      "revisionId": 395,
+      "chunkCount": 5,
+      "durationMs": 944.1292639999883
+    },
+    {
+      "status": "indexed",
+      "articleId": 397,
+      "revisionId": 396,
+      "chunkCount": 4,
+      "durationMs": 867.0441000000574
+    },
+    {
+      "status": "indexed",
+      "articleId": 398,
+      "revisionId": 397,
+      "chunkCount": 8,
+      "durationMs": 1829.2571809999645
+    },
+    {
+      "status": "indexed",
+      "articleId": 399,
+      "revisionId": 398,
+      "chunkCount": 9,
+      "durationMs": 1904.1127579999156
+    },
+    {
+      "status": "indexed",
+      "articleId": 400,
+      "revisionId": 399,
+      "chunkCount": 14,
+      "durationMs": 1388.126794999931
+    },
+    {
+      "status": "indexed",
+      "articleId": 401,
+      "revisionId": 400,
+      "chunkCount": 4,
+      "durationMs": 1166.0986290000146
+    },
+    {
+      "status": "indexed",
+      "articleId": 402,
+      "revisionId": 401,
+      "chunkCount": 7,
+      "durationMs": 1242.8388789999299
+    },
+    {
+      "status": "indexed",
+      "articleId": 403,
+      "revisionId": 402,
+      "chunkCount": 8,
+      "durationMs": 1471.624741000007
+    },
+    {
+      "status": "indexed",
+      "articleId": 404,
+      "revisionId": 403,
+      "chunkCount": 17,
+      "durationMs": 3890.411233000108
+    },
+    {
+      "status": "indexed",
+      "articleId": 405,
+      "revisionId": 404,
+      "chunkCount": 12,
+      "durationMs": 1886.8474660000065
+    },
+    {
+      "status": "indexed",
+      "articleId": 406,
+      "revisionId": 405,
+      "chunkCount": 9,
+      "durationMs": 2639.636043000035
+    },
+    {
+      "status": "indexed",
+      "articleId": 407,
+      "revisionId": 406,
+      "chunkCount": 25,
+      "durationMs": 2433.659590000054
+    },
+    {
+      "status": "indexed",
+      "articleId": 408,
+      "revisionId": 407,
+      "chunkCount": 4,
+      "durationMs": 439.1192110000411
+    },
+    {
+      "status": "indexed",
+      "articleId": 409,
+      "revisionId": 408,
+      "chunkCount": 4,
+      "durationMs": 413.02409299998544
+    },
+    {
+      "status": "indexed",
+      "articleId": 410,
+      "revisionId": 409,
+      "chunkCount": 19,
+      "durationMs": 2656.0718689999776
+    },
+    {
+      "status": "indexed",
+      "articleId": 411,
+      "revisionId": 410,
+      "chunkCount": 18,
+      "durationMs": 2217.9959149999777
+    },
+    {
+      "status": "indexed",
+      "articleId": 412,
+      "revisionId": 411,
+      "chunkCount": 13,
+      "durationMs": 1198.7103920000372
+    },
+    {
+      "status": "indexed",
+      "articleId": 413,
+      "revisionId": 412,
+      "chunkCount": 10,
+      "durationMs": 1198.0954680000432
+    },
+    {
+      "status": "indexed",
+      "articleId": 414,
+      "revisionId": 413,
+      "chunkCount": 7,
+      "durationMs": 1443.3133759999182
+    },
+    {
+      "status": "indexed",
+      "articleId": 415,
+      "revisionId": 414,
+      "chunkCount": 25,
+      "durationMs": 2817.042799000046
+    },
+    {
+      "status": "indexed",
+      "articleId": 416,
+      "revisionId": 415,
+      "chunkCount": 20,
+      "durationMs": 2359.278373999987
+    },
+    {
+      "status": "indexed",
+      "articleId": 417,
+      "revisionId": 416,
+      "chunkCount": 11,
+      "durationMs": 1693.9020589999855
+    },
+    {
+      "status": "indexed",
+      "articleId": 418,
+      "revisionId": 417,
+      "chunkCount": 3,
+      "durationMs": 701.5854030000046
+    },
+    {
+      "status": "indexed",
+      "articleId": 419,
+      "revisionId": 418,
+      "chunkCount": 3,
+      "durationMs": 756.750670999987
+    },
+    {
+      "status": "indexed",
+      "articleId": 420,
+      "revisionId": 419,
+      "chunkCount": 10,
+      "durationMs": 2009.5424969999585
+    },
+    {
+      "status": "indexed",
+      "articleId": 421,
+      "revisionId": 420,
+      "chunkCount": 3,
+      "durationMs": 764.4489019999746
+    },
+    {
+      "status": "indexed",
+      "articleId": 422,
+      "revisionId": 421,
+      "chunkCount": 9,
+      "durationMs": 2254.450432999991
+    },
+    {
+      "status": "indexed",
+      "articleId": 423,
+      "revisionId": 422,
+      "chunkCount": 5,
+      "durationMs": 951.9954440000001
+    },
+    {
+      "status": "indexed",
+      "articleId": 424,
+      "revisionId": 423,
+      "chunkCount": 4,
+      "durationMs": 874.3111579999095
+    },
+    {
+      "status": "indexed",
+      "articleId": 425,
+      "revisionId": 424,
+      "chunkCount": 8,
+      "durationMs": 1650.1695940000936
+    },
+    {
+      "status": "indexed",
+      "articleId": 426,
+      "revisionId": 425,
+      "chunkCount": 9,
+      "durationMs": 2170.1679830000503
+    },
+    {
+      "status": "indexed",
+      "articleId": 427,
+      "revisionId": 426,
+      "chunkCount": 14,
+      "durationMs": 1372.0549419999588
+    },
+    {
+      "status": "indexed",
+      "articleId": 428,
+      "revisionId": 427,
+      "chunkCount": 4,
+      "durationMs": 1142.1053229999961
+    },
+    {
+      "status": "indexed",
+      "articleId": 429,
+      "revisionId": 428,
+      "chunkCount": 7,
+      "durationMs": 1283.084460999933
+    },
+    {
+      "status": "indexed",
+      "articleId": 430,
+      "revisionId": 429,
+      "chunkCount": 8,
+      "durationMs": 1455.913647999987
+    },
+    {
+      "status": "indexed",
+      "articleId": 431,
+      "revisionId": 430,
+      "chunkCount": 17,
+      "durationMs": 3630.576020999928
+    },
+    {
+      "status": "indexed",
+      "articleId": 432,
+      "revisionId": 431,
+      "chunkCount": 12,
+      "durationMs": 1630.4132550000213
+    },
+    {
+      "status": "indexed",
+      "articleId": 433,
+      "revisionId": 432,
+      "chunkCount": 9,
+      "durationMs": 2401.9744039999787
+    },
+    {
+      "status": "indexed",
+      "articleId": 434,
+      "revisionId": 433,
+      "chunkCount": 25,
+      "durationMs": 2691.035356999957
+    },
+    {
+      "status": "indexed",
+      "articleId": 435,
+      "revisionId": 434,
+      "chunkCount": 4,
+      "durationMs": 435.4559280000394
+    },
+    {
+      "status": "indexed",
+      "articleId": 436,
+      "revisionId": 435,
+      "chunkCount": 4,
+      "durationMs": 410.9417489999905
+    },
+    {
+      "status": "indexed",
+      "articleId": 437,
+      "revisionId": 436,
+      "chunkCount": 19,
+      "durationMs": 2624.500902999891
+    },
+    {
+      "status": "indexed",
+      "articleId": 438,
+      "revisionId": 437,
+      "chunkCount": 18,
+      "durationMs": 1950.1630989999976
+    },
+    {
+      "status": "indexed",
+      "articleId": 439,
+      "revisionId": 438,
+      "chunkCount": 13,
+      "durationMs": 1226.5643129999517
+    },
+    {
+      "status": "indexed",
+      "articleId": 440,
+      "revisionId": 439,
+      "chunkCount": 10,
+      "durationMs": 1222.3374160000822
+    },
+    {
+      "status": "indexed",
+      "articleId": 441,
+      "revisionId": 440,
+      "chunkCount": 7,
+      "durationMs": 1456.1451399999205
+    },
+    {
+      "status": "indexed",
+      "articleId": 442,
+      "revisionId": 441,
+      "chunkCount": 25,
+      "durationMs": 2559.87442300003
+    },
+    {
+      "status": "indexed",
+      "articleId": 443,
+      "revisionId": 442,
+      "chunkCount": 20,
+      "durationMs": 2245.1569919999456
+    },
+    {
+      "status": "indexed",
+      "articleId": 444,
+      "revisionId": 443,
+      "chunkCount": 11,
+      "durationMs": 1964.3639919999987
+    },
+    {
+      "status": "indexed",
+      "articleId": 445,
+      "revisionId": 444,
+      "chunkCount": 3,
+      "durationMs": 679.8216300000204
+    },
+    {
+      "status": "indexed",
+      "articleId": 446,
+      "revisionId": 445,
+      "chunkCount": 3,
+      "durationMs": 757.3463259999407
+    },
+    {
+      "status": "indexed",
+      "articleId": 447,
+      "revisionId": 446,
+      "chunkCount": 10,
+      "durationMs": 2021.161381999962
+    },
+    {
+      "status": "indexed",
+      "articleId": 448,
+      "revisionId": 447,
+      "chunkCount": 3,
+      "durationMs": 815.5059040000197
+    },
+    {
+      "status": "indexed",
+      "articleId": 449,
+      "revisionId": 448,
+      "chunkCount": 9,
+      "durationMs": 2227.274074999965
+    },
+    {
+      "status": "indexed",
+      "articleId": 450,
+      "revisionId": 449,
+      "chunkCount": 5,
+      "durationMs": 927.3301330000395
+    },
+    {
+      "status": "indexed",
+      "articleId": 451,
+      "revisionId": 450,
+      "chunkCount": 4,
+      "durationMs": 884.4327339999145
+    },
+    {
+      "status": "indexed",
+      "articleId": 452,
+      "revisionId": 451,
+      "chunkCount": 8,
+      "durationMs": 1497.6344299999764
+    },
+    {
+      "status": "indexed",
+      "articleId": 453,
+      "revisionId": 452,
+      "chunkCount": 9,
+      "durationMs": 1883.9273380000377
+    },
+    {
+      "status": "indexed",
+      "articleId": 454,
+      "revisionId": 453,
+      "chunkCount": 14,
+      "durationMs": 1416.6429410000565
+    },
+    {
+      "status": "indexed",
+      "articleId": 455,
+      "revisionId": 454,
+      "chunkCount": 4,
+      "durationMs": 1605.3695630000439
+    },
+    {
+      "status": "indexed",
+      "articleId": 456,
+      "revisionId": 455,
+      "chunkCount": 7,
+      "durationMs": 1358.297462000046
+    },
+    {
+      "status": "indexed",
+      "articleId": 457,
+      "revisionId": 456,
+      "chunkCount": 8,
+      "durationMs": 1454.9395710000535
+    },
+    {
+      "status": "indexed",
+      "articleId": 458,
+      "revisionId": 457,
+      "chunkCount": 17,
+      "durationMs": 3640.8995880000293
+    },
+    {
+      "status": "indexed",
+      "articleId": 459,
+      "revisionId": 458,
+      "chunkCount": 12,
+      "durationMs": 1605.9377359999344
+    },
+    {
+      "status": "indexed",
+      "articleId": 460,
+      "revisionId": 459,
+      "chunkCount": 9,
+      "durationMs": 2339.9723399999784
+    },
+    {
+      "status": "indexed",
+      "articleId": 461,
+      "revisionId": 460,
+      "chunkCount": 25,
+      "durationMs": 2462.463376999949
+    },
+    {
+      "status": "indexed",
+      "articleId": 462,
+      "revisionId": 461,
+      "chunkCount": 4,
+      "durationMs": 441.29863600002136
+    },
+    {
+      "status": "indexed",
+      "articleId": 463,
+      "revisionId": 462,
+      "chunkCount": 4,
+      "durationMs": 409.0759250000119
+    },
+    {
+      "status": "indexed",
+      "articleId": 464,
+      "revisionId": 463,
+      "chunkCount": 19,
+      "durationMs": 3049.057932000025
+    },
+    {
+      "status": "indexed",
+      "articleId": 465,
+      "revisionId": 464,
+      "chunkCount": 18,
+      "durationMs": 1899.8774710000725
+    },
+    {
+      "status": "indexed",
+      "articleId": 466,
+      "revisionId": 465,
+      "chunkCount": 13,
+      "durationMs": 1199.6691580000333
+    },
+    {
+      "status": "indexed",
+      "articleId": 467,
+      "revisionId": 466,
+      "chunkCount": 10,
+      "durationMs": 1201.6381520000286
+    },
+    {
+      "status": "indexed",
+      "articleId": 468,
+      "revisionId": 467,
+      "chunkCount": 7,
+      "durationMs": 1489.5396259999834
+    },
+    {
+      "status": "indexed",
+      "articleId": 469,
+      "revisionId": 468,
+      "chunkCount": 25,
+      "durationMs": 2523.193474000087
+    },
+    {
+      "status": "indexed",
+      "articleId": 470,
+      "revisionId": 469,
+      "chunkCount": 20,
+      "durationMs": 2140.244517000043
+    },
+    {
+      "status": "indexed",
+      "articleId": 471,
+      "revisionId": 470,
+      "chunkCount": 11,
+      "durationMs": 1680.8582950000418
+    },
+    {
+      "status": "indexed",
+      "articleId": 472,
+      "revisionId": 471,
+      "chunkCount": 3,
+      "durationMs": 682.6619590000482
+    },
+    {
+      "status": "indexed",
+      "articleId": 473,
+      "revisionId": 472,
+      "chunkCount": 3,
+      "durationMs": 750.8648039998952
+    },
+    {
+      "status": "indexed",
+      "articleId": 474,
+      "revisionId": 473,
+      "chunkCount": 10,
+      "durationMs": 2336.2168939999538
+    },
+    {
+      "status": "indexed",
+      "articleId": 475,
+      "revisionId": 474,
+      "chunkCount": 3,
+      "durationMs": 930.3052829999942
+    },
+    {
+      "status": "indexed",
+      "articleId": 476,
+      "revisionId": 475,
+      "chunkCount": 9,
+      "durationMs": 1857.0486120000714
+    },
+    {
+      "status": "indexed",
+      "articleId": 477,
+      "revisionId": 476,
+      "chunkCount": 5,
+      "durationMs": 933.3574929999886
+    },
+    {
+      "status": "indexed",
+      "articleId": 478,
+      "revisionId": 477,
+      "chunkCount": 4,
+      "durationMs": 888.4866299999412
+    },
+    {
+      "status": "indexed",
+      "articleId": 479,
+      "revisionId": 478,
+      "chunkCount": 8,
+      "durationMs": 1495.6036469999235
+    },
+    {
+      "status": "indexed",
+      "articleId": 480,
+      "revisionId": 479,
+      "chunkCount": 9,
+      "durationMs": 2144.654956000042
+    },
+    {
+      "status": "indexed",
+      "articleId": 481,
+      "revisionId": 480,
+      "chunkCount": 14,
+      "durationMs": 1573.5351549999323
+    },
+    {
+      "status": "indexed",
+      "articleId": 482,
+      "revisionId": 481,
+      "chunkCount": 4,
+      "durationMs": 1141.4744090000167
+    },
+    {
+      "status": "indexed",
+      "articleId": 483,
+      "revisionId": 482,
+      "chunkCount": 7,
+      "durationMs": 1452.2018049999606
+    },
+    {
+      "status": "indexed",
+      "articleId": 484,
+      "revisionId": 483,
+      "chunkCount": 8,
+      "durationMs": 1840.3498730000574
+    },
+    {
+      "status": "indexed",
+      "articleId": 485,
+      "revisionId": 484,
+      "chunkCount": 17,
+      "durationMs": 3775.252373000025
+    },
+    {
+      "status": "indexed",
+      "articleId": 486,
+      "revisionId": 485,
+      "chunkCount": 12,
+      "durationMs": 1581.091684000101
+    },
+    {
+      "status": "indexed",
+      "articleId": 487,
+      "revisionId": 486,
+      "chunkCount": 9,
+      "durationMs": 2311.285183000029
+    },
+    {
+      "status": "indexed",
+      "articleId": 488,
+      "revisionId": 487,
+      "chunkCount": 25,
+      "durationMs": 2384.1838269999716
+    },
+    {
+      "status": "indexed",
+      "articleId": 489,
+      "revisionId": 488,
+      "chunkCount": 4,
+      "durationMs": 439.78498700005
+    },
+    {
+      "status": "indexed",
+      "articleId": 490,
+      "revisionId": 489,
+      "chunkCount": 4,
+      "durationMs": 411.8304730000673
+    },
+    {
+      "status": "indexed",
+      "articleId": 491,
+      "revisionId": 490,
+      "chunkCount": 19,
+      "durationMs": 2669.78171000001
+    },
+    {
+      "status": "indexed",
+      "articleId": 492,
+      "revisionId": 491,
+      "chunkCount": 18,
+      "durationMs": 2277.866536000045
+    },
+    {
+      "status": "indexed",
+      "articleId": 493,
+      "revisionId": 492,
+      "chunkCount": 13,
+      "durationMs": 1213.6336989999982
+    },
+    {
+      "status": "indexed",
+      "articleId": 494,
+      "revisionId": 493,
+      "chunkCount": 10,
+      "durationMs": 1263.3516930000624
+    },
+    {
+      "status": "indexed",
+      "articleId": 495,
+      "revisionId": 494,
+      "chunkCount": 7,
+      "durationMs": 1451.637699999963
+    },
+    {
+      "status": "indexed",
+      "articleId": 496,
+      "revisionId": 495,
+      "chunkCount": 25,
+      "durationMs": 2563.297024999978
+    },
+    {
+      "status": "indexed",
+      "articleId": 497,
+      "revisionId": 496,
+      "chunkCount": 20,
+      "durationMs": 2199.301142000011
+    },
+    {
+      "status": "indexed",
+      "articleId": 498,
+      "revisionId": 497,
+      "chunkCount": 11,
+      "durationMs": 1699.2243040000321
+    },
+    {
+      "status": "indexed",
+      "articleId": 499,
+      "revisionId": 498,
+      "chunkCount": 3,
+      "durationMs": 703.9257069999585
+    },
+    {
+      "status": "indexed",
+      "articleId": 500,
+      "revisionId": 499,
+      "chunkCount": 3,
+      "durationMs": 788.2781480000122
+    },
+    {
+      "status": "indexed",
+      "articleId": 501,
+      "revisionId": 500,
+      "chunkCount": 10,
+      "durationMs": 2053.5501029998995
+    }
+  ]
+}

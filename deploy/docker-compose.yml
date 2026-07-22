@@ -10,6 +10,15 @@ services:
       SITE_URL: https://blog.leesaitool.com
       DEPLOY_COMMIT_SHA: ${DEPLOY_COMMIT_SHA:?DEPLOY_COMMIT_SHA must be a full commit SHA}
       IMAGE_DIGEST: ${IMAGE_DIGEST:?IMAGE_DIGEST must be an immutable digest}
+      SEMANTIC_SEARCH_URL: http://semantic:8090
+      SEMANTIC_SEARCH_MODEL_ID: ibm-granite/granite-embedding-97m-multilingual-r2
+      SEMANTIC_SEARCH_MODEL_REVISION: 835ad14087e140460703cf0fae09f97d469d65c2
+      SEMANTIC_SEARCH_DIMENSION: 384
+      SEMANTIC_SEARCH_TIMEOUT_MS: 4000
+      SEMANTIC_RERANK_MODEL_ID: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
+      SEMANTIC_RERANK_MODEL_REVISION: 1427fd652930e4ba29e8149678df786c240d8825
+      SEMANTIC_RERANK_TIMEOUT_MS: 6000
+      SEMANTIC_RERANK_ENABLED: "${SEMANTIC_RERANK_ENABLED:-1}"
     volumes:
       - /var/www/arthurs-review/data:/data
     restart: unless-stopped
@@ -28,12 +37,40 @@ services:
       INTERNAL_APP_URL: http://app:3000
       DEPLOY_COMMIT_SHA: ${DEPLOY_COMMIT_SHA:?DEPLOY_COMMIT_SHA must be a full commit SHA}
       IMAGE_DIGEST: ${IMAGE_DIGEST:?IMAGE_DIGEST must be an immutable digest}
+      SEMANTIC_SEARCH_URL: http://semantic:8090
+      SEMANTIC_SEARCH_MODEL_ID: ibm-granite/granite-embedding-97m-multilingual-r2
+      SEMANTIC_SEARCH_MODEL_REVISION: 835ad14087e140460703cf0fae09f97d469d65c2
+      SEMANTIC_SEARCH_DIMENSION: 384
+      SEMANTIC_SEARCH_TIMEOUT_MS: 4000
+      SEMANTIC_RERANK_MODEL_ID: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
+      SEMANTIC_RERANK_MODEL_REVISION: 1427fd652930e4ba29e8149678df786c240d8825
+      SEMANTIC_RERANK_TIMEOUT_MS: 6000
+      SEMANTIC_RERANK_ENABLED: "${SEMANTIC_RERANK_ENABLED:-1}"
     volumes:
       - /var/www/arthurs-review/data:/data
     command: ["pnpm", "jobs:work"]
     restart: unless-stopped
     depends_on:
       - app
+
+  semantic:
+    image: ${SEMANTIC_IMAGE:?SEMANTIC_IMAGE must contain an immutable digest}
+    environment:
+      SEMANTIC_RERANK_ENABLED: "${SEMANTIC_RERANK_ENABLED:-1}"
+    restart: unless-stopped
+    expose:
+      - "8090"
+    mem_limit: 1200m
+    cpus: 1.0
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8090/healthz', timeout=3))['ok']"]
+      interval: 15s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
 
   caddy:
     image: caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648

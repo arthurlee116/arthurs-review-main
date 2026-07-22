@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "host": {
+    "address": "72.60.195.46",
+    "cpuQuota": 1,
+    "hostMemoryBytes": 3831111680,
+    "swapBytes": 0,
+    "cpuFeatures": [
+      "avx2"
+    ]
+  },
+  "semanticContainerLimitBytes": 1258291200,
+  "graniteTrials": [
+    {
+      "name": "myblog-semantic-granite-exp-20260721",
+      "imageId": "sha256:9790fbdb00fdf4e585d4e025ab08a5f8ede9775a4c1f52bdaf1d5d45ab967fbd",
+      "rerankerLoaded": true,
+      "embeddingBatchSize": 16,
+      "cpuMemArena": true,
+      "mallocTrimAfterInference": false,
+      "oomKilled": true,
+      "exitCode": 137
+    },
+    {
+      "name": "myblog-semantic-granite-bounded-20260721",
+      "imageId": "sha256:0e2d55366204086844325c5ff0c8275852d3da0d275dc4085da290f18707f349",
+      "rerankerLoaded": false,
+      "embeddingBatchSize": 16,
+      "cpuMemArena": false,
+      "memoryPattern": false,
+      "mallocTrimAfterInference": false,
+      "oomKilled": true,
+      "exitCode": 137
+    },
+    {
+      "name": "myblog-semantic-granite-trimmed-20260721",
+      "imageId": "sha256:0758d197ec22d709e29b147375162e8819cfb4d363d17bc7ccbb3189614c2dbe",
+      "rerankerLoaded": false,
+      "embeddingBatchSize": 4,
+      "cpuMemArena": false,
+      "memoryPattern": false,
+      "mallocArenaMax": 1,
+      "mallocTrimThresholdBytes": 131072,
+      "mallocTrimAfterInference": true,
+      "oomKilled": false,
+      "cgroupMemoryPeakBytes": 425631744,
+      "indexedArticleCount": 500,
+      "indexedChunkCount": 5230,
+      "indexDurationMs": 822235.877
+    },
+    {
+      "name": "myblog-semantic-granite-final-stress-20260722",
+      "rerankerLoaded": true,
+      "embeddingBatchSize": 4,
+      "cpuMemArena": false,
+      "memoryPattern": false,
+      "prepackingDisabled": false,
+      "mallocArenaMax": 1,
+      "mallocTrimAfterInference": true,
+      "coLocatedStoppedExperimentalSidecars": 4,
+      "oomKilled": true,
+      "exitCode": 137,
+      "validPerformanceTrial": false,
+      "note": "Invalidated because four stale experimental model containers were still resident and caused host-wide memory pressure."
+    },
+    {
+      "name": "myblog-semantic-granite-prepackoff-20260722",
+      "imageManifestDigest": "sha256:2bbd11323e591412d33f9a4479b1a319aa5a3da3b26d9eb917f9953e16ad50de",
+      "rerankerLoaded": true,
+      "embeddingBatchSize": 4,
+      "cpuMemArena": false,
+      "memoryPattern": false,
+      "prepackingDisabled": true,
+      "mallocArenaMax": 1,
+      "mallocTrimThresholdBytes": 131072,
+      "mallocTrimAfterInference": true,
+      "oomKilled": false,
+      "exitCode": 0,
+      "cgroupMemoryPeakBytes": 714481664,
+      "cgroupSwapPeakBytes": 0,
+      "observedMinimumHostAvailableBytes": 914259968,
+      "indexedArticleCount": 500,
+      "indexedChunkCount": 5230,
+      "indexDurationMs": 1763281.114212,
+      "denseScanLatencyMs": {
+        "p50": 41.70109,
+        "p95": 58.066769,
+        "max": 92.177298
+      }
+    }
+  ],
+  "experimentSwap": {
+    "configuredBytes": 2147479552,
+    "persistent": false,
+    "hostSwapUsedBytesAtFinalIndexCapture": 13107200,
+    "semanticCgroupSwapPeakBytes": 0,
+    "cleanupPending": false,
+    "cleanedUp": true,
+    "activeAfterCleanup": false,
+    "fileExistsAfterCleanup": false
+  },
+  "jinaTrial": {
+    "name": "myblog-semantic-jina-trimmed-20260721",
+    "imageId": "sha256:df32d89fa5986b070292938ceedd90c1544ef7659fcdcacc9d849b76a6ec70a4",
+    "rerankerLoaded": false,
+    "embeddingBatchSize": 4,
+    "oomKilled": false,
+    "cgroupMemoryPeakBytes": 451993600,
+    "measuredArticleCount": 27,
+    "measuredChunkCount": 281,
+    "measuredIndexDurationMs": 218256.599181,
+    "projectedArticleCount": 500,
+    "projectedChunkCount": 5230,
+    "projectedOneCoreDurationMs": 4062213.5719453027,
+    "projectedOneCoreMinutes": 67.7035595324217,
+    "perfectTwoCoreLowerBoundMinutes": 33.85177976621085,
+    "projectionMethod": "Measured 281-chunk duration multiplied by 5230/281; the two-core value assumes impossible perfect linear speedup and is therefore an optimistic lower bound."
+  }
+}
