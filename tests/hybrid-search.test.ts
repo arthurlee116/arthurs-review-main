@@ -77,7 +77,7 @@ afterEach(async () => {
 });
 
 describe("hybrid public search", () => {
-  it("takes 30 distinct FTS articles and 30 distinct dense articles before article-level RRF", async () => {
+  it("keeps 30 plus 30 retrieval pools but exposes strict FTS hits plus the fused top ten", async () => {
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
     const { searchArticleResultsHybrid } = await import("@/lib/services/search");
     for (let index = 1; index <= 35; index += 1) {
@@ -154,6 +154,35 @@ describe("hybrid public search", () => {
     expect(page.results[0]?.excerptParts).toEqual([
       { text: "人必须永远同时被当作目的，而不只是手段。这个原则讨论人的尊严。", highlighted: false },
     ]);
+  });
+
+  it("exposes at most the fused top ten when every hit is semantic-only", async () => {
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticleResultsHybrid } = await import("@/lib/services/search");
+    for (let index = 1; index <= 15; index += 1) {
+      const article = publishArticle(
+        createArticle(
+          articleInput({
+            titleZh: `纯语义候选 ${index}`,
+            slug: `semantic-only-${index}`,
+            bodyZh: "这篇正文不包含用户输入的任何连续字串。",
+          }),
+        ).id,
+      );
+      const cosine = 1 - index / 100;
+      await insertEmbedding(article, [cosine, Math.sqrt(1 - cosine * cosine)], `semantic passage ${index}`);
+    }
+
+    const page = await searchArticleResultsHybrid("资本主义的坏处", {
+      client: fakeClient(),
+      rerankEnabled: false,
+      pageSize: 20,
+    });
+
+    expect(page.total).toBe(10);
+    expect(page.totalPages).toBe(1);
+    expect(page.results).toHaveLength(10);
+    expect(page.results.every((result) => result.excerptParts.every((part) => !part.highlighted))).toBe(true);
   });
 
   it("falls back to the complete legacy FTS pagination when query embedding fails", async () => {

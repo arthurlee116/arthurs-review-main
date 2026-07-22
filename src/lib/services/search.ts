@@ -14,6 +14,8 @@ import type { Article, ArticleRow } from "./articles";
 export const SEARCH_PAGE_SIZE = 10;
 export { MAX_SEARCH_CODE_POINTS, MAX_SEARCH_TOKENS };
 
+const HYBRID_FUSED_RESULT_LIMIT = 10;
+const HYBRID_RETRIEVAL_LIMIT = 30;
 const highlightStart = "[[[mark]]]";
 const highlightEnd = "[[[/mark]]]";
 
@@ -90,26 +92,34 @@ function tokenizeForFts(text: string): string {
     .trim();
 }
 
-// Escape FTS5 special characters and build a prefix-match query.
-// The input is pre-tokenized for CJK so whitespace-splitting yields individual
-// characters or words, each with a trailing * for prefix matching.
+// Require each contiguous Han run to occupy consecutive FTS positions. Keep
+// prefix matching for non-Han terms, where word prefixes remain useful.
 export function normalizeSearchQuery(raw: string) {
   return Array.from(raw.trim()).slice(0, MAX_SEARCH_CODE_POINTS).join("");
 }
 
 export function buildFtsQuery(raw: string): string {
-  const cjkReady = tokenizeForFts(normalizeSearchQuery(raw));
-  return cjkReady
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((t) => {
-      const escaped = t.replace(/[*"()\[\]{}^~|]/g, "");
-      if (!escaped || !/[\p{L}\p{N}]/u.test(escaped)) return "";
-      return `"${escaped}"*`;
-    })
-    .filter(Boolean)
-    .slice(0, MAX_SEARCH_TOKENS)
-    .join(" ");
+  const parts = normalizeSearchQuery(raw).match(/\p{Script=Han}+|[^\p{Script=Han}\s]+/gu) ?? [];
+  const clauses: string[] = [];
+  let tokenCount = 0;
+
+  for (const part of parts) {
+    if (tokenCount >= MAX_SEARCH_TOKENS) break;
+
+    if (/^\p{Script=Han}+$/u.test(part)) {
+      const characters = Array.from(part).slice(0, MAX_SEARCH_TOKENS - tokenCount);
+      clauses.push(`"${characters.join(" ")}"`);
+      tokenCount += characters.length;
+      continue;
+    }
+
+    const escaped = part.replace(/[*"()\[\]{}^~|]/g, "");
+    if (!escaped || !/[\p{L}\p{N}]/u.test(escaped)) continue;
+    clauses.push(`"${escaped}"*`);
+    tokenCount += 1;
+  }
+
+  return clauses.join(" ");
 }
 
 /** Insert or update an article's full text into the FTS5 index. */
@@ -316,7 +326,7 @@ export function searchArticles(query: string): Article[] {
   return searchArticleResults(query, { page: 1, pageSize: 50 }).results.map((result) => result.article);
 }
 
-function searchFtsCandidates(ftsQuery: string, limit: number): FtsArticleCandidate[] {
+function searchFtsCandidates(ftsQuery: string): FtsArticleCandidate[] {
   const rows = getDb()
     .prepare(
       `SELECT a.id,
@@ -342,10 +352,9 @@ function searchFtsCandidates(ftsQuery: string, limit: number): FtsArticleCandida
        JOIN article_revisions r ON r.id = a.published_revision_id
        JOIN article_search s ON a.id = s.rowid
        WHERE article_search MATCH ?
-       ORDER BY rank, coalesce(a.published_at, a.updated_at) DESC, a.id DESC
-       LIMIT ?`,
+       ORDER BY rank, coalesce(a.published_at, a.updated_at) DESC, a.id DESC`,
     )
-    .all(ftsQuery, limit) as Array<SearchArticleRow & { fts_score: number }>;
+    .all(ftsQuery) as Array<SearchArticleRow & { fts_score: number }>;
   const articles = mapArticleRows(rows);
   return rows.map((row, index) => ({
     articleId: row.id,
@@ -463,9 +472,10 @@ export async function searchArticleResultsHybrid(
     return searchArticleResults(normalized, options);
   }
 
-  const ftsCandidates = searchFtsCandidates(ftsQuery, 30);
+  const allFtsCandidates = searchFtsCandidates(ftsQuery);
+  const ftsCandidates = allFtsCandidates.slice(0, HYBRID_RETRIEVAL_LIMIT);
   const densePublishedAt = new Map(denseRows.map((row) => [row.articleId, row.publishedAt]));
-  const denseRanking = rankDenseArticleChunks(denseRows, queryVector, client.config.embedding, 30);
+  const denseRanking = rankDenseArticleChunks(denseRows, queryVector, client.config.embedding, HYBRID_RETRIEVAL_LIMIT);
   if (denseRanking.candidates.length === 0) {
     fallbackLog("dense");
     return searchArticleResults(normalized, options);
@@ -478,12 +488,14 @@ export async function searchArticleResultsHybrid(
     publishedAt: densePublishedAt.get(candidate.articleId) ?? null,
   }));
   let fused = reciprocalRankFusion(ftsCandidates, denseCandidates, 60);
-  const articles = loadPublishedArticlesById(fused.map((candidate) => candidate.articleId));
+  const articles = loadPublishedArticlesById([
+    ...new Set([...fused.map((candidate) => candidate.articleId), ...allFtsCandidates.map((candidate) => candidate.articleId)]),
+  ]);
   fused = fused.filter((candidate) => articles.has(candidate.articleId));
 
   const rerankEnabled = options.rerankEnabled ?? process.env.SEMANTIC_RERANK_ENABLED === "1";
   if (rerankEnabled && fused.length > 0) {
-    const head = fused.slice(0, 10);
+    const head = fused.slice(0, HYBRID_FUSED_RESULT_LIMIT);
     try {
       const rerankScores = await client.rerank(
         normalized,
@@ -503,11 +515,18 @@ export async function searchArticleResultsHybrid(
       const byArticleId = new Map(
         rerankScores.map((score) => [Number(score.id.replace(/^article:/, "")), score.score]),
       );
-      fused = applyRerankerScores(fused, byArticleId, 10);
+      fused = applyRerankerScores(fused, byArticleId, HYBRID_FUSED_RESULT_LIMIT);
     } catch (error) {
       fallbackLog("rerank", error);
     }
   }
+
+  const fusedHead = fused.slice(0, HYBRID_FUSED_RESULT_LIMIT);
+  const fusedHeadArticleIds = new Set(fusedHead.map((candidate) => candidate.articleId));
+  const remainingFtsCandidates = reciprocalRankFusion(allFtsCandidates, [] as typeof denseCandidates, 60).filter(
+    (candidate) => !fusedHeadArticleIds.has(candidate.articleId),
+  );
+  fused = [...fusedHead, ...remainingFtsCandidates];
 
   options.onTrace?.({
     fts: ftsCandidates.map((candidate, index) => ({

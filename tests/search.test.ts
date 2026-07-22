@@ -23,6 +23,13 @@ afterEach(async () => {
 });
 
 describe("keyword search", () => {
+  it("builds contiguous Chinese text as strict FTS phrases", async () => {
+    const { buildFtsQuery } = await import("@/lib/services/search");
+
+    expect(buildFtsQuery("资本主义的坏处")).toBe('"资 本 主 义 的 坏 处"');
+    expect(buildFtsQuery("资本主义 坏处")).toBe('"资 本 主 义" "坏 处"');
+  });
+
   it("bounds raw Unicode input and FTS prefix tokens on the server", async () => {
     const { MAX_SEARCH_CODE_POINTS, MAX_SEARCH_TOKENS, buildFtsQuery, normalizeSearchQuery } = await import("@/lib/services/search");
     const raw = `${"😀".repeat(MAX_SEARCH_CODE_POINTS + 5)} ignored`;
@@ -157,6 +164,39 @@ describe("keyword search", () => {
     expect(page.results[0].article.slug).toBe("highlighted-bystander");
     expect(page.results[0].excerptParts).toContainEqual({ text: "旁观者", highlighted: true });
     expect(page.results[0].excerptParts.map((part) => part.text).join("")).toContain("旁观者");
+  });
+
+  it("does not match scattered Chinese characters from a phrase", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticleResults } = await import("@/lib/services/search");
+    migrate();
+
+    publishArticle(
+      createArticle(
+        articleInput({
+          titleZh: "资本主义问题",
+          slug: "capitalism-harms",
+          bodyZh: "资本主义的坏处包括系统性的剥削。",
+        }),
+      ).id,
+    );
+    publishArticle(
+      createArticle(
+        articleInput({
+          titleZh: "分散字符陷阱",
+          slug: "scattered-character-trap",
+          bodyZh: "自己的资产阶级幻觉，认为可以靠改良主义，坏处很多，根本没有出路。",
+        }),
+      ).id,
+    );
+
+    const page = searchArticleResults("资本主义的坏处");
+
+    expect(page.results.map((result) => result.article.slug)).toEqual(["capitalism-harms"]);
+    expect(page.results[0]?.excerptParts.filter((part) => part.highlighted).map((part) => part.text)).toEqual([
+      "资本主义的坏处",
+    ]);
   });
 
   it("paginates public search results with stable ordering", async () => {
