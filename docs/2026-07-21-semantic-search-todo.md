@@ -143,10 +143,10 @@
 
 - [x] `git diff --check`，确认只改预期文件且保留用户 `graphify-out/`。
 - [x] 审查 secret、绝对路径、生产快照、模型大文件未进入 git；仅提交哈希/统计证据和小型 lockfile，未提交 DB、正文快照或模型二进制。
-- [ ] 提交到 `codex/` 功能分支并推送；不推 `main`。
-- [ ] 观察非部署 GitHub Actions 到全部 green；失败即定位、修复、重推、重看。
+- [x] 提交到 `codex/audit-remediation` 并推送 commit `c099e9f3d6ada3de5b82e129657b9d8b0da4a67a`；未推 `main`。
+- [x] 非部署 [GitHub Actions run 29885331253](https://github.com/arthurlee116/arthurs-review-main/actions/runs/29885331253) 全部 green，用时 9m0s。
 - [x] 独立重跑验收命令，不复用旧输出：Python 29、Vitest 268、lint/typecheck、Next build、real-model Playwright 31 passed。
-- [ ] 对照 Design Spec 第 12 节逐项勾选，未满足项不能用“基本完成”糊弄。
+- [x] 对照 Design Spec 第 12 节逐项勾选；唯一未满足的是自设 Hit@1 ≥ 0.80，实测 0.7654，明确保留未勾选并写入限制，没有篡题。
 - [x] 核对实验后生产容器 ID/digest、Compose checksum、DB checksum/文章数、`/healthz`，全部与 before 一致。
 - [x] 停止并移除隔离实验容器/tunnel、临时 swap、实验 images 和 runs；保留仓库 benchmark 报告与可复现实验脚本。
-- [ ] 写最终详细报告：代码、模型、benchmark、性能、资源、降级、测试、CI、未部署证明、未来部署/回滚。
+- [x] 写最终详细报告：代码、模型、benchmark、性能、资源、降级、测试、CI、未部署证明、未来部署/回滚。

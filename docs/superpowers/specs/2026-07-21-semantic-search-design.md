@@ -318,7 +318,7 @@ article_embedding_chunks(
 
 - [x] `pnpm lint`、完整 Vitest、`pnpm build`、完整 Playwright 全绿。
 - [x] sidecar Python 单测、模型 smoke test、Docker healthcheck 和两个镜像的 linux/amd64 build 全绿。
-- [ ] 非 `main` 功能分支 GitHub Actions 全绿，且 workflow 不接触生产 SSH/部署 secrets。
+- [x] 非 `main` 功能分支 GitHub Actions 全绿，且 workflow 不接触生产 SSH/部署 secrets。
 - [x] 使用 Codex Browser 在隔离实验站点实测至少 12 个代表查询，覆盖精确、语义、易混淆、英文、无结果、模型故障。
 - [x] 桌面与移动 viewport 检查搜索框、摘要、高亮、分页、长中英文断行和无布局溢出。
 

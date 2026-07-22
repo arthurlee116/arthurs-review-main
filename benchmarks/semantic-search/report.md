@@ -178,9 +178,10 @@ Sidecar 的生产约束为单推理 semaphore、单线程 ORT、关闭 CPU arena
 - Codex Browser 跑了 12 个代表查询：4 lexical、4 semantic、2 contrastive、1 English、1 无结果。11 个有目标文章的查询全部在前 10，其中 8 个第 1；5 个直接来自冻结 benchmark 的查询，浏览器排名与 raw JSON 完全一致：`1, 9, 6, 2, 1`。
 - lexical 命中保留真实 `<mark>` 高亮；纯 dense 命中没有伪造高亮。第二页实际点击后显示 10 条和 `Page 2 of 3`，Previous/Next URL 稳定；结果文章链接实际打开并读到正文。
 - 393×956 手机 viewport 重跑中文语义和长英文查询，10 张卡片、图片、搜索框和分页都正常，`scrollWidth === clientWidth === 393`。
-- 浏览器发现并修复了一个原单测漏掉的真实 bug：有向量数据时，`!!!` 会绕过空 FTS 结果触发 dense 检索。新增带真实 embedding row 的回归测试后，标点-only 查询现在不访问 sidecar并显示无结果。
+- 浏览器发现并修复了一个原单测漏掉的真实 bug：有向量数据时，`!!!` 会绕过空 FTS 结果触发 dense 检索。新增带真实 embedding row 的回归测试后，标点-only 查询现在不访问 sidecar 并显示无结果。
 - 真实 sidecar stop 后，同一语义-only 页面仍返回 HTTP 200 并安全退回 FTS；重启并恢复 health 后目标文章回到第 1。另测了 200 ms timeout、HTTP 200 坏 JSON、worker restart 和 revision 999999 stale job；旧向量数始终为 281，没有半套索引。
 - 锁定真实模型的完整 Playwright 运行结果为 31 passed、1 条既有移动端条件 skip；桌面和 mobile 项目都通过“FTS 无命中但 dense 找回文章”的新增 E2E。
+- 功能分支 commit `c099e9f3d6ada3de5b82e129657b9d8b0da4a67a` 的 [GitHub Actions CI](https://github.com/arthurlee116/arthurs-review-main/actions/runs/29885331253) 用时 9 分钟全绿：从空 runner 安装依赖，重复 lint/Vitest/Python tests，构建并 load 两个 linux/amd64 镜像，启动真实模型、完成 embeddings、跑模型 smoke 和完整 Playwright。该 workflow 权限只有 `contents: read`，没有 SSH、packages write 或部署步骤。
 
 浏览器机器证据在 `measurements/browser-acceptance-final.json`，桌面/手机截图在 `measurements/screenshots/`；故障证据在 `measurements/failure-injection-final.json`。
 
