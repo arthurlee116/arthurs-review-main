@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db/connection";
+import { categoryLabel } from "@/lib/content/categories";
 import { readMarkdownBody } from "@/lib/content/markdown";
 import { MAX_SEARCH_CODE_POINTS, MAX_SEARCH_TOKENS } from "@/lib/search-limits";
 import {
@@ -126,7 +127,6 @@ export function buildFtsQuery(raw: string): string {
 export function syncArticleToFts(article: Article): void {
   const db = getDb();
   const bodyZh = readMarkdownBody(article.bodyZhPath);
-  const bodyEn = article.bodyEnPath ? readMarkdownBody(article.bodyEnPath) : "";
   const tags = article.tags.map((t) => t.name).join(" ");
 
   db.prepare(
@@ -135,12 +135,12 @@ export function syncArticleToFts(article: Article): void {
   ).run(
     article.id,
     tokenizeForFts(article.titleZh),
-    article.titleEn ?? "",
+    "",
     tokenizeForFts(article.excerptZh),
-    article.excerptEn ?? "",
+    "",
     tokenizeForFts(bodyZh),
-    bodyEn,
-    tokenizeForFts(article.category),
+    "",
+    tokenizeForFts(categoryLabel(article.category)),
     tokenizeForFts(tags),
   );
 }
@@ -384,6 +384,7 @@ function loadDenseRows(client: HybridSemanticClient): StoredEmbeddingChunk[] {
        where chunks.model_id = ?
          and chunks.model_revision = ?
          and chunks.dimension = ?
+         and chunks.language in ('metadata', 'zh')
        order by chunks.article_id, chunks.chunk_index`,
     )
     .all(identity.modelId, identity.modelRevision, identity.dimension) as DenseChunkRow[];
@@ -503,9 +504,7 @@ export async function searchArticleResultsHybrid(
           const article = articles.get(candidate.articleId)!;
           const passageParts = [
             article.titleZh,
-            article.titleEn ?? "",
             article.excerptZh,
-            article.excerptEn ?? "",
             candidate.dense?.content ?? "",
             candidate.fts?.excerptParts.map((part) => part.text).join("") ?? "",
           ].filter(Boolean);

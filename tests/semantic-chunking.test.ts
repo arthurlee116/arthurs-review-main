@@ -23,13 +23,13 @@ describe("article embedding chunks", () => {
     titleEn: "Value Is Not Price",
     excerptZh: "讨论资本主义如何把人的价值压缩成交换价格。",
     excerptEn: "Why market price cannot exhaust human value.",
-    category: "society",
+    category: "社会分析",
     tags: ["资本", "价值"],
     bodyZh: `## 市场\n\n${"价格不能定义人。".repeat(24)}\n\n## 尊严\n\n${"人应当作为目的。".repeat(18)}`,
     bodyEn: "## Dignity\n\nA person is an end, not merely a price.",
   };
 
-  it("creates one metadata chunk followed by bounded Chinese and English body chunks", () => {
+  it("creates only Chinese metadata and body chunks when an English manuscript exists", () => {
     const chunks = buildArticleEmbeddingChunks(article, {
       targetCodePoints: 80,
       maxCodePoints: 100,
@@ -41,14 +41,15 @@ describe("article embedding chunks", () => {
       language: "metadata",
     });
     expect(chunks[0]?.content).toContain("价值不是价格");
-    expect(chunks[0]?.content).toContain("Value Is Not Price");
+    expect(chunks[0]?.content).not.toContain("Value Is Not Price");
+    expect(chunks[0]?.content).not.toContain("Why market price cannot exhaust human value.");
     expect(chunks[0]?.content).toContain("资本、价值");
     expect(chunks.some((chunk) => chunk.language === "zh")).toBe(true);
-    expect(chunks.some((chunk) => chunk.language === "en")).toBe(true);
+    expect(chunks.map((chunk) => chunk.language)).not.toContain("en");
+    expect(chunks.map((chunk) => chunk.content).join("\n")).not.toContain("A person is an end, not merely a price.");
     expect(chunks.map((chunk) => chunk.chunkIndex)).toEqual(chunks.map((_, index) => index));
     expect(chunks.slice(1).every((chunk) => Array.from(chunk.content).length <= 100)).toBe(true);
     expect(chunks.filter((chunk) => chunk.language === "zh").every((chunk) => chunk.embeddingText.startsWith("文章：价值不是价格"))).toBe(true);
-    expect(chunks.filter((chunk) => chunk.language === "en").every((chunk) => chunk.embeddingText.startsWith("Article: Value Is Not Price"))).toBe(true);
   });
 
   it("preserves overlap across a long paragraph and carries the nearest section heading", () => {
@@ -72,7 +73,7 @@ describe("article embedding chunks", () => {
     const second = buildArticleEmbeddingChunks(chineseOnly);
 
     expect(first).toEqual(second);
-    expect(first.some((chunk) => chunk.language === "en")).toBe(false);
+    expect(first.map((chunk) => chunk.language)).not.toContain("en");
     expect(first.every((chunk) => chunk.content.trim().length > 0 && chunk.embeddingText.trim().length > 0)).toBe(true);
   });
 

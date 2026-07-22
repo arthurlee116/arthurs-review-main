@@ -38,6 +38,7 @@ async function insertEmbedding(
   vector: readonly number[],
   content: string,
   chunkIndex = 0,
+  language: "metadata" | "zh" | "en" = "zh",
 ) {
   const { getDb } = await import("@/lib/db/connection");
   getDb()
@@ -45,7 +46,7 @@ async function insertEmbedding(
       `insert into article_embedding_chunks(
          article_id, revision_id, model_id, model_revision, dimension, chunk_index,
          language, content, token_count, embedding, created_at
-       ) values (?, ?, ?, ?, ?, ?, 'zh', ?, 10, ?, ?)`,
+       ) values (?, ?, ?, ?, ?, ?, ?, ?, 10, ?, ?)`,
     )
     .run(
       article.id,
@@ -54,6 +55,7 @@ async function insertEmbedding(
       identity.modelRevision,
       identity.dimension,
       chunkIndex,
+      language,
       content,
       encodeFloat32Vector(vector),
       "2026-07-21T00:00:00.000Z",
@@ -154,6 +156,60 @@ describe("hybrid public search", () => {
     expect(page.results[0]?.excerptParts).toEqual([
       { text: "人必须永远同时被当作目的，而不只是手段。这个原则讨论人的尊严。", highlighted: false },
     ]);
+  });
+
+  it("ignores legacy English manuscript embeddings", async () => {
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticleResultsHybrid } = await import("@/lib/services/search");
+    const article = publishArticle(
+      createArticle(
+        articleInput({
+          titleZh: "只允许中文向量",
+          titleEn: "English vectors are forbidden",
+          slug: "ignore-legacy-english-vector",
+          excerptZh: "这是中文摘要",
+          excerptEn: "This is an English excerpt.",
+          bodyZh: "这篇中文正文不包含查询词。",
+          bodyEn: "The English manuscript contains a semantic match.",
+        }),
+      ).id,
+    );
+    await insertEmbedding(article, [1, 0], "The English manuscript contains a semantic match.", 0, "en");
+    const client = fakeClient();
+
+    const page = await searchArticleResultsHybrid("完全不同的中文查询", { client, rerankEnabled: false });
+
+    expect(page.results).toEqual([]);
+    expect(client.embed).not.toHaveBeenCalled();
+  });
+
+  it("sends only Chinese source fields to the reranker", async () => {
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticleResultsHybrid } = await import("@/lib/services/search");
+    const article = publishArticle(
+      createArticle(
+        articleInput({
+          titleZh: "中文重排标题",
+          titleEn: "Private English Reranker Title",
+          slug: "chinese-reranker-input-only",
+          excerptZh: "中文重排摘要",
+          excerptEn: "Private English reranker excerpt.",
+          bodyZh: "重排检索词只存在于中文正文。",
+          bodyEn: "Private English reranker manuscript.",
+        }),
+      ).id,
+    );
+    await insertEmbedding(article, [1, 0], "中文向量片段");
+    const client = fakeClient();
+
+    await searchArticleResultsHybrid("重排检索词", { client, rerankEnabled: true });
+
+    const passages = client.rerank.mock.calls[0]?.[1].map((candidate) => candidate.text).join("\n") ?? "";
+    expect(passages).toContain("中文重排标题");
+    expect(passages).toContain("中文重排摘要");
+    expect(passages).not.toContain("Private English Reranker Title");
+    expect(passages).not.toContain("Private English reranker excerpt.");
+    expect(passages).not.toContain("Private English reranker manuscript.");
   });
 
   it("exposes at most the fused top ten when every hit is semantic-only", async () => {

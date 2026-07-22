@@ -3,6 +3,7 @@ import { createSemanticSearchClient } from "./client";
 import { buildArticleEmbeddingChunks } from "./chunking";
 import { encodeFloat32Vector } from "./vector";
 import { deleteArticleEmbeddings } from "./storage";
+import { categoryLabel } from "@/lib/content/categories";
 import { getDb } from "@/lib/db/connection";
 import { getArticleRevisionById } from "@/lib/services/articles";
 
@@ -38,13 +39,10 @@ export async function indexPublishedArticleRevision(articleId: number, revisionI
   if (!article || article.publishedRevisionId !== revisionId) return { status: "stale" as const, articleId, revisionId };
   const chunks = buildArticleEmbeddingChunks({
     titleZh: article.titleZh,
-    titleEn: article.titleEn,
     excerptZh: article.excerptZh,
-    excerptEn: article.excerptEn,
-    category: article.category,
+    category: categoryLabel(article.category),
     tags: article.tags.map((tag) => tag.name),
     bodyZh: article.bodyZh ?? "",
-    bodyEn: article.bodyEn ?? null,
   });
 
   const vectors: Float32Array[] = [];

@@ -74,6 +74,36 @@ describe("keyword search", () => {
     expect(results.map((article) => article.slug)).toEqual(["city-bystander"]);
   });
 
+  it("does not put English manuscript fields into the FTS index", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { searchArticles } = await import("@/lib/services/search");
+    migrate();
+
+    publishArticle(
+      createArticle(
+        articleInput({
+          titleZh: "只搜索中文文稿",
+          titleEn: "UnindexedEnglish Title",
+          slug: "chinese-search-corpus-only",
+          excerptZh: "英文原稿不属于搜索范围",
+          excerptEn: "UnindexedEnglish excerpt.",
+          bodyZh: "中文正文仍然可以正常搜索。",
+          bodyEn: "UnindexedEnglish manuscript body.",
+        }),
+      ).id,
+    );
+
+    expect(searchArticles("UnindexedEnglish")).toEqual([]);
+    expect(searchArticles("中文正文").map((article) => article.slug)).toEqual(["chinese-search-corpus-only"]);
+    expect(getDb().prepare("select title_en, excerpt_en, body_en from article_search").get()).toEqual({
+      title_en: "",
+      excerpt_en: "",
+      body_en: "",
+    });
+  });
+
   it("keeps the FTS index when migrate runs again", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");

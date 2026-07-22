@@ -84,7 +84,9 @@ describe("semantic article indexing", () => {
       createArticle(
         articleInput({
           titleZh: "人的价值",
+          titleEn: "The Value of a Person",
           excerptZh: "价格不能定义人",
+          excerptEn: "Price cannot define a person.",
           bodyZh: `## 第一节\n\n${"人不是商品。".repeat(90)}`,
           bodyEn: "A person is not a commodity.",
         }),
@@ -107,13 +109,17 @@ describe("semantic article indexing", () => {
          from article_embedding_chunks order by chunk_index`,
       )
       .all() as Array<Record<string, unknown>>;
-    expect(rows.length).toBeGreaterThan(3);
+    expect(rows.length).toBeGreaterThan(2);
     expect(client.embed).toHaveBeenCalledTimes(Math.ceil(rows.length / 2));
     expect(rows.map((row) => row.chunk_index)).toEqual(rows.map((_, index) => index));
     expect(rows.every((row) => row.article_id === published.id && row.revision_id === published.revisionId)).toBe(true);
     expect(rows.every((row) => row.model_id === embeddingIdentity.modelId && row.model_revision === embeddingIdentity.modelRevision)).toBe(true);
     expect(rows.every((row) => row.dimension === 3 && Buffer.isBuffer(row.embedding) && (row.embedding as Buffer).length === 12)).toBe(true);
     expect(rows.every((row) => row.created_at === "2026-07-21T01:02:03.000Z")).toBe(true);
+    expect(rows.map((row) => row.language)).not.toContain("en");
+    expect(rows.map((row) => row.content).join("\n")).not.toContain("The Value of a Person");
+    expect(rows.map((row) => row.content).join("\n")).not.toContain("Price cannot define a person.");
+    expect(rows.map((row) => row.content).join("\n")).not.toContain("A person is not a commodity.");
   });
 
   it("does not call the model or disturb current vectors for an already stale revision", async () => {

@@ -1,17 +1,14 @@
 export type ArticleEmbeddingInput = {
   titleZh: string;
-  titleEn: string | null;
   excerptZh: string;
-  excerptEn: string | null;
   category: string;
   tags: readonly string[];
   bodyZh: string;
-  bodyEn: string | null;
 };
 
 export type ArticleEmbeddingChunk = {
   chunkIndex: number;
-  language: "metadata" | "zh" | "en";
+  language: "metadata" | "zh";
   content: string;
   embeddingText: string;
 };
@@ -148,9 +145,7 @@ function splitSection(section: MarkdownSection, options: ResolvedChunkingOptions
 function metadataContent(article: ArticleEmbeddingInput) {
   return [
     `中文标题：${article.titleZh.trim()}`,
-    article.titleEn?.trim() ? `英文标题：${article.titleEn.trim()}` : "",
     `中文摘要：${article.excerptZh.trim()}`,
-    article.excerptEn?.trim() ? `英文摘要：${article.excerptEn.trim()}` : "",
     `分类：${article.category.trim()}`,
     article.tags.length > 0 ? `标签：${article.tags.map((tag) => tag.trim()).filter(Boolean).join("、")}` : "",
   ]
@@ -164,28 +159,20 @@ export function buildArticleEmbeddingChunks(article: ArticleEmbeddingInput, opti
   const metadata = metadataContent(article);
   if (metadata) chunks.push({ chunkIndex: 0, language: "metadata", content: metadata, embeddingText: metadata });
 
-  const appendBody = (language: "zh" | "en", markdown: string | null) => {
-    if (!markdown?.trim()) return;
-    const titlePrefix =
-      language === "zh"
-        ? `文章：${article.titleZh.trim()}`
-        : `Article: ${(article.titleEn ?? article.titleZh).trim()}`;
+  const appendBody = (markdown: string) => {
+    if (!markdown.trim()) return;
+    const titlePrefix = `文章：${article.titleZh.trim()}`;
     for (const section of markdownSections(markdown).flatMap((value) => splitSection(value, resolved))) {
-      const headingPrefix = section.heading
-        ? language === "zh"
-          ? `章节：${section.heading}`
-          : `Section: ${section.heading}`
-        : "";
+      const headingPrefix = section.heading ? `章节：${section.heading}` : "";
       chunks.push({
         chunkIndex: chunks.length,
-        language,
+        language: "zh",
         content: section.content,
         embeddingText: [titlePrefix, headingPrefix, section.content].filter(Boolean).join("\n"),
       });
     }
   };
 
-  appendBody("zh", article.bodyZh);
-  appendBody("en", article.bodyEn);
+  appendBody(article.bodyZh);
   return chunks;
 }
