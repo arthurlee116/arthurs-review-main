@@ -61,7 +61,7 @@ export function enqueuePublishedRevisionJobs(
     db,
   );
 
-  enqueueJob(
+  const semanticJob = enqueueJob(
     {
       type: "search.embed",
       payload: {
@@ -74,6 +74,24 @@ export function enqueuePublishedRevisionJobs(
     },
     db,
   );
+  if (semanticJob.status !== "queued" && semanticJob.status !== "running") {
+    const indexed = db
+      .prepare("select 1 from article_embedding_chunks where article_id = ? and revision_id = ? limit 1")
+      .get(article.id, article.revisionId);
+    if (!indexed) {
+      db.prepare(
+        `update jobs
+         set payload = ?, status = 'queued', attempts = 0, max_attempts = 12,
+             run_at = ?, locked_at = null, locked_by = null, last_error = null, updated_at = ?
+         where id = ?`,
+      ).run(
+        JSON.stringify({ articleId: article.id, revisionId: article.revisionId }),
+        article.updatedAt,
+        article.updatedAt,
+        semanticJob.id,
+      );
+    }
+  }
 
   return enqueueCacheInvalidation(
     {

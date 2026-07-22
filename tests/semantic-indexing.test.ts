@@ -197,6 +197,25 @@ describe("semantic article indexing", () => {
     expect(getDb().prepare("select article_id from article_embedding_chunks").all()).toEqual([]);
   });
 
+  it("requeues embedding when an unchanged revision is unpublished and republished", async () => {
+    const { createArticle, publishArticle, unpublishArticle } = await import("@/lib/services/articles");
+    const { getDb } = await import("@/lib/db/connection");
+    const published = publishArticle(createArticle(articleInput({ slug: "semantic-republish" })).id);
+    await insertExistingChunk(published.id, published.revisionId, embeddingIdentity.modelRevision);
+    getDb()
+      .prepare("update jobs set status = 'succeeded', attempts = 1 where type = 'search.embed'")
+      .run();
+
+    unpublishArticle(published.id);
+    publishArticle(published.id);
+
+    expect(
+      getDb()
+        .prepare("select status, attempts from jobs where type = 'search.embed' and dedupe_key = ?")
+        .get(`article:${published.id}:revision:${published.revisionId}`),
+    ).toEqual({ status: "queued", attempts: 0 });
+  });
+
   it("backfills only missing current revisions and can safely requeue succeeded jobs", async () => {
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
     const { getDb } = await import("@/lib/db/connection");
