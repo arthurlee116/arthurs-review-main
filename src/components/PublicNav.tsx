@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
+import { usePathname } from "next/navigation";
 
 const links = [
   ["Home", "/"],
@@ -11,16 +14,29 @@ const links = [
   ["About", "/about"],
 ] as const;
 
-export function PublicNav({ compactTop = false }: { compactTop?: boolean }) {
+const activeClasses = "underline decoration-[var(--accent)] decoration-2 underline-offset-8";
+const hoverClasses = "hover:underline hover:decoration-[var(--accent)] hover:decoration-2 hover:underline-offset-8";
+
+export function PublicNav() {
+  const pathname = usePathname() ?? "/";
+
   return (
-    <div className={compactTop ? "" : "mt-8"}>
+    <div className="mt-6">
       <nav className="container sans border-y border-[var(--rule)] py-3 text-center text-xs uppercase tracking-[0.14em]">
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
-          {links.map(([label, href]) => (
-            <Link key={href} href={href as Route}>
-              {label}
-            </Link>
-          ))}
+          {links.map(([label, href]) => {
+            const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href as Route}
+                aria-current={isActive ? "page" : undefined}
+                className={isActive ? activeClasses : hoverClasses}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </div>
       </nav>
     </div>

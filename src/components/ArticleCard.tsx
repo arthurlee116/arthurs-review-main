@@ -16,7 +16,7 @@ export function ArticleCard({
   featured?: boolean;
 }) {
   return (
-    <article className="border-b border-[var(--rule)] py-7">
+    <article className="group border-b border-[var(--rule)] py-7">
       {article.coverImagePath ? (
         <CoverImage className="mb-5" path={article.coverImagePath} alt="" sizes={large ? coverImageSizes.largeCard : coverImageSizes.card} eager={eagerImage} />
       ) : null}
@@ -26,8 +26,9 @@ export function ArticleCard({
           <span className="sans border-l-2 border-[var(--accent)] pl-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">Featured</span>
         ) : null}
       </div>
+      {featured && !article.coverImagePath ? <div className="mt-4 h-1.5 w-16 bg-[var(--accent)]" aria-hidden="true" /> : null}
       <h2 className={large ? "mt-3 text-4xl font-bold leading-none md:text-5xl" : "mt-3 text-2xl font-bold leading-tight md:text-3xl"}>
-        <Link href={articlePath(article.category, article.slug)}>{article.titleZh}</Link>
+        <Link className="transition-colors group-hover:text-[var(--accent)] focus-visible:text-[var(--accent)]" href={articlePath(article.category, article.slug)}>{article.titleZh}</Link>
       </h2>
       {article.excerptZh ? <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--muted)]">{article.excerptZh}</p> : null}
     </article>

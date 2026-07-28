@@ -5,6 +5,7 @@ import { CoverImage, coverImageSizes } from "@/components/CoverImage";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { FeedbackCTA } from "@/components/FeedbackCTA";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { ReadingProgress } from "@/components/ReadingProgress";
 import { articlePath } from "@/lib/content/urls";
 import { categories, categoryLabel, type CategoryId } from "@/lib/content/categories";
 import { getCachedArticleUrlRedirect, getCachedPublishedArticle, listCachedPublicationProofs } from "@/lib/services/public-content";
@@ -13,7 +14,7 @@ import { uploadPublicPath } from "@/lib/media/paths";
 import { absoluteUrl } from "@/lib/seo";
 import { PublicShell } from "./_publicShell";
 
-const SINGLE_LINE_TITLE_MAX = 9;
+const SINGLE_LINE_TITLE_MAX = 7;
 
 type ArticleRouteProps = {
   category: CategoryId;
@@ -112,6 +113,7 @@ export async function ArticlePage({
 
   return (
     <PublicShell mastheadHeadingLevel={2}>
+      <ReadingProgress />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
       <main className="container pb-12 pt-8">
@@ -120,7 +122,7 @@ export async function ArticlePage({
           <ArticleMeta category={article.category} publishedAt={article.publishedAt} />
           <LanguageSwitch hasEnglish={Boolean(article.bodyEn)} currentPath={articlePath(article.category, article.slug)} />
           <h1
-            className={`mt-5 text-[min(48px,9.5vw)] font-bold leading-none md:text-7xl ${singleLineTitle ? "whitespace-nowrap" : "max-w-[9.5em] text-balance md:max-w-none"}`}
+            className={`mt-5 text-[min(44px,8.5vw)] font-bold leading-none md:text-7xl ${singleLineTitle ? "whitespace-nowrap" : "max-w-[9.5em] text-balance md:max-w-none"}`}
           >
             {title}
           </h1>

@@ -20,7 +20,7 @@ export async function HomeContent() {
   const feed = articles.filter((article) => article.id !== featured?.id).slice(0, 11);
 
   return (
-    <PublicShell noticePlacement="beforeNav">
+    <PublicShell>
       <main className="container py-10">
         {featured ? (
           <section className="grid gap-8 border-b-2 border-[var(--rule)] pb-8 md:grid-cols-[1.35fr_1fr]">
@@ -46,7 +46,7 @@ export async function HomeContent() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<PublicShell noticePlacement="beforeNav"><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
+    <Suspense fallback={<PublicShell><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
       <HomeContent />
     </Suspense>
   );

@@ -42,7 +42,7 @@ export async function ArchiveContent({ page = 1 }: { page?: number } = {}) {
       <main className="container overflow-x-hidden pb-16">
         <header className="max-w-5xl py-10 md:py-14">
           <p className="sans text-xs font-bold uppercase tracking-[0.12em] text-[var(--accent)]">Complete index</p>
-          <h1 className="sans mt-4 max-w-5xl text-5xl font-bold leading-[0.95] tracking-[-0.04em] md:text-7xl">Archive</h1>
+          <h1 className="mt-4 max-w-5xl text-5xl font-bold leading-[0.95] tracking-[-0.04em] md:text-7xl">Archive</h1>
           <p className="mt-6 max-w-[55ch] text-lg leading-8 text-[var(--muted)]">Every published article, grouped by year.</p>
         </header>
 
@@ -50,7 +50,7 @@ export async function ArchiveContent({ page = 1 }: { page?: number } = {}) {
           <div className="border-t border-[var(--rule)]">
             {groups.map((group) => (
               <section key={group.year} className="grid gap-6 border-b border-[var(--rule)] py-10 md:grid-cols-[10rem_1fr] md:gap-12" aria-labelledby={`archive-${group.year}`}>
-                <h2 id={`archive-${group.year}`} className="sans text-5xl font-bold leading-none tracking-[-0.04em]">
+                <h2 id={`archive-${group.year}`} className="text-5xl font-bold leading-none tracking-[-0.04em]">
                   {group.year}
                 </h2>
                 <ol className="grid gap-x-10 gap-y-8 sm:grid-cols-2">

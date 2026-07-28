@@ -8,13 +8,13 @@ export function SearchResultCard({ result }: { result: SearchArticleResult }) {
   const { article, excerptParts } = result;
 
   return (
-    <article className="border-b border-[var(--rule)] py-7">
+    <article className="group border-b border-[var(--rule)] py-7">
       {article.coverImagePath ? (
         <CoverImage className="mb-5" path={article.coverImagePath} alt="" sizes={coverImageSizes.largeCard} />
       ) : null}
       <ArticleMeta category={article.category} publishedAt={article.publishedAt} />
       <h2 className="mt-3 text-4xl font-bold leading-none md:text-5xl">
-        <Link href={articlePath(article.category, article.slug)}>{article.titleZh}</Link>
+        <Link className="transition-colors group-hover:text-[var(--accent)] focus-visible:text-[var(--accent)]" href={articlePath(article.category, article.slug)}>{article.titleZh}</Link>
       </h2>
       {excerptParts.length ? (
         <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--muted)]">

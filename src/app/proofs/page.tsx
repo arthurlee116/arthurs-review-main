@@ -55,7 +55,7 @@ export async function ProofsContent({ page = 1 }: { page?: number } = {}) {
       <main className="container overflow-x-hidden pb-16">
         <header className="max-w-5xl py-10 md:py-14">
           <p className="sans text-xs font-bold uppercase tracking-[0.12em] text-[var(--accent)]">Public verification</p>
-          <h1 className="sans mt-4 max-w-5xl text-5xl font-bold leading-[0.95] tracking-[-0.04em] md:text-7xl">Proofs</h1>
+          <h1 className="mt-4 max-w-5xl text-5xl font-bold leading-[0.95] tracking-[-0.04em] md:text-7xl">Proofs</h1>
           <p className="mt-6 max-w-[62ch] text-lg leading-8 text-[var(--muted)]">
             每次已发布内容发生变化，这里会留下内容哈希和可下载源文件。记录能证明内容不晚于该时间存在，但不主张这是首次发布日期。
           </p>

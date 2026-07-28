@@ -14,7 +14,7 @@ export async function CategoryPage({ category }: { category: CategoryId }) {
           <p className="sans text-xs font-bold uppercase text-[var(--muted)]">Archive</p>
           <div className="mt-3 flex items-center gap-4">
             <span className="h-1 w-12 bg-[var(--accent)]" aria-hidden="true" />
-            <h1 className="sans text-3xl font-bold leading-tight md:text-4xl">{categories[category].label}</h1>
+            <h1 className="text-3xl font-bold leading-tight md:text-4xl">{categories[category].label}</h1>
           </div>
         </header>
         {articles.length ? (

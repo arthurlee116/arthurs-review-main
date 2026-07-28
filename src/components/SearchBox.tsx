@@ -7,10 +7,10 @@ export function SearchBox({ defaultValue = "", className = "" }: { defaultValue?
         name="q"
         maxLength={MAX_SEARCH_CODE_POINTS}
         defaultValue={defaultValue}
-        className="min-w-0 flex-1 border border-[var(--rule)] bg-transparent px-3 py-2 text-sm"
+        className="min-w-0 flex-1 border border-[var(--rule)] bg-transparent px-3 py-1.5 text-xs md:py-2 md:text-sm"
         aria-label="Search"
       />
-      <button className="border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-sm text-[var(--paper)]">Search</button>
+      <button className="border border-[var(--rule)] bg-[var(--ink)] px-3 py-1.5 text-xs text-[var(--paper)] md:px-4 md:py-2 md:text-sm">Search</button>
     </form>
   );
 }

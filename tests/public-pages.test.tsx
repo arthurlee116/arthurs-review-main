@@ -48,7 +48,7 @@ describe("public article pages", () => {
     render(await HomeContent());
 
     expect(screen.queryByRole("dialog", { name: "留言" })).not.toBeInTheDocument();
-    expect(screen.getAllByText(contactNotice)).toHaveLength(1);
+    expect(screen.queryByText(contactNotice)).not.toBeInTheDocument();
     expect(fs.existsSync("src/components/ContactPromptModal.tsx")).toBe(false);
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByRole("link", { name: "Archive" })).toHaveAttribute("href", "/archive");
