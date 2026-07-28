@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import { Masthead } from "@/components/Masthead";
-import { PublicNav } from "@/components/PublicNav";
+import { PublicNav, PublicNavStatic } from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicFooter";
 
 export function PublicShell({
@@ -12,7 +13,9 @@ export function PublicShell({
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <Masthead headingLevel={mastheadHeadingLevel} />
-      <PublicNav />
+      <Suspense fallback={<PublicNavStatic />}>
+        <PublicNav />
+      </Suspense>
       <div className="flex-1">{children}</div>
       <PublicFooter />
     </div>
