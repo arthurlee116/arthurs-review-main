@@ -12,7 +12,7 @@ test("home page keeps the classic masthead and exposes every public archive", as
   }
 });
 
-test("mobile masthead stays stable and keeps the contact notice compact", async ({ page }) => {
+test("mobile masthead stays stable above the nav", async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 956 });
   await page.goto("/");
   await page.waitForLoadState("networkidle");
@@ -28,10 +28,6 @@ test("mobile masthead stays stable and keeps the contact notice compact", async 
     const titleText = document.createRange();
     titleText.selectNodeContents(title);
     const titleRect = titleText.getBoundingClientRect();
-    const notice = document.querySelector(".contact-notice")!;
-    const noticeText = document.createRange();
-    noticeText.selectNodeContents(notice);
-    const noticeRect = noticeText.getBoundingClientRect();
     const accentRect = document.querySelector("header.container > div:last-child")!.getBoundingClientRect();
     const navRect = document.querySelector("nav")!.getBoundingClientRect();
 
@@ -39,20 +35,19 @@ test("mobile masthead stays stable and keeps the contact notice compact", async 
       textSizeAdjust: getComputedStyle(document.documentElement).webkitTextSizeAdjust,
       titleLines: lineCount(title),
       titleFits: titleRect.left >= 0 && titleRect.right <= innerWidth,
-      noticeLines: lineCount(notice),
-      topGap: noticeRect.top - accentRect.bottom,
-      bottomGap: navRect.top - noticeRect.bottom,
+      navFollowsMasthead: navRect.top > accentRect.bottom,
+      noticeOnHome: Boolean(document.querySelector(".contact-notice")),
     };
   });
 
   expect(layout.textSizeAdjust).toBe("100%");
   expect(layout.titleLines).toBe(1);
   expect(layout.titleFits).toBe(true);
-  expect(layout.noticeLines).toBe(3);
-  expect(Math.abs(layout.topGap - layout.bottomGap)).toBeLessThanOrEqual(2);
+  expect(layout.navFollowsMasthead).toBe(true);
+  expect(layout.noticeOnHome).toBe(false);
 });
 
-test("mobile article titles use the nine-character wrapping threshold", async ({ page }) => {
+test("mobile article titles use the seven-character wrapping threshold", async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 956 });
 
   const titleLayout = async (path: string) => {
