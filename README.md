@@ -38,8 +38,8 @@ The Playwright suite seeds `DATA_DIR=./data/e2e` before starting the dev server.
 Production is designed for Docker Compose on the VPS behind Caddy:
 
 ```bash
-ssh root@187.124.247.64 'bash -s' < scripts/server-bootstrap.sh
-REMOTE=root@187.124.247.64 ./scripts/deploy.sh
+ssh root@72.60.195.46 'bash -s' < scripts/server-bootstrap.sh
+REMOTE=root@72.60.195.46 ./scripts/deploy.sh
 ```
 
 Runtime data is mounted at `/var/www/arthurs-review/data` on the host and `/data` in the app container. Caddy serves `blog.leesaitool.com` with automatic HTTPS.
@@ -48,6 +48,7 @@ Pushes to `main` deploy through GitHub Actions. Required repository secrets:
 
 - `DEPLOY_SSH_PRIVATE_KEY`: private key allowed to SSH into the VPS
 - `PRODUCTION_ENV`: contents of `deploy/production.env`
+- `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `WORKER_REVALIDATE_SECRET`
 
 Optional repository variables: `DEPLOY_HOST`, `DEPLOY_REMOTE`, `DEPLOY_APP_DIR`.
 
