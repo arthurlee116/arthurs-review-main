@@ -19,7 +19,7 @@ const hoverClasses = "hover:underline hover:decoration-[var(--accent)] hover:dec
 
 function NavLinks({ pathname }: { pathname: string | null }) {
   return (
-    <div className="mt-6">
+    <div className="mt-5">
       <nav className="container sans border-y border-[var(--rule)] py-3 text-center text-xs uppercase tracking-[0.14em]">
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
           {links.map(([label, href]) => {

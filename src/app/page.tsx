@@ -21,11 +21,14 @@ export async function HomeContent() {
 
   return (
     <PublicShell>
-      <main className="container py-10">
+      <main className="container pb-10 pt-4">
         {featured ? (
           <section className="grid gap-8 border-b-2 border-[var(--rule)] pb-8 md:grid-cols-[1.35fr_1fr]">
-            <ArticleCard article={featured} large eagerImage featured />
-            <div>
+            {/* ponytail: -mt-7 cancels ArticleCard's own py-7 so the section hugs the nav rule */}
+            <div className="-mt-7">
+              <ArticleCard article={featured} large eagerImage featured />
+            </div>
+            <div className="-mt-7">
               {feed.slice(0, 3).map((article) => (
                 <ArticleCard key={article.id} article={article} />
               ))}
