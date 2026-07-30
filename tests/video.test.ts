@@ -8,24 +8,34 @@ const hasFfmpeg = spawnSync("ffmpeg", ["-version"]).status === 0;
 
 let tmpDir: string;
 let clipPath: string;
+let silentClipPath: string;
+
+function generateClip(args: string[], target: string) {
+  const result = spawnSync("ffmpeg", ["-y", ...args, target], { stdio: "ignore" });
+  if (result.status !== 0) throw new Error("failed to generate test clip");
+}
 
 beforeAll(() => {
   if (!hasFfmpeg) return;
   const clipDir = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-clip-"));
   clipPath = path.join(clipDir, "clip.mp4");
-  const result = spawnSync(
-    "ffmpeg",
+  silentClipPath = path.join(clipDir, "silent.mp4");
+  generateClip(
     [
-      "-y",
       "-f", "lavfi", "-i", "testsrc=duration=2:size=640x360:rate=30",
       "-f", "lavfi", "-i", "sine",
       "-shortest",
       "-pix_fmt", "yuv420p",
-      clipPath,
     ],
-    { stdio: "ignore" },
+    clipPath,
   );
-  if (result.status !== 0) throw new Error("failed to generate test clip");
+  generateClip(
+    [
+      "-f", "lavfi", "-i", "testsrc=duration=2:size=640x360:rate=30",
+      "-pix_fmt", "yuv420p",
+    ],
+    silentClipPath,
+  );
 });
 
 afterAll(() => {
@@ -71,6 +81,45 @@ describe("video uploads", () => {
       expect(result.width).toBeLessThanOrEqual(1920);
       expect(result.height).toBeGreaterThan(0);
       expect(result.originalName).toBe("clip.mp4");
+    },
+    120000,
+  );
+
+  it.skipIf(!hasFfmpeg)(
+    "transcodes a clip without audio using the -an branch",
+    async () => {
+      const { processVideoUpload } = await import("@/lib/media/video");
+      const buffer = fs.readFileSync(silentClipPath);
+
+      const result = await processVideoUpload(buffer, "silent.mp4", "video/mp4");
+
+      expect(result.relativePath.endsWith(".mp4")).toBe(true);
+      expect(fs.existsSync(path.join(tmpDir, result.relativePath))).toBe(true);
+      expect(fs.existsSync(path.join(tmpDir, result.coverRelativePath))).toBe(true);
+      expect(result.durationSeconds).toBeGreaterThan(1.5);
+      expect(result.durationSeconds).toBeLessThan(2.5);
+    },
+    120000,
+  );
+
+  it.skipIf(!hasFfmpeg)(
+    "cleans up partial outputs when ffmpeg fails on garbage input",
+    async () => {
+      const { processVideoUpload } = await import("@/lib/media/video");
+      const garbage = Buffer.from("not a video");
+
+      await expect(processVideoUpload(garbage, "garbage.mp4", "video/mp4")).rejects.toThrow(
+        /Video processing failed:/,
+      );
+
+      const uploadsDir = path.join(tmpDir, "uploads");
+      const leftovers = fs.existsSync(uploadsDir)
+        ? fs.readdirSync(uploadsDir, { recursive: true }).filter((entry) => {
+            const full = path.join(uploadsDir, String(entry));
+            return fs.statSync(full).isFile();
+          })
+        : [];
+      expect(leftovers).toEqual([]);
     },
     120000,
   );
