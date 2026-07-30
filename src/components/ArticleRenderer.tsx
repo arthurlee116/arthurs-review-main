@@ -4,10 +4,14 @@ import remarkGfm from "remark-gfm";
 
 const sanitizeSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames ?? []), "video", "source"],
+  tagNames: [...(defaultSchema.tagNames ?? []), "video"],
   attributes: {
     ...defaultSchema.attributes,
     video: [...(defaultSchema.attributes?.video ?? []), "controls", "poster", "src", "className"],
+  },
+  protocols: {
+    ...defaultSchema.protocols,
+    poster: ["http", "https"],
   },
 };
 
