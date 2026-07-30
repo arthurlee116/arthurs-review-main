@@ -81,7 +81,7 @@ describe("MarkdownEditor", () => {
 
     render(<MarkdownEditor label="Chinese body" value="正文" onChange={onChange} />);
 
-    const inlineImagePicker = screen.getByLabelText("Insert inline image");
+    const inlineImagePicker = screen.getByLabelText("Insert inline image or video");
     expect(inlineImagePicker.closest(".studio-button")).toBeTruthy();
 
     await user.upload(inlineImagePicker, new File(["image"], "inline.png", { type: "image/png" }));
@@ -104,7 +104,7 @@ describe("MarkdownEditor", () => {
     );
 
     const { rerender } = render(<MarkdownEditor label="Chinese body" value="正文" onChange={onChange} />);
-    const upload = user.upload(screen.getByLabelText("Insert inline image"), new File(["image"], "inline.png", { type: "image/png" }));
+    const upload = user.upload(screen.getByLabelText("Insert inline image or video"), new File(["image"], "inline.png", { type: "image/png" }));
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
 
     rerender(<MarkdownEditor label="Chinese body" value={"正文\n上传期间新输入"} onChange={onChange} />);
@@ -112,6 +112,27 @@ describe("MarkdownEditor", () => {
     await upload;
 
     expect(onChange).toHaveBeenLastCalledWith("正文\n上传期间新输入\n\n![inline](/media/2026/05/inline.webp)");
+  });
+
+  it("uploads a video and inserts a markdown embed with a poster query param", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          kind: "video",
+          publicPath: "/media/2026/07/clip.mp4",
+          coverPublicPath: "/media/2026/07/clip-cover.webp",
+        }),
+      ),
+    );
+
+    render(<MarkdownEditor label="Chinese body" value="正文" onChange={onChange} />);
+
+    await user.upload(screen.getByLabelText("Insert inline image or video"), new File(["video"], "clip.mp4", { type: "video/mp4" }));
+
+    expect(onChange).toHaveBeenCalledWith("正文\n\n![clip](/media/2026/07/clip.mp4?poster=/media/2026/07/clip-cover.webp)");
   });
 
   it("accepts a dropped inline image and inserts the public markdown image link", async () => {
@@ -128,7 +149,7 @@ describe("MarkdownEditor", () => {
     render(<MarkdownEditor label="Chinese body" value="正文" onChange={onChange} />);
 
     const file = new File(["image"], "dropped.png", { type: "image/png" });
-    fireEvent.drop(screen.getByLabelText("Chinese body image drop target"), {
+    fireEvent.drop(screen.getByLabelText("Chinese body media drop target"), {
       dataTransfer: {
         files: [file],
         items: [{ kind: "file", type: "image/png" }],

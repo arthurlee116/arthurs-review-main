@@ -17,14 +17,20 @@ function imageAlt(fileName: string) {
   return fileName.replace(/\.[^.]+$/, "") || "image";
 }
 
-function isImageFile(file: File) {
-  return file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name);
+function isMediaFile(file: File) {
+  return (
+    file.type.startsWith("image/") ||
+    file.type.startsWith("video/") ||
+    /\.(jpe?g|png|webp|mp4|mov|webm)$/i.test(file.name)
+  );
 }
 
-function hasImage(transfer: DataTransfer) {
+function hasMedia(transfer: DataTransfer) {
   return (
-    Array.from(transfer.items).some((item) => item.kind === "file" && item.type.startsWith("image/")) ||
-    Array.from(transfer.files).some(isImageFile)
+    Array.from(transfer.items).some(
+      (item) => item.kind === "file" && (item.type.startsWith("image/") || item.type.startsWith("video/")),
+    ) ||
+    Array.from(transfer.files).some(isMediaFile)
   );
 }
 
@@ -80,16 +86,25 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
   async function uploadFile(file: File) {
     const body = new FormData();
     body.append("file", file);
+    setMessage(file.type.startsWith("video/") ? "Uploading… (video transcoding can take a minute)" : "Uploading…");
     const response = await fetch("/studio/api/media", {
       method: "POST",
       headers: { "x-csrf-token": csrfToken() ?? "" },
       body,
     });
-    if (!response.ok) return;
-    const result = (await response.json()) as { publicPath: string };
-    const insertion = `![${imageAlt(file.name)}](${result.publicPath})`;
+    if (!response.ok) {
+      setMessage("Upload failed.");
+      return;
+    }
+    const result = (await response.json()) as { kind?: string; publicPath: string; coverPublicPath?: string };
+    const alt = imageAlt(file.name);
+    const insertion =
+      result.kind === "video" && result.coverPublicPath
+        ? `![${alt}](${result.publicPath}?poster=${result.coverPublicPath})`
+        : `![${alt}](${result.publicPath})`;
     const latestValue = valueRef.current;
     onChange(latestValue.trim() ? `${latestValue}\n\n${insertion}` : insertion);
+    setMessage(`Inserted ${file.name}`);
   }
 
   async function upload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -135,12 +150,12 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
         isDraggingImage ? "border-[var(--ink)] bg-white/70 p-3" : ""
       }`}
       onDragEnter={(event) => {
-        if (!hasImage(event.dataTransfer)) return;
+        if (!hasMedia(event.dataTransfer)) return;
         event.preventDefault();
         setIsDraggingImage(true);
       }}
       onDragOver={(event) => {
-        if (!hasImage(event.dataTransfer)) return;
+        if (!hasMedia(event.dataTransfer)) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = "copy";
       }}
@@ -149,13 +164,13 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
         setIsDraggingImage(false);
       }}
       onDrop={async (event) => {
-        if (!hasImage(event.dataTransfer)) return;
+        if (!hasMedia(event.dataTransfer)) return;
         event.preventDefault();
         setIsDraggingImage(false);
-        const file = Array.from(event.dataTransfer.files).find(isImageFile);
+        const file = Array.from(event.dataTransfer.files).find(isMediaFile);
         if (file) await uploadFile(file);
       }}
-      aria-label={`${label} image drop target`}
+      aria-label={`${label} media drop target`}
     >
       <div className="grid min-w-0 gap-2">
         <span>{label}</span>
@@ -171,8 +186,13 @@ export function MarkdownEditor({ label, value, onChange }: { label: string; valu
       </div>
       <div className="flex flex-wrap gap-2">
         <label className="studio-button w-fit border border-[var(--rule)] px-3 py-2 text-xs">
-          Insert inline image
-          <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} />
+          Insert inline image or video
+          <input
+            className="sr-only"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm"
+            onChange={upload}
+          />
         </label>
         <label className="studio-button w-fit border border-[var(--rule)] px-3 py-2 text-xs">
           Import Markdown

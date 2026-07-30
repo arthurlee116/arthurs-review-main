@@ -8,7 +8,7 @@ export const ArticleBodySchema = z.object({
   titleZh: z.string().min(1, "Chinese title is required"),
   titleEn: z.string().nullable(),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must use lowercase letters, numbers, and single hyphens"),
-  category: z.enum(["commentary", "society", "misc"]),
+  category: z.enum(["commentary", "society", "misc", "life"]),
   excerptZh: z.string(),
   excerptEn: z.string().nullable(),
   seoDescription: z.string(),

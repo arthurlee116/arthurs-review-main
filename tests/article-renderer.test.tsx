@@ -39,4 +39,27 @@ describe("ArticleRenderer", () => {
     expect(container.querySelector("script")).not.toBeInTheDocument();
     expect(screen.getByText("Safe")).toBeInTheDocument();
   });
+
+  it("renders an .mp4 image embed as a video with a poster", () => {
+    const { container } = render(
+      <ArticleRenderer markdown={"![clip](/media/2026/07/x.mp4?poster=/media/2026/07/y.webp)"} />,
+    );
+
+    const video = container.querySelector("video");
+    expect(video).toBeInTheDocument();
+    expect(video).toHaveAttribute("controls");
+    expect(video).toHaveAttribute("src", "/media/2026/07/x.mp4");
+    expect(video).toHaveAttribute("poster", "/media/2026/07/y.webp");
+    expect(container.querySelector("img")).not.toBeInTheDocument();
+  });
+
+  it("renders a normal image embed as an img", () => {
+    const { container } = render(<ArticleRenderer markdown={"![alt text](/media/2026/07/photo.webp)"} />);
+
+    const image = container.querySelector("img");
+    expect(image).toBeInTheDocument();
+    expect(image).toHaveAttribute("src", "/media/2026/07/photo.webp");
+    expect(image).toHaveAttribute("alt", "alt text");
+    expect(container.querySelector("video")).not.toBeInTheDocument();
+  });
 });

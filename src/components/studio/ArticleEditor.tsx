@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import type { CategoryId } from "@/lib/content/categories";
 import type { Article } from "@/lib/services/articles";
 import { ImageUploader } from "./ImageUploader";
 import { MarkdownEditor } from "./MarkdownEditor";
@@ -16,7 +17,7 @@ type FormState = {
   titleZh: string;
   titleEn: string;
   slug: string;
-  category: "commentary" | "society" | "misc";
+  category: CategoryId;
   excerptZh: string;
   excerptEn: string;
   seoDescription: string;
@@ -239,6 +240,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
           <option value="commentary">时事评论</option>
           <option value="society">社会分析</option>
           <option value="misc">杂七杂八</option>
+          <option value="life">生活</option>
         </select>
       </label>
       <label className="grid gap-2">

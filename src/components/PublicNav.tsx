@@ -9,6 +9,7 @@ const links = [
   ["时事评论", "/commentary"],
   ["社会分析", "/society"],
   ["杂七杂八", "/misc"],
+  ["生活", "/life"],
   ["Archive", "/archive"],
   ["Proofs", "/proofs"],
   ["About", "/about"],
