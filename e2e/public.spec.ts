@@ -7,7 +7,7 @@ test("home page keeps the classic masthead and exposes every public archive", as
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Arthur's Review" })).toBeVisible();
   const publicNav = page.getByRole("navigation").first();
-  for (const label of ["Home", "时事评论", "社会分析", "杂七杂八", "Archive", "Proofs", "About"]) {
+  for (const label of ["Home", "时事评论", "社会分析", "杂七杂八", "生活", "Archive", "Proofs", "About"]) {
     await expect(publicNav.getByRole("link", { name: label, exact: true })).toBeVisible();
   }
 });
@@ -133,7 +133,7 @@ test("production runtime exposes health, immutable version metadata, and product
   expect(await version.json()).toEqual({
     commit: process.env.E2E_EXPECTED_COMMIT ?? "development",
     digest: process.env.E2E_EXPECTED_DIGEST ?? "development",
-    schemaVersion: 9,
+    schemaVersion: 10,
   });
 
   await page.goto("/");

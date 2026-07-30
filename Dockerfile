@@ -31,7 +31,7 @@ ENV OTS_CLI_PATH=/opt/opentimestamps/bin/ots
 ENV BUILD_COMMIT_SHA=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.revision=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.source="https://github.com/arthurlee116/arthurs-review-main"
-RUN apk add --no-cache python3 make g++ \
+RUN apk add --no-cache python3 make g++ ffmpeg \
   && npm install --global corepack@0.35.0 \
   && corepack enable \
   && corepack install --global pnpm@10.28.1
