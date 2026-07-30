@@ -71,6 +71,12 @@ export const migrations: Migration[] = [
     filename: "009_semantic_search.sql",
     up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "009_semantic_search.sql"), "utf8")),
   },
+  {
+    version: 10,
+    name: "life_category",
+    filename: "010_life_category.sql",
+    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "010_life_category.sql"), "utf8")),
+  },
 ];
 
 type ArticleSearchRow = {
@@ -197,11 +203,25 @@ export function runMigrations(db: Database.Database, orderedMigrations: Migratio
   }
 
   const record = db.prepare("insert into schema_migrations(version, name, applied_at) values (?, ?, ?)");
-  for (const migration of orderedMigrations.slice(applied.length)) {
-    db.transaction(() => {
-      migration.up(db);
-      record.run(migration.version, migration.name, new Date().toISOString());
-    }).immediate();
+  const pending = orderedMigrations.slice(applied.length);
+  if (pending.length === 0) return;
+
+  // Table-rebuild migrations (rename/copy/drop) break on deferred foreign keys, and
+  // `pragma foreign_keys = off` is a no-op inside a transaction, so the runner wraps
+  // the pending batch instead and verifies referential integrity at the end.
+  db.pragma("foreign_keys = off");
+  try {
+    for (const migration of pending) {
+      db.transaction(() => {
+        migration.up(db);
+        record.run(migration.version, migration.name, new Date().toISOString());
+      }).immediate();
+    }
+  } finally {
+    db.pragma("foreign_keys = on");
+  }
+  if ((db.pragma("foreign_key_check") as Array<unknown>).length > 0) {
+    throw new Error("Foreign key violations after migrations.");
   }
 }
 

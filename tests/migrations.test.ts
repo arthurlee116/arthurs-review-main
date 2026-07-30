@@ -82,6 +82,7 @@ describe("schema migrations", () => {
       { version: 7, name: "translation_batches" },
       { version: 8, name: "admin_auth_state" },
       { version: 9, name: "semantic_search" },
+      { version: 10, name: "life_category" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -106,6 +107,7 @@ describe("schema migrations", () => {
       { version: 7, name: "translation_batches" },
       { version: 8, name: "admin_auth_state" },
       { version: 9, name: "semantic_search" },
+      { version: 10, name: "life_category" },
     ]);
   });
 
@@ -164,6 +166,60 @@ describe("schema migrations", () => {
     expect(db.pragma("foreign_key_check")).toEqual([]);
     expect(db.pragma("integrity_check")).toEqual([{ integrity_check: "ok" }]);
     db.close();
+  });
+
+  it("allows the life category in article_revisions and preserves rows and ownership triggers", async () => {
+    const { migrate, runMigrations, migrations } = await import("@/lib/db/migrate");
+    const { getDb } = await import("@/lib/db/connection");
+    const db = getDb();
+
+    migrate();
+
+    db.prepare("insert into articles(id, published_at, updated_at, is_featured) values (1, null, ?, 0)")
+      .run("2026-07-21T00:00:00.000Z");
+    const insertRevision = db.prepare(
+      `insert into article_revisions(
+         article_id, created_at, title_zh, slug, category, excerpt_zh, seo_description, body_zh_path
+       ) values (?, ?, ?, ?, ?, '', '', ?)`,
+    );
+    insertRevision.run(1, "2026-07-21T00:00:00.000Z", "旧文章", "legacy-post", "commentary", "markdown/1.zh.md");
+
+    const countBefore = (db.prepare("select count(*) as count from article_revisions").get() as { count: number }).count;
+    const lifeMigration = migrations.find((migration) => migration.version === 10);
+    expect(lifeMigration).toBeTruthy();
+    runMigrations(db, migrations.slice(0, 10));
+
+    expect((db.prepare("select count(*) as count from article_revisions").get() as { count: number }).count).toBe(countBefore);
+    expect(db.prepare("select slug, category from article_revisions where id = 1").get()).toEqual({
+      slug: "legacy-post",
+      category: "commentary",
+    });
+
+    expect(() =>
+      insertRevision.run(1, "2026-07-30T00:00:00.000Z", "生活", "life-post", "life", "markdown/2.zh.md"),
+    ).not.toThrow();
+    expect(db.prepare("select slug, category from article_revisions where slug = 'life-post'").get()).toEqual({
+      slug: "life-post",
+      category: "life",
+    });
+
+    expect(() =>
+      insertRevision.run(1, "2026-07-30T00:00:00.000Z", "非法", "bad-post", "essay", "markdown/3.zh.md"),
+    ).toThrow();
+
+    // The articles-table ownership triggers from 003 must still reject cross-article revision references.
+    db.prepare("insert into articles(id, published_at, updated_at, is_featured) values (2, null, ?, 0)")
+      .run("2026-07-30T00:00:00.000Z");
+    expect(() =>
+      db.prepare("update articles set draft_revision_id = 1 where id = 2").run(),
+    ).toThrow("draft revision belongs to another article");
+
+    const indexNames = (db.prepare("select name from sqlite_master where type = 'index' order by name").all() as Array<{ name: string }>)
+      .map((row) => row.name);
+    expect(indexNames).toContain("article_revisions_article_idx");
+    expect(indexNames).toContain("article_revisions_path_idx");
+    expect(db.prepare("select name from sqlite_master where name = 'article_revisions_new'").get()).toBeUndefined();
+    expect(db.pragma("integrity_check")).toEqual([{ integrity_check: "ok" }]);
   });
 
   it("rolls back a failed migration and can retry it", async () => {

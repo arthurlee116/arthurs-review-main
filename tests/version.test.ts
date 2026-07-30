@@ -30,7 +30,7 @@ describe("GET /version", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    await expect(response.json()).resolves.toEqual({ commit, digest, schemaVersion: 9 });
+    await expect(response.json()).resolves.toEqual({ commit, digest, schemaVersion: 10 });
   });
 
   it("does not leak database details when the schema version is unavailable", async () => {
