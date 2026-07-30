@@ -56,11 +56,12 @@ export async function processVideoUpload(buffer: Buffer, originalName: string, m
 
     const inputProbe = await probeJson(inputPath);
     const audioArgs = hasAudioStream(inputProbe) ? [...allowedAudio] : ["-an"];
+    const inputDuration = Number.parseFloat(inputProbe.format?.duration ?? "0");
 
     await execFileAsync("ffmpeg", [
       "-y",
       "-i", inputPath,
-      "-vf", "scale='min(1920,iw)':-2",
+      "-vf", "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
       "-c:v", "libsvtav1",
       "-crf", "30",
       "-preset", "6",
@@ -71,9 +72,10 @@ export async function processVideoUpload(buffer: Buffer, originalName: string, m
     ]);
 
     const framePath = path.join(tmpDir, "cover.png");
+    const coverOffset = inputDuration > 0 ? Math.min(1, inputDuration / 2) : 0;
     await execFileAsync("ffmpeg", [
       "-y",
-      "-ss", "1",
+      "-ss", String(coverOffset),
       "-i", diskPath,
       "-frames:v", "1",
       framePath,

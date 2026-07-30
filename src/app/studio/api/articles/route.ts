@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   const result = listStudioArticlePage({
     page: pageNumber(params.get("page")),
     status: status === "draft" || status === "published" ? status : "all",
-    category: category === "commentary" || category === "society" || category === "misc" ? category : "all",
+    category: category === "commentary" || category === "society" || category === "life" || category === "misc" ? category : "all",
     query: params.get("q") ?? "",
   });
   return Response.json({ ...result, articles: result.items });

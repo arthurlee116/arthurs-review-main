@@ -24,7 +24,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
   await connection();
   const params = await searchParams;
   const status = params.status === "draft" || params.status === "published" ? params.status : "all";
-  const category = params.category === "commentary" || params.category === "society" || params.category === "misc" ? params.category : "all";
+  const category = params.category === "commentary" || params.category === "society" || params.category === "life" || params.category === "misc" ? params.category : "all";
   const query = params.q ?? "";
   const articlePage = listStudioArticlePage({
     status,
@@ -51,6 +51,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
             <option value="all">All</option>
             <option value="commentary">时事评论</option>
             <option value="society">社会分析</option>
+            <option value="life">生活</option>
             <option value="misc">杂七杂八</option>
           </select>
         </label>

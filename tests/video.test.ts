@@ -9,6 +9,8 @@ const hasFfmpeg = spawnSync("ffmpeg", ["-version"]).status === 0;
 let tmpDir: string;
 let clipPath: string;
 let silentClipPath: string;
+let shortClipPath: string;
+let tallClipPath: string;
 
 function generateClip(args: string[], target: string) {
   const result = spawnSync("ffmpeg", ["-y", ...args, target], { stdio: "ignore" });
@@ -20,6 +22,8 @@ beforeAll(() => {
   const clipDir = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-clip-"));
   clipPath = path.join(clipDir, "clip.mp4");
   silentClipPath = path.join(clipDir, "silent.mp4");
+  shortClipPath = path.join(clipDir, "short.mp4");
+  tallClipPath = path.join(clipDir, "tall.mp4");
   generateClip(
     [
       "-f", "lavfi", "-i", "testsrc=duration=2:size=640x360:rate=30",
@@ -35,6 +39,20 @@ beforeAll(() => {
       "-pix_fmt", "yuv420p",
     ],
     silentClipPath,
+  );
+  generateClip(
+    [
+      "-f", "lavfi", "-i", "testsrc=duration=0.5:size=320x240:rate=30",
+      "-pix_fmt", "yuv420p",
+    ],
+    shortClipPath,
+  );
+  generateClip(
+    [
+      "-f", "lavfi", "-i", "testsrc=duration=1:size=720x1560:rate=30",
+      "-pix_fmt", "yuv420p",
+    ],
+    tallClipPath,
   );
 });
 
@@ -120,6 +138,38 @@ describe("video uploads", () => {
           })
         : [];
       expect(leftovers).toEqual([]);
+    },
+    120000,
+  );
+
+  it.skipIf(!hasFfmpeg)(
+    "extracts a cover frame from a sub-second clip",
+    async () => {
+      const { processVideoUpload } = await import("@/lib/media/video");
+      const buffer = fs.readFileSync(shortClipPath);
+
+      const result = await processVideoUpload(buffer, "short.mp4", "video/mp4");
+
+      expect(fs.existsSync(path.join(tmpDir, result.relativePath))).toBe(true);
+      expect(fs.existsSync(path.join(tmpDir, result.coverRelativePath))).toBe(true);
+      expect(result.durationSeconds).toBeGreaterThan(0.3);
+      expect(result.durationSeconds).toBeLessThan(0.8);
+    },
+    120000,
+  );
+
+  it.skipIf(!hasFfmpeg)(
+    "caps portrait videos at 1080p height",
+    async () => {
+      const { processVideoUpload } = await import("@/lib/media/video");
+      const buffer = fs.readFileSync(tallClipPath);
+
+      const result = await processVideoUpload(buffer, "tall.mp4", "video/mp4");
+
+      expect(result.height).toBeLessThanOrEqual(1080);
+      expect(result.height).toBeGreaterThan(0);
+      expect(result.width).toBeLessThanOrEqual(1920);
+      expect(fs.existsSync(path.join(tmpDir, result.coverRelativePath))).toBe(true);
     },
     120000,
   );
