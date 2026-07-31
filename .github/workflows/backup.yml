@@ -107,3 +107,93 @@ jobs:
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
+
+  # TEMP: manual diagnostic job for the 7/31 backup failure investigation.
+  # Run via workflow_dispatch, then remove.
+  diagnose:
+    name: Diagnose VPS backup health
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure SSH
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_SSH_PASSPHRASE: ${{ secrets.DEPLOY_SSH_PASSPHRASE }}
+        run: |
+          test -n "$DEPLOY_SSH_PRIVATE_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          eval "$(ssh-agent -s)"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+          if [ -n "${DEPLOY_SSH_PASSPHRASE:-}" ]; then
+            cat > "$RUNNER_TEMP/ssh-askpass" <<'EOF'
+          #!/usr/bin/env sh
+          printf '%s\n' "$DEPLOY_SSH_PASSPHRASE"
+          EOF
+            chmod 700 "$RUNNER_TEMP/ssh-askpass"
+            DISPLAY=none SSH_ASKPASS="$RUNNER_TEMP/ssh-askpass" SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key </dev/null
+          else
+            ssh-add ~/.ssh/deploy_key
+          fi
+          DEPLOY_HOST="${DEPLOY_HOST:-72.60.195.46}"
+          if [ "$DEPLOY_HOST" = "72.60.195.46" ]; then
+            printf '%s\n' '72.60.195.46 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPW6DVc3HbWdUhmPpQxR2De5SrdmSsmYyxm+RrHgedSl' >> ~/.ssh/known_hosts
+          else
+            ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          fi
+          cat > ~/.ssh/config <<EOF
+          Host $DEPLOY_HOST
+            IdentityFile ~/.ssh/deploy_key
+            IdentityAgent $SSH_AUTH_SOCK
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ConnectTimeout 20
+            ConnectionAttempts 1
+            ServerAliveInterval 15
+            ServerAliveCountMax 3
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Test SSH connectivity
+        env:
+          REMOTE: ${{ vars.DEPLOY_REMOTE }}
+        run: |
+          REMOTE="${REMOTE:-root@72.60.195.46}"
+          echo "runner: $(curl -sS --max-time 5 https://api.ipify.org || echo UNKNOWN)"
+          ssh -v "$REMOTE" "echo SSH_OK; uptime" 2>&1 | tail -20
+
+      - name: Gather VPS diagnostics
+        env:
+          REMOTE: ${{ vars.DEPLOY_REMOTE }}
+        run: |
+          REMOTE="${REMOTE:-root@72.60.195.46}"
+          ssh "$REMOTE" 'bash -s' <<'EOF'
+          echo "=== now ==="
+          date -u
+          echo "=== backup files (last 15) ==="
+          ls -lt /var/www/arthurs-review/backups/ 2>&1 | head -16
+          echo "=== backup log tail (last 60) ==="
+          tail -60 /var/log/arthurs-review-backup.log 2>&1
+          echo "=== cron.d entry ==="
+          cat /etc/cron.d/arthurs-review-backup 2>&1
+          echo "=== cron service ==="
+          systemctl is-active cron 2>&1; systemctl is-active crond 2>&1
+          echo "=== journal cron ==="
+          journalctl -u cron --since "2 days ago" --no-pager 2>&1 | tail -20
+          echo "=== disk ==="
+          df -h /var/www/arthurs-review 2>&1 | tail -2
+          echo "=== lock ==="
+          ls -la /var/lock/arthurs-review-maintenance.lock 2>&1
+          echo "=== auth log ssh/fail2ban ==="
+          tail -50 /var/log/auth.log 2>&1 | grep -iE "ssh|fail2ban|drop" | tail -15
+          echo "=== DIAG DONE ==="
+EOF
