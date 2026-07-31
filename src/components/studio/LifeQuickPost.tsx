@@ -7,7 +7,8 @@ import { buildLifePost, type UploadedMedia } from "@/lib/studio/life-post";
 import { precompressImage } from "@/lib/studio/precompress";
 
 const MAX_FILES = 10;
-const ACCEPT = "image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm";
+const ACCEPT =
+  "image/png,image/jpeg,image/webp,image/heic,image/heif,image/gif,image/avif,video/mp4,video/quicktime,video/webm,.heic,.heif,.gif,.avif";
 
 type MediaItem = {
   id: string;
@@ -20,7 +21,7 @@ type MediaItem = {
 type MediaApiResult = UploadedMedia & { error?: string };
 
 function isVideo(file: File) {
-  return file.type.startsWith("video/");
+  return file.type.startsWith("video/") || /\.(mp4|mov|webm)$/i.test(file.name);
 }
 
 function statusLabel(item: MediaItem) {
@@ -147,7 +148,7 @@ export function LifeQuickPost() {
     <div className="sans grid min-w-0 gap-5 text-sm">
       <label className="studio-button grid w-full cursor-pointer place-items-center gap-2 border border-dashed border-[var(--rule)] p-10 text-center">
         <span>选择照片或视频（最多 10 个）</span>
-        <span className="text-xs text-[var(--muted)]">图片会自动压缩后上传；视频在服务器转码，可能需要一分钟</span>
+        <span className="text-xs text-[var(--muted)]">支持 HEIC/AVIF/GIF 等格式；图片自动压缩，视频在服务器转码，可能需要一分钟</span>
         <input
           aria-label="Choose photos or videos"
           className="sr-only"

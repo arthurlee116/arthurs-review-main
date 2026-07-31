@@ -61,11 +61,10 @@ export async function processVideoUpload(buffer: Buffer, originalName: string, m
     await execFileAsync("ffmpeg", [
       "-y",
       "-i", inputPath,
-      "-vf", "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
+      "-vf", "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2,format=yuv420p",
       "-c:v", "libsvtav1",
       "-crf", "30",
       "-preset", "6",
-      "-pix_fmt", "yuv420p",
       ...audioArgs,
       "-movflags", "+faststart",
       diskPath,

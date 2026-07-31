@@ -128,4 +128,60 @@ describe("media API", () => {
       error: "Only MP4, MOV, and WebM videos are allowed.",
     });
   });
+
+  it("accepts HEIC uploads with empty MIME via extension fallback", async () => {
+    const { POST } = await import("@/app/studio/api/media/route");
+    const input = await sharp({
+      create: { width: 800, height: 600, channels: 3, background: "#111111" },
+    })
+      .jpeg()
+      .toBuffer();
+    const body = new FormData();
+    // iOS Safari often reports .heic files with an empty MIME type
+    body.append("file", new File([input], "IMG_1234.HEIC", { type: "" }));
+
+    const response = await POST({
+      method: "POST",
+      formData: async () => body,
+    } as Request);
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.kind).toBe("image");
+    expect(json.relativePath.endsWith(".webp")).toBe(true);
+  });
+
+  it("routes empty-MIME .mov files to the video processor", async () => {
+    const { POST } = await import("@/app/studio/api/media/route");
+    const body = new FormData();
+    body.append("file", new File(["fake video bytes"], "clip.MOV", { type: "" }));
+
+    const response = await POST({
+      method: "POST",
+      formData: async () => body,
+    } as Request);
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.kind).toBe("video");
+
+    const { processVideoUpload } = await import("@/lib/media/video");
+    expect(processVideoUpload).toHaveBeenCalledWith(expect.any(Buffer), "clip.MOV", "video/quicktime");
+  });
+
+  it("rejects files with neither recognized MIME nor extension", async () => {
+    const { POST } = await import("@/app/studio/api/media/route");
+    const body = new FormData();
+    body.append("file", new File(["scan bytes"], "scan.tiff", { type: "" }));
+
+    const response = await POST({
+      method: "POST",
+      formData: async () => body,
+    } as Request);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Only images and videos are allowed.",
+    });
+  });
 });

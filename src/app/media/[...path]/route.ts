@@ -6,6 +6,7 @@ import { uploadDiskPath } from "@/lib/media/paths";
 
 const MIME_TYPES: Record<string, string> = {
   ".webp": "image/webp",
+  ".gif": "image/gif",
   ".mp4": "video/mp4",
 };
 

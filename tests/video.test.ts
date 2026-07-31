@@ -174,6 +174,43 @@ describe("video uploads", () => {
     120000,
   );
 
+  it.skipIf(!hasFfmpeg)(
+    "transcodes 10-bit input to 8-bit yuv420p without color corruption",
+    async () => {
+      const clipDir = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-clip-10bit-"));
+      try {
+        const tenBitClip = path.join(clipDir, "tenbit.mp4");
+        generateClip(
+          [
+            "-f", "lavfi", "-i", "testsrc=duration=1:size=640x360:rate=30",
+            "-pix_fmt", "yuv420p10le",
+            "-c:v", "libx265",
+            "-tag:v", "hvc1",
+          ],
+          tenBitClip,
+        );
+
+        const { processVideoUpload } = await import("@/lib/media/video");
+        const result = await processVideoUpload(fs.readFileSync(tenBitClip), "tenbit.mp4", "video/mp4");
+
+        expect(fs.existsSync(path.join(tmpDir, result.relativePath))).toBe(true);
+
+        const probe = spawnSync("ffprobe", [
+          "-v", "quiet",
+          "-print_format", "json",
+          "-show_streams",
+          path.join(tmpDir, result.relativePath),
+        ]);
+        const streams = JSON.parse(probe.stdout.toString()).streams;
+        const video = streams.find((s: { codec_type?: string }) => s.codec_type === "video");
+        expect(video.pix_fmt).toBe("yuv420p");
+      } finally {
+        fs.rmSync(clipDir, { recursive: true, force: true });
+      }
+    },
+    120000,
+  );
+
   it("rejects unsupported MIME types", async () => {
     const { processVideoUpload } = await import("@/lib/media/video");
     await expect(processVideoUpload(Buffer.from("x"), "clip.avi", "video/x-msvideo")).rejects.toThrow(
