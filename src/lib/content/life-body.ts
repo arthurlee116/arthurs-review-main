@@ -9,6 +9,22 @@ function parseEmbedLine(line: string): LifeMedia | null {
   return { url, poster: poster || undefined, isVideo: /\.mp4$/i.test(url) };
 }
 
+export function countLifeMedia(body: string) {
+  let count = 0;
+  let inMediaBlock = true;
+
+  for (const rawLine of body.split("\n")) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (inMediaBlock && EMBED_LINE.test(line)) {
+      count += 1;
+    } else {
+      inMediaBlock = false;
+    }
+  }
+  return count;
+}
+
 export function parseLifeBody(body: string): { media: LifeMedia[]; caption: string[] } {
   const media: LifeMedia[] = [];
   const caption: string[] = [];

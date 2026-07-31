@@ -77,4 +77,27 @@ describe("PhotoWall", () => {
     expect(screen.getByText("没有封面的摘要")).toBeInTheDocument();
     expect(screen.getByRole("link")).toHaveAttribute("href", "/life/text-only");
   });
+
+  it("shows a media count badge on multi-photo articles", () => {
+    render(<PhotoWall articles={[article({ id: 1 })]} mediaCounts={{ 1: 4 }} />);
+
+    expect(screen.getByText("4 张")).toBeInTheDocument();
+  });
+
+  it("shows no badge for single-photo articles or missing counts", () => {
+    render(
+      <PhotoWall
+        articles={[article({ id: 1, titleZh: "单图" }), article({ id: 2, slug: "other", titleZh: "无计数" })]}
+        mediaCounts={{ 1: 1 }}
+      />,
+    );
+
+    expect(screen.queryByText(/张$/)).not.toBeInTheDocument();
+  });
+
+  it("renders a stacked-photo edge behind multi-photo covers", () => {
+    const { container } = render(<PhotoWall articles={[article({ id: 1 })]} mediaCounts={{ 1: 3 }} />);
+
+    expect(container.querySelectorAll("[data-photo-stack]")).toHaveLength(1);
+  });
 });
