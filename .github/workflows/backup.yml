@@ -60,7 +60,7 @@ jobs:
             IdentityAgent $SSH_AUTH_SOCK
             IdentitiesOnly yes
             StrictHostKeyChecking yes
-            ConnectTimeout 30
+            ConnectTimeout 20
             ConnectionAttempts 1
             ServerAliveInterval 15
             ServerAliveCountMax 3
@@ -74,7 +74,7 @@ jobs:
           retry_network() {
             local attempt output status
             output="$(mktemp)"
-            for attempt in 1 2 3 4 5; do
+            for attempt in 1 2 3 4 5 6 7 8; do
               if "$@" >"$output"; then
                 cat "$output"
                 rm -f "$output"
@@ -83,7 +83,7 @@ jobs:
                 status=$?
               fi
               : >"$output"
-              if [ "$attempt" = 5 ]; then
+              if [ "$attempt" = 8 ]; then
                 rm -f "$output"
                 return "$status"
               fi
@@ -92,7 +92,11 @@ jobs:
           }
           REMOTE="${REMOTE:-root@72.60.195.46}"
           BACKUP_DIR=/var/www/arthurs-review/backups
-          BACKUP_PATH="$(retry_network ssh "$REMOTE" "set -eu; latest=\$(find '$BACKUP_DIR' -maxdepth 1 -type f -name 'arthurs-review-*.tar.gz' -mmin -180 -printf '%T@ %p\\n' | sort -nr | sed -n '1s/^[^ ]* //p'); test -n \"\$latest\"; printf '%s\\n' \"\$latest\"")"
+          # -mtime -1: accept any backup from the last 24h. The VPS cron runs
+          # backup-data.sh at 03:00 local time (America/New_York = UTC-4), i.e.
+          # 07:00 UTC. This job's schedule (07:30 UTC) plus GitHub schedule
+          # delays used to push the gap past -mmin -180 (3h), failing spuriously.
+          BACKUP_PATH="$(retry_network ssh "$REMOTE" "set -eu; latest=\$(find '$BACKUP_DIR' -maxdepth 1 -type f -name 'arthurs-review-*.tar.gz' -mtime -1 -printf '%T@ %p\\n' | sort -nr | sed -n '1s/^[^ ]* //p'); test -n \"\$latest\"; printf '%s\\n' \"\$latest\"")"
           BACKUP_NAME="$(basename "$BACKUP_PATH")"
           [[ "$BACKUP_PATH" == "$BACKUP_DIR/$BACKUP_NAME" ]]
           [[ "$BACKUP_NAME" =~ ^arthurs-review-[0-9]{8}T[0-9]{6}Z\.tar\.gz$ ]]
