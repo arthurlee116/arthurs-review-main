@@ -196,4 +196,4 @@ jobs:
           echo "=== auth log ssh/fail2ban ==="
           tail -50 /var/log/auth.log 2>&1 | grep -iE "ssh|fail2ban|drop" | tail -15
           echo "=== DIAG DONE ==="
-EOF
+          EOF
