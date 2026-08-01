@@ -31,7 +31,7 @@ FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951
 WORKDIR /build
 ENV VIPS_VERSION=8.18.4
 RUN apk add --no-cache \
-      glib libjpeg-turbo libpng libwebp cgif libexif lcms2 fftw tiff highway expat \
+      glib libjpeg-turbo libpng libwebp libwebpmux libwebpdemux cgif libexif lcms2 fftw tiff highway expat \
       build-base meson ninja pkgconf wget \
       glib-dev libjpeg-turbo-dev libpng-dev libwebp-dev cgif-dev libexif-dev \
       lcms2-dev fftw-dev tiff-dev highway-dev expat-dev \
@@ -65,7 +65,7 @@ ENV BUILD_COMMIT_SHA=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.revision=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.source="https://github.com/arthurlee116/arthurs-review-main"
 RUN apk add --no-cache python3 make g++ ffmpeg \
-      glib libjpeg-turbo libpng libwebp cgif libexif lcms2 fftw tiff highway expat \
+      glib libjpeg-turbo libpng libwebp libwebpmux libwebpdemux cgif libexif lcms2 fftw tiff highway expat \
   && apk add --no-cache \
       --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
       libheif \
