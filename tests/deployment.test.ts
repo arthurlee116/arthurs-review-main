@@ -479,8 +479,7 @@ describe("deployment scripts", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
 
-    expect(dockerfile.match(/corepack install --global pnpm@10\.28\.1/g)).toHaveLength(3);
-    expect(dockerfile).toContain("ENV COREPACK_ENABLE_NETWORK=0");
+    expect(dockerfile.match(/corepack install --global pnpm@10\.28\.1/g)).toHaveLength(3); // deps, builder, runner (libvips stage needs no pnpm)    expect(dockerfile).toContain("ENV COREPACK_ENABLE_NETWORK=0");
     expect(workflow).toContain('docker run --rm --network none "$IMAGE_TAG" pnpm --version');
   });
 
@@ -489,7 +488,7 @@ describe("deployment scripts", () => {
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
     const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as { engines?: { node?: string } };
 
-    expect(dockerfile.match(/FROM node:26-alpine/g)).toHaveLength(3);
+    expect(dockerfile.match(/FROM node:26-alpine/g)).toHaveLength(4); // deps, builder, libvips, runner
     expect(workflow).toContain("node-version: 26");
     expect(packageJson.engines?.node).toBe(">=26 <27");
     expect(fs.readFileSync(".nvmrc", "utf8").trim()).toBe("26");
@@ -527,7 +526,7 @@ describe("deployment scripts", () => {
     expect(build).toBeGreaterThanOrEqual(0);
     expect(build).toBeLessThan(e2e);
     expect(e2e).toBeLessThan(push);
-    expect(dockerfile.match(/FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66/g)).toHaveLength(3);
+    expect(dockerfile.match(/FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66/g)).toHaveLength(4);
     expect(playwright).toContain("process.env.PLAYWRIGHT_BASE_URL");
     expect(playwright).toContain("webServer: externalBaseURL ? undefined");
     expect(playwright).toContain("workers: 1");

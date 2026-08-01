@@ -6,6 +6,9 @@ import { newUploadPath, uploadDiskPath } from "./paths";
 
 const allowed = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "image/gif", "image/avif"]);
 
+const MAX_PIXELS = 12_000_000;
+const MAX_EDGE = 1600;
+
 export async function processImageUpload(buffer: Buffer, originalName: string, mimeType = "image/jpeg") {
   if (!allowed.has(mimeType)) throw new Error("Only JPEG, PNG, WebP, HEIC, GIF, and AVIF images are allowed.");
   if (buffer.length > 8 * 1024 * 1024) throw new Error("Image must be 8 MB or smaller.");
@@ -23,7 +26,18 @@ export async function processImageUpload(buffer: Buffer, originalName: string, m
     return { relativePath, width: metadata.width ?? 0, height: metadata.height ?? 0, originalName };
   }
 
-  const output = await sharp(buffer).rotate().resize({ width: 1600, withoutEnlargement: true }).webp({ quality: 82 }).toFile(diskPath);
+  const input = sharp(buffer, { limitInputPixels: MAX_PIXELS * 8 });
+  const metadata = await input.metadata();
+  const pixels = (metadata.width ?? 0) * (metadata.height ?? 0);
+  if (pixels > MAX_PIXELS) {
+    throw new Error(`Image is too large (${Math.round(pixels / 1_000_000)} MP). Maximum is ${MAX_PIXELS / 1_000_000} MP.`);
+  }
+
+  const output = await input
+    .rotate()
+    .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toFile(diskPath);
 
   return {
     relativePath,

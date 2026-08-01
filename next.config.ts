@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     useTypeScriptCli: true,
+    // Matches MAX_VIDEO_BYTES in src/lib/media/video.ts — proxy buffers the full
+    // request body, and its default 10MB limit truncates video uploads.
+    proxyClientMaxBodySize: "200mb",
   },
   headers() {
     return [

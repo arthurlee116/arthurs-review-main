@@ -87,6 +87,22 @@ describe("image uploads", () => {
     expect(result.relativePath.endsWith(".webp")).toBe(true);
   });
 
+  it("rejects images above 12 megapixels", async () => {
+    const { processImageUpload } = await import("@/lib/media/image");
+    const input = await sharp({
+      create: {
+        width: 8000,
+        height: 6000,
+        channels: 3,
+        background: "#111111",
+      },
+    })
+      .jpeg()
+      .toBuffer();
+
+    await expect(processImageUpload(input, "huge.jpg")).rejects.toThrow(/too large.*12 MP/);
+  });
+
   it("rejects unsupported image types like TIFF", async () => {
     const { processImageUpload } = await import("@/lib/media/image");
 
