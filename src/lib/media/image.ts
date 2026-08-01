@@ -29,12 +29,16 @@ export async function processImageUpload(buffer: Buffer, originalName: string, m
   const input = sharp(buffer, { limitInputPixels: MAX_PIXELS * 8 });
   const metadata = await input.metadata();
   const pixels = (metadata.width ?? 0) * (metadata.height ?? 0);
-  if (pixels > MAX_PIXELS) {
-    throw new Error(`Image is too large (${Math.round(pixels / 1_000_000)} MP). Maximum is ${MAX_PIXELS / 1_000_000} MP.`);
-  }
+  const scale = pixels > MAX_PIXELS ? Math.sqrt(MAX_PIXELS / pixels) : 1;
 
   const output = await input
     .rotate()
+    .resize({
+      width: Math.max(1, Math.round((metadata.width ?? MAX_EDGE) * scale)),
+      height: Math.max(1, Math.round((metadata.height ?? MAX_EDGE) * scale)),
+      fit: "inside",
+      withoutEnlargement: true,
+    })
     .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
     .webp({ quality: 82 })
     .toFile(diskPath);

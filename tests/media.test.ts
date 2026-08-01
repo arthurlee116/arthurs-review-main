@@ -87,7 +87,7 @@ describe("image uploads", () => {
     expect(result.relativePath.endsWith(".webp")).toBe(true);
   });
 
-  it("rejects images above 12 megapixels", async () => {
+  it("downscales images above 12 megapixels to 12 MP", async () => {
     const { processImageUpload } = await import("@/lib/media/image");
     const input = await sharp({
       create: {
@@ -100,7 +100,12 @@ describe("image uploads", () => {
       .jpeg()
       .toBuffer();
 
-    await expect(processImageUpload(input, "huge.jpg")).rejects.toThrow(/too large.*12 MP/);
+    const result = await processImageUpload(input, "huge.jpg");
+
+    // 8000x6000 (48 MP) → capped to 12 MP → ≤1600px longest edge after second resize
+    expect(result.width).toBeLessThanOrEqual(1600);
+    expect(result.height).toBeLessThanOrEqual(1600);
+    expect(result.width * result.height).toBeLessThanOrEqual(12_000_000);
   });
 
   it("rejects unsupported image types like TIFF", async () => {

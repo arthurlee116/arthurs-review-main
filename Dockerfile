@@ -41,7 +41,7 @@ RUN apk add --no-cache \
   && wget -q -O- "https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.xz" | tar xJ \
   && meson setup /build/out "/build/vips-${VIPS_VERSION}" \
       --prefix /usr --buildtype release \
-      -Ddeprecated=false -Dexamples=false -Dcplusplus=false -Ddocs=false \
+      -Ddeprecated=false -Dexamples=false -Dcplusplus=true -Ddocs=false \
       -Dmodules=disabled -Dintrospection=disabled -Dvapi=false \
       -Dcfitsio=disabled -Dcgif=enabled -Dexif=enabled -Dfftw=enabled \
       -Dfontconfig=disabled -Darchive=disabled -Dheif=enabled -Dheif-module=disabled \
@@ -75,6 +75,7 @@ RUN apk add --no-cache python3 make g++ ffmpeg \
 ENV COREPACK_ENABLE_NETWORK=0
 COPY --from=deps /opt/opentimestamps /opt/opentimestamps
 COPY --from=libvips /usr/lib/libvips.so.42* /usr/lib/
+COPY --from=libvips /usr/lib/libvips-cpp.so.42* /usr/lib/
 COPY --from=libvips /usr/bin/vips* /usr/bin/
 COPY --from=libvips /usr/lib/pkgconfig/vips*.pc /usr/lib/pkgconfig/
 COPY --from=libvips /usr/include/vips /usr/include/vips
@@ -88,12 +89,18 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/scripts ./scripts
 # Point sharp's vendored libvips at the 8.18.4 build from the libvips stage.
-# @img packages live under pnpm's virtual store, so resolve them at build time.
+# sharp's native binary has NEEDED=libvips-cpp.so.8.18.3 and calls vips_version()
+# from the core libvips, so replace both the cpp wrapper (under that exact name)
+# and the core lib. @img packages live under pnpm's virtual store, so resolve at
+# build time.
 RUN set -e; \
   VENDORED=$(find /app/node_modules/.pnpm -type d -path '*@img+sharp-libvips-linuxmusl-x64*/lib' | head -1); \
   test -n "$VENDORED" || { echo "vendored sharp-libvips lib dir not found" >&2; exit 1; }; \
-  rm -f "$VENDORED"/libvips-cpp.so.42*; \
-  cp -d /usr/lib/libvips.so.42* "$VENDORED"/; \
-  ln -sf libvips.so.42 "$VENDORED/libvips-cpp.so.42"
+  rm -f "$VENDORED"/libvips-cpp.so* "$VENDORED"/libvips.so*; \
+  cp /usr/lib/libvips.so.42.20.4 "$VENDORED"/; \
+  cp /usr/lib/libvips-cpp.so.42.20.4 "$VENDORED"/; \
+  ln -sf libvips.so.42.20.4 "$VENDORED/libvips.so.42"; \
+  ln -sf libvips-cpp.so.42.20.4 "$VENDORED/libvips-cpp.so.42"; \
+  cp /usr/lib/libvips-cpp.so.42.20.4 "$VENDORED/libvips-cpp.so.8.18.3"
 EXPOSE 3000
 CMD ["pnpm", "start"]
