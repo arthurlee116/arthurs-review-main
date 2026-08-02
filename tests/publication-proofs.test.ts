@@ -309,6 +309,21 @@ describe("publication proofs", () => {
     expect(stamp).toHaveBeenCalledTimes(2);
   });
 
+  it("parses Bitcoin attestations from --no-bitcoin verify output", async () => {
+    const { __testables } = await import("@/lib/services/publication-proofs");
+    const output = [
+      "Not checking Bitcoin attestation; Bitcoin disabled",
+      "To verify manually, check that Bitcoin block 957872 has merkleroot 328057b7a2b69269f38f386061f5b58d6745fec8cd53fcc223f9265971076310",
+      "To verify manually, check that Bitcoin block 957919 has merkleroot 4b8128bf7aeae3262929d1a7c0feb38995b677834b3dbbb6ccc49820bea012a7",
+    ].join("\n");
+
+    expect(__testables.parseAttestations(output)).toEqual([
+      { height: 957872, merkleRoot: "328057b7a2b69269f38f386061f5b58d6745fec8cd53fcc223f9265971076310" },
+      { height: 957919, merkleRoot: "4b8128bf7aeae3262929d1a7c0feb38995b677834b3dbbb6ccc49820bea012a7" },
+    ]);
+    expect(__testables.parseAttestations("Calendar https://x: Pending confirmation in Bitcoin blockchain")).toEqual([]);
+  });
+
   it("serves only the recorded OTS receipt as an attachment", async () => {
     const article = await publishedArticle();
     const { createPublicationProof } = await import("@/lib/services/publication-proofs");

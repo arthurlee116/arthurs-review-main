@@ -251,8 +251,68 @@ async function verifyOpenTimestamps(documentPath: string, otsPath: string): Prom
     return "anchored";
   } catch (error) {
     if (isPendingConfirmation(error)) return "pending_confirmation";
-    throw error;
+    if (!/could not connect to bitcoin node/i.test(commandText(error))) throw error;
   }
+  // This ots build only verifies Bitcoin attestations against a local node,
+  // which the container doesn't run. Fall back to checking each attested
+  // block's merkle root against public esplora endpoints.
+  return verifyAgainstEsplora(executable, documentPath, otsPath);
+}
+
+function parseAttestations(noBitcoinOutput: string) {
+  const attestations: Array<{ height: number; merkleRoot: string }> = [];
+  for (const match of noBitcoinOutput.matchAll(/Bitcoin block (\d+) has merkleroot ([0-9a-f]{64})/g)) {
+    attestations.push({ height: Number(match[1]), merkleRoot: match[2]! });
+  }
+  return attestations;
+}
+
+async function fetchEsploraMerkleRoot(height: number): Promise<string> {
+  const endpoints = (process.env.OTS_ESPLORA_URLS ?? "https://mempool.space/api,https://blockstream.info/api").split(",");
+  let lastError: unknown;
+  for (const base of endpoints) {
+    try {
+      const hashResponse = await fetch(`${base.trim()}/block-height/${height}`, { signal: AbortSignal.timeout(15_000) });
+      if (!hashResponse.ok) throw new Error(`HTTP ${hashResponse.status}`);
+      const blockHash = (await hashResponse.text()).trim();
+      const blockResponse = await fetch(`${base.trim()}/block/${blockHash}`, { signal: AbortSignal.timeout(15_000) });
+      if (!blockResponse.ok) throw new Error(`HTTP ${blockResponse.status}`);
+      const block = (await blockResponse.json()) as { merkle_root?: unknown };
+      if (typeof block.merkle_root === "string" && /^[0-9a-f]{64}$/.test(block.merkle_root)) return block.merkle_root;
+      throw new Error("missing merkle_root");
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}
+
+async function verifyAgainstEsplora(executable: string, documentPath: string, otsPath: string): Promise<"anchored" | "pending_confirmation"> {
+  let output: string;
+  try {
+    await execFileAsync(executable, ["--no-bitcoin", "verify", "-f", documentPath, otsPath], { timeout: 60_000 });
+    throw new Error("OpenTimestamps --no-bitcoin verify unexpectedly succeeded.");
+  } catch (error) {
+    if (error instanceof Error && error.message === "OpenTimestamps --no-bitcoin verify unexpectedly succeeded.") throw error;
+    output = commandText(error);
+  }
+  const attestations = parseAttestations(output);
+  if (attestations.length === 0) {
+    if (isPendingConfirmation(output)) return "pending_confirmation";
+    throw new Error(`OpenTimestamps verify produced no attestations: ${output.split("\n")[0] ?? "unknown error"}`);
+  }
+  for (const { height, merkleRoot } of attestations) {
+    let actual: string;
+    try {
+      actual = await fetchEsploraMerkleRoot(height);
+    } catch (error) {
+      throw new Error(`Could not fetch Bitcoin block ${height} for verification: ${errorMessage(error)}`);
+    }
+    if (actual !== merkleRoot) {
+      throw new Error(`Bitcoin block ${height} merkle root mismatch: expected ${merkleRoot}, got ${actual}.`);
+    }
+  }
+  return "anchored";
 }
 
 async function waybackRequest(url: string, init?: RequestInit) {
@@ -301,6 +361,8 @@ export async function captureWithWayback(publicUrl: string) {
   }
   throw new Error("Wayback capture timed out");
 }
+
+export const __testables = { parseAttestations };
 
 const defaultServices: ProofServices = {
   now: () => new Date(),
