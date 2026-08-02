@@ -271,4 +271,34 @@ describe("durable jobs", () => {
 
     expect(getJob(queued.id)).toMatchObject({ status: "dead", attempts: 1, lastError: "receipt mismatch" });
   });
+
+  it("re-enqueues jobs for unfinished proofs and revives dead proof jobs", async () => {
+    const { getDb } = await import("@/lib/db/connection");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { ensurePublicationProofRecord } = await import("@/lib/services/publication-proofs");
+    const { reconcileUnfinishedProofs } = await import("@/lib/jobs/reconcile");
+    const { enqueueJob, getJob } = await import("@/lib/jobs/queue");
+
+    const finishedArticle = publishArticle(createArticle(articleInput({ slug: "finished" })).id);
+    const unfinishedArticle = publishArticle(createArticle(articleInput({ slug: "unfinished" })).id);
+    const db = getDb();
+    db.prepare("delete from jobs").run();
+
+    const finished = ensurePublicationProofRecord(finishedArticle, { createdAt: "2026-07-21T00:00:00.000Z" })!;
+    const unfinished = ensurePublicationProofRecord(unfinishedArticle, { createdAt: "2026-07-21T00:00:00.000Z" })!;
+    db.prepare("update publication_proofs set ots_status = 'anchored', wayback_status = 'complete' where id = ?").run(finished.id);
+    db.prepare("update publication_proofs set ots_status = 'verification_failed', wayback_status = 'failed' where id = ?").run(unfinished.id);
+    const deadOts = enqueueJob({ type: "proof.ots_upgrade_verify", payload: { proofId: unfinished.id }, dedupeKey: `proof:${unfinished.id}`, maxAttempts: 8 }, db);
+    const deadWayback = enqueueJob({ type: "proof.wayback_capture", payload: { proofId: unfinished.id }, dedupeKey: `proof:${unfinished.id}`, maxAttempts: 8 }, db);
+    db.prepare("update jobs set status = 'dead', attempts = 8 where id in (?, ?)").run(deadOts.id, deadWayback.id);
+
+    const recovered = reconcileUnfinishedProofs(db);
+
+    expect(recovered).toEqual({ ots: 1, wayback: 1 });
+    expect(getJob(deadOts.id)).toMatchObject({ status: "queued", attempts: 0, maxAttempts: 96 });
+    expect(getJob(deadWayback.id)).toMatchObject({ status: "queued", attempts: 0, maxAttempts: 24 });
+    expect(
+      db.prepare("select count(*) as count from jobs where type like 'proof.%'").get(),
+    ).toEqual({ count: 2 });
+  });
 });

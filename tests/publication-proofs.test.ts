@@ -260,6 +260,55 @@ describe("publication proofs", () => {
     expect(retried).toMatchObject({ otsStatus: "pending_confirmation", waybackStatus: "complete" });
   });
 
+  it("recovers a verification_failed proof once the verify error clears", async () => {
+    const article = await publishedArticle();
+    let verifyAttempts = 0;
+    const { advanceOpenTimestampProof, ensurePublicationProofRecord } = await import("@/lib/services/publication-proofs");
+    const proof = ensurePublicationProofRecord(article, { createdAt: "2026-07-13T15:00:00.000Z" })!;
+    const services = {
+      now: () => new Date("2026-07-13T15:00:00.000Z"),
+      stamp: async () => Uint8Array.of(5, 6, 7),
+      upgrade: async () => "complete" as const,
+      verify: async () => {
+        verifyAttempts += 1;
+        if (verifyAttempts === 1) throw new Error("Could not connect to Bitcoin node");
+        return "anchored" as const;
+      },
+      capture: async () => "https://web.archive.org/example",
+    };
+
+    const failed = await advanceOpenTimestampProof(proof.id, services);
+    expect(failed).toMatchObject({ otsStatus: "verification_failed", otsError: "Could not connect to Bitcoin node" });
+
+    const recovered = await advanceOpenTimestampProof(proof.id, services);
+    expect(recovered).toMatchObject({ otsStatus: "anchored", otsError: null });
+    expect(verifyAttempts).toBe(2);
+  });
+
+  it("re-stamps when a failed proof has no usable receipt", async () => {
+    const article = await publishedArticle();
+    const stamp = vi
+      .fn<() => Promise<Uint8Array>>()
+      .mockRejectedValueOnce(new Error("calendar unreachable"))
+      .mockResolvedValueOnce(Uint8Array.of(8, 8, 8));
+    const { advanceOpenTimestampProof, ensurePublicationProofRecord } = await import("@/lib/services/publication-proofs");
+    const proof = ensurePublicationProofRecord(article, { createdAt: "2026-07-13T15:00:00.000Z" })!;
+    const services = {
+      now: () => new Date("2026-07-13T15:00:00.000Z"),
+      stamp,
+      upgrade: async () => "complete" as const,
+      verify: async () => "anchored" as const,
+      capture: async () => "https://web.archive.org/example",
+    };
+
+    const failed = await advanceOpenTimestampProof(proof.id, services);
+    expect(failed).toMatchObject({ otsStatus: "verification_failed", otsPath: null });
+
+    const recovered = await advanceOpenTimestampProof(proof.id, services);
+    expect(recovered).toMatchObject({ otsStatus: "anchored", otsPath: expect.stringMatching(/\.ots$/) });
+    expect(stamp).toHaveBeenCalledTimes(2);
+  });
+
   it("serves only the recorded OTS receipt as an attachment", async () => {
     const article = await publishedArticle();
     const { createPublicationProof } = await import("@/lib/services/publication-proofs");

@@ -409,7 +409,7 @@ export function resolveProofPath(relativePath: string) {
 }
 
 async function finishOpenTimestamps(proof: PublicationProof, services: ProofServices) {
-  if (proof.otsStatus === "anchored" || proof.otsStatus === "verification_failed") return;
+  if (proof.otsStatus === "anchored") return;
   const fullDocumentPath = resolveProofPath(proof.documentPath);
   if (sha256File(fullDocumentPath) !== proof.documentSha256) {
     getDb()
@@ -420,7 +420,10 @@ async function finishOpenTimestamps(proof: PublicationProof, services: ProofServ
 
   const relativeOtsPath = proof.otsPath ?? `${proof.documentPath}.ots`;
   const fullOtsPath = resolveProofPath(relativeOtsPath);
-  if (proof.otsStatus === "submitted") {
+  const needsReceipt =
+    proof.otsStatus === "submitted" ||
+    (proof.otsStatus === "verification_failed" && (!proof.otsPath || !fs.existsSync(fullOtsPath) || fs.statSync(fullOtsPath).size === 0));
+  if (needsReceipt) {
     fs.rmSync(fullOtsPath, { force: true });
     try {
       const receipt = await services.stamp(fullDocumentPath);
@@ -439,6 +442,7 @@ async function finishOpenTimestamps(proof: PublicationProof, services: ProofServ
   }
 
   if (!fs.existsSync(fullOtsPath) || fs.statSync(fullOtsPath).size === 0) {
+    if (proof.otsStatus === "verification_failed") return;
     getDb()
       .prepare("update publication_proofs set ots_path = null, ots_status = 'verification_failed', ots_error = ? where id = ?")
       .run("OpenTimestamps receipt is missing or empty.", proof.id);
