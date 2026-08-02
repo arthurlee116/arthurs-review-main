@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LifeQuickPost } from "@/components/studio/LifeQuickPost";
@@ -122,6 +122,42 @@ describe("LifeQuickPost", () => {
     await user.click(publish);
     expect(await screen.findByText(/Slug already exists/)).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it("publishes with the selected cover first in the body and as the cover image", async () => {
+    const calls: { url: string; body?: unknown }[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (url === "/studio/api/media") {
+          const file = (init?.body as FormData).get("file") as File;
+          return imageUpload(file.name.replace(/\.jpg$/, ""));
+        }
+        if (url === "/studio/api/articles") {
+          calls.push({ url, body: JSON.parse(String(init?.body)) });
+          return articleResponse(42);
+        }
+        calls.push({ url });
+        return publishResponse();
+      }),
+    );
+    const user = userEvent.setup();
+    render(<LifeQuickPost />);
+    await user.upload(screen.getByLabelText(/choose photos or videos/i), [imageFile("a.jpg"), imageFile("b.jpg")]);
+    const publish = screen.getByRole("button", { name: /发布/ });
+    await waitFor(() => expect(publish).toBeEnabled());
+
+    const row = screen.getByText("b.jpg").closest("li")!;
+    await user.click(within(row).getByRole("button", { name: /设为封面/ }));
+    expect(within(row).getByText("封面")).toBeInTheDocument();
+
+    await user.click(publish);
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/life"));
+    const create = calls.find((call) => call.url === "/studio/api/articles");
+    expect(create?.body).toMatchObject({
+      bodyZh: "![](/media/2026/07/b.webp)\n![](/media/2026/07/a.webp)",
+      coverImagePath: "uploads/2026/07/b.webp",
+    });
   });
 
   it("keeps publish disabled when an upload failed and enables it after removing the failed file", async () => {

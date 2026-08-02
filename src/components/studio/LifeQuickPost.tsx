@@ -34,6 +34,7 @@ function statusLabel(item: MediaItem) {
 export function LifeQuickPost() {
   const router = useRouter();
   const [items, setItems] = useState<MediaItem[]>([]);
+  const [coverId, setCoverId] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
   const [message, setMessage] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
@@ -93,6 +94,7 @@ export function LifeQuickPost() {
 
   function removeItem(id: string) {
     setItems((current) => current.filter((item) => item.id !== id));
+    setCoverId((current) => (current === id ? null : current));
   }
 
   const pending = items.some((item) => item.status !== "done");
@@ -102,7 +104,9 @@ export function LifeQuickPost() {
     setIsPublishing(true);
     setMessage("");
     try {
-      const media = items.map((item) => item.uploaded!);
+      const coverIndex = items.findIndex((item) => item.id === coverId && item.status === "done");
+      const ordered = coverIndex > 0 ? [items[coverIndex], ...items.filter((_, index) => index !== coverIndex)] : items;
+      const media = ordered.map((item) => item.uploaded!);
       const post = buildLifePost(media, caption, new Date());
       const create = await fetch("/studio/api/articles", {
         method: "POST",
@@ -170,10 +174,18 @@ export function LifeQuickPost() {
                 {isVideo(item.file) ? "视频" : "图片"}
               </span>
               <span className={item.status === "failed" ? "text-red-700" : "text-[var(--muted)]"}>{statusLabel(item)}</span>
+              {coverId === item.id ? (
+                <span className="sans text-xs uppercase tracking-[0.12em] text-[var(--ink)]">封面</span>
+              ) : null}
               <span className="ml-auto flex gap-2">
                 {item.status === "failed" ? (
                   <button type="button" className="text-xs underline" onClick={() => void uploadItem(item)}>
                     重试
+                  </button>
+                ) : null}
+                {item.status === "done" && coverId !== item.id ? (
+                  <button type="button" className="text-xs underline" onClick={() => setCoverId(item.id)}>
+                    设为封面
                   </button>
                 ) : null}
                 <button type="button" className="text-xs underline" onClick={() => removeItem(item.id)}>
