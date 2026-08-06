@@ -90,6 +90,7 @@ pnpm seed           # seed the database
 pnpm hash-password  # generate admin password hash
 pnpm backup:database # create SQLite snapshot
 pnpm proofs:backfill # backfill publication proofs
+pnpm proof:replay <id> # advance one stuck proof (ots+wayback) to done; --list to see unfinished ones
 pnpm search:backfill # backfill semantic search vectors
 pnpm search:benchmark # run semantic search benchmark
 ```
@@ -98,11 +99,25 @@ pnpm search:benchmark # run semantic search benchmark
 
 `pnpm lint` → `pnpm test` → `pnpm build`. CI also runs `python -m pytest semantic/tests`.
 
+### Changes land with their check attached
+
+Every change is handed off with the smallest project-owned check that covers that
+change already run against the final state — a whole-suite green is not a
+substitute. Concretely:
+
+- touched `tests/*.test.ts` or the code under it → `pnpm test tests/<file>.test.ts` (no `--`, vitest filters by the positional) or `-t "<case>"`
+- changed a route/component → run the Playwright case that exercises it
+- touched a workflow / deploy script / proof or job path → run its focused test and note the manual or CI check that would catch a regression
+
+`pnpm test` is the baseline, not the final gate; the final gate is the scoped
+check tied to what actually changed. If a change has no runnable check, say so
+explicitly in the handoff instead of letting the suite stand in for it.
+
 ### Running a single test
 
 ```bash
-pnpm test -- tests/search.test.ts              # single file
-pnpm test -- -t "search returns matching"       # single test by name
+pnpm test tests/search.test.ts              # single file (no `--`; `pnpm test -- <file>` runs the whole suite)
+pnpm test -t "search returns matching"       # single test by name
 ```
 
 Playwright single test: `pnpm exec playwright test e2e/studio.spec.ts -g "studio requires login"`.
@@ -132,7 +147,7 @@ Playwright single test: `pnpm exec playwright test e2e/studio.spec.ts -g "studio
 - `src/app/healthz/` — health check with database + storage + release checks.
 - `src/app/version/` — exposes commit, digest, schema version.
 - `src/app/internal/revalidate/` — worker revalidation endpoint (auth via `WORKER_REVALIDATE_SECRET`).
-- `src/app/proofs/` — OpenTimestamps publication proofs (requires `OTS_CLI_PATH`).
+- `src/app/proofs/` — OpenTimestamps publication proofs (requires `OTS_CLI_PATH`). Failed proofs land in the `publication_proofs` table; `pnpm proof:replay <id>` re-drives one, `--list` shows unfinished ones.
 - `src/app/feed.xml/` — RSS feed route.
 
 ## Deployment

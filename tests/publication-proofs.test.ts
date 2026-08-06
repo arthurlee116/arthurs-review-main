@@ -21,6 +21,7 @@ afterEach(async () => {
   vi.unstubAllGlobals();
   delete process.env.WAYBACK_ACCESS_KEY;
   delete process.env.WAYBACK_SECRET_KEY;
+  delete process.env.OTS_ESPLORA_URLS;
 });
 
 async function publishedArticle() {
@@ -360,5 +361,76 @@ describe("publication proofs", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-disposition")).toContain(`publication-proof-${proof!.id}.json`);
     expect(await response.text()).toContain("第一版正文");
+  });
+
+  describe("esplora fallback verification", () => {
+    it("returns the merkle root from the first working endpoint", async () => {
+      const fetchMock = vi.fn<typeof fetch>()
+        .mockResolvedValueOnce(Response.json({}, { status: 500 }))
+        .mockResolvedValueOnce(new Response("00000000000000000001b2e0e3d0a8c9f7f6e5d4c3b2a190807060504030201000"))
+        .mockResolvedValueOnce(Response.json({ merkle_root: "a".repeat(64) }));
+      vi.stubGlobal("fetch", fetchMock);
+      process.env.OTS_ESPLORA_URLS = "https://first.invalid/api,https://second.invalid/api";
+      const { __testables } = await import("@/lib/services/publication-proofs");
+
+      await expect(__testables.fetchEsploraMerkleRoot(957872)).resolves.toBe("a".repeat(64));
+
+      expect(fetchMock).toHaveBeenNthCalledWith(1, "https://first.invalid/api/block-height/957872", expect.objectContaining({ signal: expect.any(AbortSignal) }));
+      expect(fetchMock).toHaveBeenNthCalledWith(2, "https://second.invalid/api/block-height/957872", expect.objectContaining({ signal: expect.any(AbortSignal) }));
+      expect(fetchMock).toHaveBeenNthCalledWith(3, "https://second.invalid/api/block/00000000000000000001b2e0e3d0a8c9f7f6e5d4c3b2a190807060504030201000", expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    });
+
+    it("propagates the last error when every endpoint fails", async () => {
+      const fetchMock = vi.fn<typeof fetch>()
+        .mockResolvedValueOnce(Response.json({}, { status: 429 }))
+        .mockResolvedValueOnce(Response.json({}, { status: 503 }));
+      vi.stubGlobal("fetch", fetchMock);
+      process.env.OTS_ESPLORA_URLS = "https://first.invalid/api,https://second.invalid/api";
+      const { __testables } = await import("@/lib/services/publication-proofs");
+
+      await expect(__testables.fetchEsploraMerkleRoot(957872)).rejects.toThrow("HTTP 503");
+    });
+
+    it("fails when the block response is missing a valid merkle_root", async () => {
+      const fetchMock = vi.fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response("00000000000000000001b2e0e3d0a8c9f7f6e5d4c3b2a190807060504030201000"))
+        .mockResolvedValueOnce(Response.json({ merkle_root: "not-a-hash" }));
+      vi.stubGlobal("fetch", fetchMock);
+      process.env.OTS_ESPLORA_URLS = "https://only.invalid/api";
+      const { __testables } = await import("@/lib/services/publication-proofs");
+
+      await expect(__testables.fetchEsploraMerkleRoot(957872)).rejects.toThrow("missing merkle_root");
+    });
+
+    it("returns anchored when every attestation matches the public merkle root", async () => {
+      const { __testables } = await import("@/lib/services/publication-proofs");
+      const fetchMerkleRoot = vi.fn(async () => "328057b7a2b69269f38f386061f5b58d6745fec8cd53fcc223f9265971076310");
+
+      await expect(__testables.verifyAttestationsAgainstEsplora(
+        [{ height: 957872, merkleRoot: "328057b7a2b69269f38f386061f5b58d6745fec8cd53fcc223f9265971076310" }],
+        fetchMerkleRoot,
+      )).resolves.toBe("anchored");
+      expect(fetchMerkleRoot).toHaveBeenCalledOnce();
+    });
+
+    it("throws a mismatch error when a merkle root differs from the receipt", async () => {
+      const { __testables } = await import("@/lib/services/publication-proofs");
+      const fetchMerkleRoot = vi.fn(async () => "f".repeat(64));
+
+      await expect(__testables.verifyAttestationsAgainstEsplora(
+        [{ height: 957872, merkleRoot: "328057b7a2b69269f38f386061f5b58d6745fec8cd53fcc223f9265971076310" }],
+        fetchMerkleRoot,
+      )).rejects.toThrow("Bitcoin block 957872 merkle root mismatch");
+    });
+
+    it("wraps a fetch failure with the block height in context", async () => {
+      const { __testables } = await import("@/lib/services/publication-proofs");
+      const fetchMerkleRoot = vi.fn(async () => { throw new Error("HTTP 429"); });
+
+      await expect(__testables.verifyAttestationsAgainstEsplora(
+        [{ height: 957872, merkleRoot: "328057b7a2b69269f38f386061f5b58d6745fec8cd53fcc223f9265971076310" }],
+        fetchMerkleRoot,
+      )).rejects.toThrow("Could not fetch Bitcoin block 957872 for verification");
+    });
   });
 });

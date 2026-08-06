@@ -287,6 +287,24 @@ async function fetchEsploraMerkleRoot(height: number): Promise<string> {
   throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
+async function verifyAttestationsAgainstEsplora(
+  attestations: Array<{ height: number; merkleRoot: string }>,
+  fetchMerkleRoot: (height: number) => Promise<string> = fetchEsploraMerkleRoot,
+): Promise<"anchored"> {
+  for (const { height, merkleRoot } of attestations) {
+    let actual: string;
+    try {
+      actual = await fetchMerkleRoot(height);
+    } catch (error) {
+      throw new Error(`Could not fetch Bitcoin block ${height} for verification: ${errorMessage(error)}`);
+    }
+    if (actual !== merkleRoot) {
+      throw new Error(`Bitcoin block ${height} merkle root mismatch: expected ${merkleRoot}, got ${actual}.`);
+    }
+  }
+  return "anchored";
+}
+
 async function verifyAgainstEsplora(executable: string, documentPath: string, otsPath: string): Promise<"anchored" | "pending_confirmation"> {
   let output: string;
   try {
@@ -301,18 +319,7 @@ async function verifyAgainstEsplora(executable: string, documentPath: string, ot
     if (isPendingConfirmation(output)) return "pending_confirmation";
     throw new Error(`OpenTimestamps verify produced no attestations: ${output.split("\n")[0] ?? "unknown error"}`);
   }
-  for (const { height, merkleRoot } of attestations) {
-    let actual: string;
-    try {
-      actual = await fetchEsploraMerkleRoot(height);
-    } catch (error) {
-      throw new Error(`Could not fetch Bitcoin block ${height} for verification: ${errorMessage(error)}`);
-    }
-    if (actual !== merkleRoot) {
-      throw new Error(`Bitcoin block ${height} merkle root mismatch: expected ${merkleRoot}, got ${actual}.`);
-    }
-  }
-  return "anchored";
+  return verifyAttestationsAgainstEsplora(attestations);
 }
 
 async function waybackRequest(url: string, init?: RequestInit) {
@@ -362,7 +369,7 @@ export async function captureWithWayback(publicUrl: string) {
   throw new Error("Wayback capture timed out");
 }
 
-export const __testables = { parseAttestations };
+export const __testables = { parseAttestations, fetchEsploraMerkleRoot, verifyAttestationsAgainstEsplora };
 
 const defaultServices: ProofServices = {
   now: () => new Date(),

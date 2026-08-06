@@ -37,14 +37,25 @@ jobs:
           node-version: 26
           cache: pnpm
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: semantic/pyproject.toml
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm install --frozen-lockfile
+          python -m pip install --disable-pip-version-check "./semantic[test]"
 
       - name: Lint JS and check TS/TSX with TypeScript 7 CLI
         run: pnpm lint
 
       - name: Test
-        run: pnpm test
+        run: |
+          pnpm test
+          python -m pytest semantic/tests
 
       - name: Define immutable image tag
         run: |
