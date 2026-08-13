@@ -26,15 +26,19 @@ RUN pnpm build
 # with >16 iref references ("Security limit exceeded"). libvips 8.18.4 raises that
 # limit, but no sharp release bundles it yet, so build 8.18.4 from source and swap
 # it in below. Remove this stage (and the COPY lines in runner) once @img/sharp-libvips-*
-# ships 8.18.4+.
+# ships 8.18.4+. The build keeps the rsvg loader enabled: next/og's ImageResponse
+# rasterizes its generated SVG through sharp, and next's image optimizer
+# (>= 16.3.0) only unblocks decoders that exist in the registry — without rsvg
+# every OG render dies with "Input buffer contains unsupported image format"
+# (surfaced to clients as an empty response / socket hang up).
 FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66 AS libvips
 WORKDIR /build
 ENV VIPS_VERSION=8.18.4
 RUN apk add --no-cache \
-      glib libjpeg-turbo libpng libwebp libwebpmux libwebpdemux cgif libexif lcms2 fftw tiff highway expat \
+      glib libjpeg-turbo libpng libwebp libwebpmux libwebpdemux cgif libexif lcms2 fftw tiff highway expat librsvg \
       build-base meson ninja pkgconf wget \
       glib-dev libjpeg-turbo-dev libpng-dev libwebp-dev cgif-dev libexif-dev \
-      lcms2-dev fftw-dev tiff-dev highway-dev expat-dev \
+      lcms2-dev fftw-dev tiff-dev highway-dev expat-dev librsvg-dev \
   && apk add --no-cache \
       --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
       libheif libheif-dev \
@@ -49,7 +53,7 @@ RUN apk add --no-cache \
       -Dlcms=enabled -Dmagick=disabled -Dmatio=disabled -Dnifti=disabled \
       -Dopenexr=disabled -Dopenjpeg=disabled -Dopenslide=disabled -Dorc=disabled \
       -Dpangocairo=disabled -Dpdfium=disabled -Dpng=enabled -Dpoppler=disabled \
-      -Dpoppler-module=disabled -Dquantizr=disabled -Drsvg=disabled -Dspng=disabled \
+      -Dpoppler-module=disabled -Dquantizr=disabled -Drsvg=enabled -Dspng=disabled \
       -Dtiff=enabled -Dwebp=enabled -Dzlib=enabled \
       -Dnsgif=false -Dppm=false -Danalyze=false -Dradiance=false \
   && meson compile -C /build/out \
@@ -65,7 +69,7 @@ ENV BUILD_COMMIT_SHA=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.revision=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.source="https://github.com/arthurlee116/arthurs-review-main"
 RUN apk add --no-cache python3 make g++ ffmpeg \
-      glib libjpeg-turbo libpng libwebp libwebpmux libwebpdemux cgif libexif lcms2 fftw tiff highway expat \
+      glib libjpeg-turbo libpng libwebp libwebpmux libwebpdemux cgif libexif lcms2 fftw tiff highway expat librsvg \
   && apk add --no-cache \
       --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
       libheif \
