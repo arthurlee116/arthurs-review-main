@@ -13,7 +13,13 @@ const allowed = new Set(["video/mp4", "video/quicktime", "video/webm"]);
 
 export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 
-const allowedAudio = ["-c:a", "libopus", "-b:a", "96k"] as const;
+type ProbeStream = {
+  codec_type?: string;
+  codec_name?: string;
+  width?: number;
+  height?: number;
+  pix_fmt?: string;
+};
 
 async function probeJson(target: string) {
   const { stdout } = await execFileAsync("ffprobe", [
@@ -26,8 +32,27 @@ async function probeJson(target: string) {
   return JSON.parse(stdout);
 }
 
-function hasAudioStream(probe: { streams?: { codec_type?: string }[] }) {
-  return probe.streams?.some((s) => s.codec_type === "audio") ?? false;
+function findStream(probe: { streams?: ProbeStream[] }, codecType: string) {
+  return probe.streams?.find((s) => s.codec_type === codecType);
+}
+
+// Already web-ready (H.264, 8-bit, ≤1080p): remux instead of re-encoding,
+// which turns a multi-minute transcode into a near-instant stream copy.
+function canCopyVideo(video: ProbeStream | undefined) {
+  return (
+    video?.codec_name === "h264" &&
+    video.pix_fmt === "yuv420p" &&
+    (video.width ?? 0) > 0 &&
+    (video.width ?? 0) <= 1920 &&
+    (video.height ?? 0) > 0 &&
+    (video.height ?? 0) <= 1080
+  );
+}
+
+function audioArgsFor(audio: ProbeStream | undefined) {
+  if (!audio) return ["-an"];
+  if (audio.codec_name === "aac") return ["-c:a", "copy"];
+  return ["-c:a", "aac", "-b:a", "128k"];
 }
 
 function ffmpegFailure(err: unknown): Error {
@@ -55,16 +80,23 @@ export async function processVideoUpload(buffer: Buffer, originalName: string, m
     fs.writeFileSync(inputPath, buffer);
 
     const inputProbe = await probeJson(inputPath);
-    const audioArgs = hasAudioStream(inputProbe) ? [...allowedAudio] : ["-an"];
+    const videoStream = findStream(inputProbe, "video");
+    const audioArgs = audioArgsFor(findStream(inputProbe, "audio"));
     const inputDuration = Number.parseFloat(inputProbe.format?.duration ?? "0");
+
+    const encodeArgs = canCopyVideo(videoStream)
+      ? ["-c:v", "copy"]
+      : [
+          "-vf", "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2,format=yuv420p",
+          "-c:v", "libx264",
+          "-crf", "23",
+          "-preset", "veryfast",
+        ];
 
     await execFileAsync("ffmpeg", [
       "-y",
       "-i", inputPath,
-      "-vf", "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2,format=yuv420p",
-      "-c:v", "libsvtav1",
-      "-crf", "30",
-      "-preset", "6",
+      ...encodeArgs,
       ...audioArgs,
       "-movflags", "+faststart",
       diskPath,
@@ -86,13 +118,13 @@ export async function processVideoUpload(buffer: Buffer, originalName: string, m
       .toFile(coverDiskPath);
 
     const outputProbe = await probeJson(diskPath);
-    const videoStream = outputProbe.streams?.find((s: { codec_type?: string }) => s.codec_type === "video");
+    const outputVideo = findStream(outputProbe, "video");
 
     return {
       relativePath,
       coverRelativePath,
-      width: videoStream?.width ?? 0,
-      height: videoStream?.height ?? 0,
+      width: outputVideo?.width ?? 0,
+      height: outputVideo?.height ?? 0,
       durationSeconds: Number.parseFloat(outputProbe.format?.duration ?? "0"),
       originalName,
     };

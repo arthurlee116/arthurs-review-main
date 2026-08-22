@@ -79,7 +79,7 @@ afterEach(async () => {
 
 describe("video uploads", () => {
   it.skipIf(!hasFfmpeg)(
-    "transcodes to AV1 mp4 with a webp cover frame",
+    "remuxes web-ready h264 mp4 without re-encoding and extracts a webp cover frame",
     async () => {
       const { processVideoUpload } = await import("@/lib/media/video");
       const buffer = fs.readFileSync(clipPath);
@@ -99,6 +99,18 @@ describe("video uploads", () => {
       expect(result.width).toBeLessThanOrEqual(1920);
       expect(result.height).toBeGreaterThan(0);
       expect(result.originalName).toBe("clip.mp4");
+
+      const probe = spawnSync("ffprobe", [
+        "-v", "quiet",
+        "-print_format", "json",
+        "-show_streams",
+        path.join(tmpDir, result.relativePath),
+      ]);
+      const streams = JSON.parse(probe.stdout.toString()).streams;
+      const video = streams.find((s: { codec_type?: string }) => s.codec_type === "video");
+      const audio = streams.find((s: { codec_type?: string }) => s.codec_type === "audio");
+      expect(video.codec_name).toBe("h264");
+      expect(audio.codec_name).toBe("aac");
     },
     120000,
   );
@@ -203,6 +215,7 @@ describe("video uploads", () => {
         ]);
         const streams = JSON.parse(probe.stdout.toString()).streams;
         const video = streams.find((s: { codec_type?: string }) => s.codec_type === "video");
+        expect(video.codec_name).toBe("h264");
         expect(video.pix_fmt).toBe("yuv420p");
       } finally {
         fs.rmSync(clipDir, { recursive: true, force: true });
