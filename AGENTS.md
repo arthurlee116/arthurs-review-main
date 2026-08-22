@@ -33,7 +33,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 **Arthur's Review** — a single-user Next.js 16 (canary) publication app. Public content is read from SQLite metadata + Markdown body files under `DATA_DIR`; editing happens in the private `/studio` backend.
 
 - **Runtime**: Node 26 (`.nvmrc` / `.node-version`), pnpm 10.28.1
-- **Framework**: Next.js 16.3.0-canary.90, React 19, React Compiler on, typed routes, native TS CLI (`experimental.useTypeScriptCli`)
+- **Framework**: Next.js 16 canary (exact pin in `package.json`), React 19, React Compiler on, typed routes, native TS CLI (`experimental.useTypeScriptCli`)
 - **Database**: better-sqlite3, migrations in `src/lib/db/migrations/` (numbered SQL, schema version = file count)
 - **Semantic search**: optional Python ONNX service (`semantic/`), wired via `SEMANTIC_SEARCH_URL`. App falls back to FTS5 when absent.
 - **Jobs**: durable SQLite-based queue, worker via `pnpm jobs:work`. Job types: `proof.create`, `proof.ots_upgrade_verify`, `proof.wayback_capture`, `cache.invalidate`, `translation.article`, `search.embed`.
@@ -125,13 +125,13 @@ Playwright single test: `pnpm exec playwright test e2e/studio.spec.ts -g "studio
 ## Testing
 
 - **Vitest** (`tests/`): jsdom environment, `@/` alias, global `vi`/`expect`. Setup mocks `next/font/local`, `next/cache`, `next/server`. Test factories in `src/test/factories.ts`.
-- **Playwright** (`e2e/`): 2 projects (chromium, mobile Pixel 7). Sequential, 1 worker. The `test:e2e` script sets a wall of env vars inline — do not try to split it. The Playwright config auto-starts the dev server via `scripts/start-e2e-server.sh` (seeds + `next dev` + `jobs:work`) unless `PLAYWRIGHT_BASE_URL` is set.
+- **Playwright** (`e2e/`): 2 projects (chromium, mobile Pixel 7). Sequential, 1 worker. `pnpm test:e2e` runs `scripts/run-e2e.sh`, which sets the wall of env vars — do not try to split it. The Playwright config auto-starts the dev server via `scripts/start-e2e-server.sh` (seeds + `next dev` + `jobs:work`) unless `PLAYWRIGHT_BASE_URL` is set.
 - **Python pytest** (`semantic/tests`): tests the semantic search service. Install with `pip install -e "./semantic[test]"`.
 
 ### E2E test quirks
 
-- E2E tests seed `DATA_DIR=./data/e2e` (or a temp dir via `scripts/run-e2e.sh`).
-- `E2E_ADMIN_PASSWORD` defaults to `admin-password` (matches the hash in the `test:e2e` script).
+- `scripts/run-e2e.sh` points `DATA_DIR` at a fresh `mktemp` dir; the Playwright webServer (`scripts/start-e2e-server.sh`) seeds it before `next dev`.
+- `E2E_ADMIN_PASSWORD` defaults to `admin-password` (matches the hash in `scripts/run-e2e.sh`).
 - `E2E_EXPECT_SEMANTIC=1` enables the semantic search test (requires the locked real model).
 - `E2E_EXPECTED_COMMIT` and `E2E_EXPECTED_DIGEST` are checked by the version test.
 

@@ -31,7 +31,7 @@ pnpm build
 docker compose -f deploy/docker-compose.yml config
 ```
 
-The Playwright suite seeds `DATA_DIR=./data/e2e` before starting the dev server.
+`pnpm test:e2e` runs the Playwright suite against a fresh temp `DATA_DIR`, seeded before the dev server starts.
 
 ## Deployment
 
