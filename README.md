@@ -68,4 +68,4 @@ Each archive contains an online SQLite snapshot plus `markdown/`, `uploads/`, `p
 scripts/verify-backup.sh /var/www/arthurs-review/backups/arthurs-review-YYYYMMDDTHHMMSSZ.tar.gz
 ```
 
-The VPS keeps 30 days of daily archives. `.github/workflows/backup.yml` also downloads, verifies, and stores the latest archive as a 30-day GitHub Actions artifact so a server loss does not take the only backup with it.
+The VPS keeps 30 days of daily archives. `.github/workflows/backup.yml` also downloads, verifies, and stores the latest archive as a 14-day GitHub Actions artifact so a server loss does not take the only backup with it.

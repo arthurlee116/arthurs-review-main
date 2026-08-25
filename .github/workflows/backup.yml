@@ -109,5 +109,8 @@ jobs:
           name: arthurs-review-production-${{ github.run_id }}
           path: production-backup.tar.gz
           if-no-files-found: error
-          retention-days: 30
+          # 14 days ≈ 1.3GB of artifacts; 30 days overran the account's
+          # artifact storage quota (backup run 32704963176 failed on upload).
+          # The VPS still keeps 30 days of local backups as the backstop.
+          retention-days: 14
           compression-level: 0

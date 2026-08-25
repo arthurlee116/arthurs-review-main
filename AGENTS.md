@@ -179,4 +179,4 @@ Daily cron `arthurs-review-backup` (installed by `scripts/server-bootstrap.sh`).
 DATA_DIR=/var/www/arthurs-review/data BACKUP_DIR=/var/www/arthurs-review/backups APP_DIR=/opt/arthurs-review scripts/backup-data.sh
 ```
 
-Verify without restoring: `scripts/verify-backup.sh <archive>`. 30-day retention on VPS + GitHub Actions artifact.
+Verify without restoring: `scripts/verify-backup.sh <archive>`. 30-day retention on VPS, 14-day on GitHub Actions artifact (artifact storage quota).
