@@ -47,10 +47,11 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-      - name: Diagnose sshd policy and logs
+      - name: Capture live sshd log during local login attempt
         run: |
           ssh root@72.60.195.46 'set -eu
-            echo "== sshd policy:"; sshd -T 2>/dev/null | grep -iE "permitrootlogin|allowusers|denyusers|pubkeyauthentication|passwordauthentication|match " || true
-            echo "== sshd_config Match blocks:"; grep -nE "^Match|^AllowUsers|^DenyUsers" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true
-            echo "== sshd logs (2h):"; journalctl _COMM=sshd --since "-2h" --no-pager 2>/dev/null | grep -iE "publickey|invalid|refused|denied" | tail -25 || true
-            echo "== fail2ban:"; (fail2ban-client status sshd 2>/dev/null || echo "no fail2ban") | tail -8'
+            ( journalctl -u ssh.service -f --since now > /tmp/sshd-live.log 2>&1 & echo $! > /tmp/j.pid )
+            sleep 80
+            kill "$(cat /tmp/j.pid)" 2>/dev/null || true
+            sleep 1
+            tail -50 /tmp/sshd-live.log'
