@@ -47,10 +47,10 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-      - name: Diagnose authorized_keys state
+      - name: Diagnose sshd policy and logs
         run: |
           ssh root@72.60.195.46 'set -eu
-            echo "== authorized_keys:"; cat -A ~/.ssh/authorized_keys | cut -c1-120
-            echo "== sshd AuthorizedKeysFile:"; sshd -T 2>/dev/null | grep -i authorizedkeysfile || true
-            echo "== home/perms:"; ls -la /root | grep ssh; ls -la /root/.ssh
-            echo "== recent auth log:"; (tail -30 /var/log/auth.log 2>/dev/null || journalctl -u ssh --no-pager -n 30) | grep -iE "sshd|authentication" | tail -15'
+            echo "== sshd policy:"; sshd -T 2>/dev/null | grep -iE "permitrootlogin|allowusers|denyusers|pubkeyauthentication|passwordauthentication|match " || true
+            echo "== sshd_config Match blocks:"; grep -nE "^Match|^AllowUsers|^DenyUsers" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true
+            echo "== sshd logs (2h):"; journalctl _COMM=sshd --since "-2h" --no-pager 2>/dev/null | grep -iE "publickey|invalid|refused|denied" | tail -25 || true
+            echo "== fail2ban:"; (fail2ban-client status sshd 2>/dev/null || echo "no fail2ban") | tail -8'
