@@ -1,0 +1,53 @@
+name: Authorize local SSH key (one-off)
+
+# Throwaway workflow on branch ops/authorize-local-ssh-key: uses the deploy
+# key from secrets to append Arthur's local public key to the VPS root's
+# authorized_keys. Delete the branch after it succeeds.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_SSH_PASSPHRASE: ${{ secrets.DEPLOY_SSH_PASSPHRASE }}
+        run: |
+          test -n "$DEPLOY_SSH_PRIVATE_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          eval "$(ssh-agent -s)"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          if [ -n "${DEPLOY_SSH_PASSPHRASE:-}" ]; then
+            cat > "$RUNNER_TEMP/ssh-askpass" <<'EOF'
+          #!/usr/bin/env sh
+          printf '%s\n' "$DEPLOY_SSH_PASSPHRASE"
+          EOF
+            chmod 700 "$RUNNER_TEMP/ssh-askpass"
+            DISPLAY=none SSH_ASKPASS="$RUNNER_TEMP/ssh-askpass" SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key </dev/null
+          else
+            ssh-add ~/.ssh/deploy_key
+          fi
+          printf '%s\n' '72.60.195.46 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPW6DVc3HbWdUhmPpQxR2De5SrdmSsmYyxm+RrHgedSl' >> ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<'EOF'
+          Host 72.60.195.46
+            IdentityFile ~/.ssh/deploy_key
+            IdentityAgent /tmp/ssh-*
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ConnectTimeout 20
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Append local public key to authorized_keys
+        run: |
+          KEY='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINSHXNkVv5NzANixLe6s5urWb0MJn0rIudYn3RihXFhT laoliarthur@outlook.com'
+          ssh root@72.60.195.46 "set -eu; mkdir -p ~/.ssh; chmod 700 ~/.ssh; touch ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys; grep -qxF '$KEY' ~/.ssh/authorized_keys || echo '$KEY' >> ~/.ssh/authorized_keys; cut -d' ' -f1-2 ~/.ssh/authorized_keys | ssh-keygen -lf -"
