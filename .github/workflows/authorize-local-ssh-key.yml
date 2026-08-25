@@ -47,14 +47,10 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-      - name: Append local public keys to authorized_keys
+      - name: Diagnose authorized_keys state
         run: |
-          ssh root@72.60.195.46 "set -eu
-            mkdir -p ~/.ssh; chmod 700 ~/.ssh
-            touch ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys
-            for key in \
-              'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBBVb2khIMCtZiXVJx0Tcw6D8Hcz4yUJeY934BdRBLai arthur@lizexudeMacBook-Air-10.local' \
-              'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINSHXNkVv5NzANixLe6s5urWb0MJn0rIudYn3RihXFhT laoliarthur@outlook.com'; do
-              grep -qxF \"\$key\" ~/.ssh/authorized_keys || echo \"\$key\" >> ~/.ssh/authorized_keys
-            done
-            cut -d' ' -f1-2 ~/.ssh/authorized_keys | ssh-keygen -lf -"
+          ssh root@72.60.195.46 'set -eu
+            echo "== authorized_keys:"; cat -A ~/.ssh/authorized_keys | cut -c1-120
+            echo "== sshd AuthorizedKeysFile:"; sshd -T 2>/dev/null | grep -i authorizedkeysfile || true
+            echo "== home/perms:"; ls -la /root | grep ssh; ls -la /root/.ssh
+            echo "== recent auth log:"; (tail -30 /var/log/auth.log 2>/dev/null || journalctl -u ssh --no-pager -n 30) | grep -iE "sshd|authentication" | tail -15'
