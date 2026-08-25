@@ -37,10 +37,10 @@ jobs:
             ssh-add ~/.ssh/deploy_key
           fi
           printf '%s\n' '72.60.195.46 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPW6DVc3HbWdUhmPpQxR2De5SrdmSsmYyxm+RrHgedSl' >> ~/.ssh/known_hosts
-          cat > ~/.ssh/config <<'EOF'
+          cat > ~/.ssh/config <<EOF
           Host 72.60.195.46
             IdentityFile ~/.ssh/deploy_key
-            IdentityAgent /tmp/ssh-*
+            IdentityAgent $SSH_AUTH_SOCK
             IdentitiesOnly yes
             StrictHostKeyChecking yes
             ConnectTimeout 20
