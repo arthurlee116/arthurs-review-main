@@ -8,6 +8,11 @@ export type PageResult<T> = {
   hasNextPage: boolean;
 };
 
+export function parsePageParam(value: string | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 1;
+}
+
 export function pageWindow(total: number, requestedPage: number | undefined, requestedPageSize: number) {
   const pageSize = Math.max(1, Math.floor(requestedPageSize));
   const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);

@@ -1,5 +1,6 @@
 import type Database from "better-sqlite3";
 import { getDb } from "@/lib/db/connection";
+import { errorMessage } from "@/lib/errors";
 
 export type JobType =
   | "proof.create"
@@ -70,10 +71,6 @@ function mapJob(row: JobRow): Job {
   };
 }
 
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error);
-}
-
 export function enqueueJob(
   {
     type,
@@ -105,6 +102,35 @@ export function enqueueJob(
 export function getJob(id: number) {
   const row = getDb().prepare("select * from jobs where id = ?").get(id) as JobRow | undefined;
   return row ? mapJob(row) : null;
+}
+
+// Reset a dedupe-blocked job (succeeded/dead) so it runs again with a fresh payload.
+export function requeueJob(
+  {
+    type,
+    payload,
+    dedupeKey,
+    maxAttempts = 12,
+    now = new Date(),
+  }: {
+    type: JobType;
+    payload: unknown;
+    dedupeKey: string;
+    maxAttempts?: number;
+    now?: Date;
+  },
+  db: Database.Database = getDb(),
+) {
+  const timestamp = now.toISOString();
+  const result = db
+    .prepare(
+      `update jobs
+       set payload = ?, status = 'queued', attempts = 0, max_attempts = ?,
+           run_at = ?, locked_at = null, locked_by = null, last_error = null, updated_at = ?
+       where type = ? and dedupe_key = ?`,
+    )
+    .run(JSON.stringify(payload), maxAttempts, timestamp, timestamp, type, dedupeKey);
+  return result.changes === 1;
 }
 
 export function claimNextJob({

@@ -48,12 +48,18 @@ describe("crash-safe article bodies", () => {
   });
 
   it("keeps the previous English body when its database update fails", async () => {
-    const { createArticle, getArticleById, updateArticleEnglishFields } = await import("@/lib/services/articles");
+    const { createArticle, getArticleById, updateArticle } = await import("@/lib/services/articles");
     const { getDb } = await import("@/lib/db/connection");
     const article = createArticle(articleInput({ slug: "english", bodyEn: "old English", titleEn: "Old" }));
     getDb().exec("create trigger block_english_update before update on articles begin select raise(abort, 'blocked'); end");
 
-    expect(() => updateArticleEnglishFields(article.id, { titleEn: "New", excerptEn: "New", bodyEn: "new English" })).toThrow("blocked");
+    expect(() =>
+      updateArticle(
+        article.id,
+        articleInput({ slug: "english", titleEn: "New", excerptEn: "New", bodyEn: "new English" }),
+        article.draftRevisionId,
+      ),
+    ).toThrow("blocked");
     expect(getArticleById(article.id, { includeDraft: true })?.bodyEn).toBe("old English");
   });
 

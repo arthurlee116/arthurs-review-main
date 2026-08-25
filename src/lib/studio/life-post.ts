@@ -35,6 +35,9 @@ function mediaEmbedLine(media: UploadedMedia) {
 }
 
 export function buildLifePost(media: UploadedMedia[], caption: string, now: Date): LifePostPayload {
+  const first = media[0];
+  if (!first) throw new Error("Life post requires at least one media item.");
+
   const titleZh = new Intl.DateTimeFormat("zh-CN", { dateStyle: "long" }).format(now);
   const slug = `life-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${slugSuffix()}`;
 
@@ -45,7 +48,6 @@ export function buildLifePost(media: UploadedMedia[], caption: string, now: Date
   const mediaBlock = media.map(mediaEmbedLine).join("\n");
   const bodyZh = trimmedCaption ? `${mediaBlock}\n\n${trimmedCaption}` : mediaBlock;
 
-  const first = media[0];
   const coverImagePath = first.kind === "video" ? (first.coverRelativePath ?? first.relativePath) : first.relativePath;
 
   return { titleZh, slug, excerptZh, bodyZh, coverImagePath };

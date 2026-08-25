@@ -7,7 +7,7 @@ import {
   publicArticleProofsTag,
   publicArticleTag,
 } from "@/lib/services/public-cache-tags";
-import { enqueueJob } from "./queue";
+import { enqueueJob, requeueJob } from "./queue";
 
 export type PublicArticlePath = { category: CategoryId; slug: string };
 
@@ -79,16 +79,15 @@ export function enqueuePublishedRevisionJobs(
       .prepare("select 1 from article_embedding_chunks where article_id = ? and revision_id = ? limit 1")
       .get(article.id, article.revisionId);
     if (!indexed) {
-      db.prepare(
-        `update jobs
-         set payload = ?, status = 'queued', attempts = 0, max_attempts = 12,
-             run_at = ?, locked_at = null, locked_by = null, last_error = null, updated_at = ?
-         where id = ?`,
-      ).run(
-        JSON.stringify({ articleId: article.id, revisionId: article.revisionId }),
-        article.updatedAt,
-        article.updatedAt,
-        semanticJob.id,
+      requeueJob(
+        {
+          type: "search.embed",
+          payload: { articleId: article.id, revisionId: article.revisionId },
+          dedupeKey: `article:${article.id}:revision:${article.revisionId}`,
+          maxAttempts: 12,
+          now: new Date(article.updatedAt),
+        },
+        db,
       );
     }
   }

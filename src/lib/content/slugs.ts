@@ -8,8 +8,10 @@ export function normalizeSlug(input: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export function assertValidSlug(slug: string) {
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+  if (!slugPattern.test(slug)) {
     throw new Error("Slug must use lowercase letters, numbers, and single hyphens.");
   }
 }

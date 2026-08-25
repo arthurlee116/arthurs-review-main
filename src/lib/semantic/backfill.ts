@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/db/connection";
-import { enqueueJob, type JobStatus } from "@/lib/jobs/queue";
+import { enqueueJob, requeueJob, type JobStatus } from "@/lib/jobs/queue";
 import type { SemanticModelIdentity } from "./vector";
 
 type PublishedRevisionRow = { id: number; revision_id: number };
@@ -27,7 +27,6 @@ export function enqueueSemanticSearchBackfill({
     )
     .all() as PublishedRevisionRow[];
   const result = { published: rows.length, enqueued: 0, skippedIndexed: 0, alreadyPending: 0 };
-  const timestamp = now.toISOString();
 
   db.transaction(() => {
     for (const row of rows) {
@@ -53,12 +52,16 @@ export function enqueueSemanticSearchBackfill({
         continue;
       }
       if (existing) {
-        db.prepare(
-          `update jobs
-           set payload = ?, status = 'queued', attempts = 0, run_at = ?, locked_at = null,
-               locked_by = null, last_error = null, updated_at = ?
-           where type = 'search.embed' and dedupe_key = ?`,
-        ).run(JSON.stringify({ articleId: row.id, revisionId: row.revision_id }), timestamp, timestamp, dedupeKey);
+        requeueJob(
+          {
+            type: "search.embed",
+            payload: { articleId: row.id, revisionId: row.revision_id },
+            dedupeKey,
+            maxAttempts: 12,
+            now,
+          },
+          db,
+        );
       } else {
         enqueueJob(
           {

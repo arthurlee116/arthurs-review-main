@@ -3,6 +3,8 @@ import { connection } from "next/server";
 import { FeaturedArticleButton } from "@/components/studio/FeaturedArticleButton";
 import { TranslateMissingEnglishButton } from "@/components/studio/TranslateMissingEnglishButton";
 import { PageNavigation } from "@/components/PageNavigation";
+import { isCategoryId } from "@/lib/content/categories";
+import { parsePageParam } from "@/lib/pagination";
 import { listStudioArticlePage } from "@/lib/services/articles";
 import { MAX_SEARCH_CODE_POINTS } from "@/lib/search-limits";
 
@@ -15,22 +17,17 @@ type ArticleSearchParams = {
   page?: string;
 };
 
-function pageNumber(value: string | undefined) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 1;
-}
-
 export default async function ArticlesPage({ searchParams }: { searchParams: Promise<ArticleSearchParams> }) {
   await connection();
   const params = await searchParams;
   const status = params.status === "draft" || params.status === "published" ? params.status : "all";
-  const category = params.category === "commentary" || params.category === "society" || params.category === "life" || params.category === "misc" ? params.category : "all";
+  const category = params.category && isCategoryId(params.category) ? params.category : "all";
   const query = params.q ?? "";
   const articlePage = listStudioArticlePage({
     status,
     category,
     query,
-    page: pageNumber(params.page),
+    page: parsePageParam(params.page),
   });
   return (
     <section>

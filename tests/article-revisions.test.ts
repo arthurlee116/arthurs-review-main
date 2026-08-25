@@ -3,6 +3,11 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { articleInput } from "@/test/factories";
+import { searchArticleResults } from "@/lib/services/search";
+
+function searchArticles(query: string) {
+  return searchArticleResults(query, { pageSize: 50 }).results.map((result) => result.article);
+}
 
 let tmpDir: string;
 
@@ -24,7 +29,6 @@ afterEach(async () => {
 describe("immutable article revisions", () => {
   it("keeps a published revision live until Publish switches the pointer", async () => {
     const { createArticle, getArticleById, getPublishedArticle, publishArticle, updateArticle } = await import("@/lib/services/articles");
-    const { searchArticles } = await import("@/lib/services/search");
     const draft = createArticle(
       articleInput({
         titleZh: "线上旧标题",

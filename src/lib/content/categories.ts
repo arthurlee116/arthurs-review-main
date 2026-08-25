@@ -7,13 +7,10 @@ export const categories = {
 
 export type CategoryId = keyof typeof categories;
 
+export const categoryIds = Object.keys(categories) as [CategoryId, ...CategoryId[]];
+
 export function isCategoryId(value: string): value is CategoryId {
-  return (
-    value === "commentary" ||
-    value === "society" ||
-    value === "misc" ||
-    value === "life"
-  );
+  return (categoryIds as readonly string[]).includes(value);
 }
 
 export function categoryLabel(category: CategoryId) {

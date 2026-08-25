@@ -4,33 +4,16 @@ import { CategoryPageFallback } from "@/app/_categoryPage";
 import { PublicShell } from "@/app/_publicShell";
 import { PhotoWall } from "@/components/life/PhotoWall";
 import { categories } from "@/lib/content/categories";
-import { countLifeMedia } from "@/lib/content/life-body";
-import { readMarkdownBody } from "@/lib/content/markdown";
 import { categoryMetadata } from "@/lib/metadata";
-import { listCachedPublishedArticles } from "@/lib/services/public-content";
+import { getCachedLifeListing } from "@/lib/services/public-content";
 
 export function generateMetadata() {
   return categoryMetadata("life", "生活");
 }
 
-function mediaCountsByArticle(articles: Awaited<ReturnType<typeof listCachedPublishedArticles>>) {
-  return Object.fromEntries(
-    articles
-      .map((article) => {
-        try {
-          return [article.id, countLifeMedia(readMarkdownBody(article.bodyZhPath))] as const;
-        } catch {
-          return [article.id, 0] as const;
-        }
-      })
-      .filter(([, count]) => count > 1),
-  );
-}
-
 async function LifeCategoryPage() {
   await io();
-  const articles = await listCachedPublishedArticles("life", { limit: 50 });
-  const mediaCounts = mediaCountsByArticle(articles);
+  const { articles, mediaCounts } = await getCachedLifeListing();
   return (
     <PublicShell>
       <main className="container pb-10">

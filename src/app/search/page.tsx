@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { SearchBox } from "@/components/SearchBox";
 import { SearchPagination } from "@/components/SearchPagination";
 import { SearchResultCard } from "@/components/SearchResultCard";
+import { parsePageParam } from "@/lib/pagination";
 import { searchArticleResultsHybrid } from "@/lib/services/search";
 import { PublicShell } from "@/app/_publicShell";
 import { publicPageMetadata } from "@/lib/metadata";
@@ -14,14 +15,9 @@ export function generateMetadata() {
   });
 }
 
-function pageNumber(value: string | undefined) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 1;
-}
-
 export async function SearchResults({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
   const { q = "", page } = await searchParams;
-  const resultPage = await searchArticleResultsHybrid(q, { page: pageNumber(page) });
+  const resultPage = await searchArticleResultsHybrid(q, { page: parsePageParam(page) });
 
   return (
     <>

@@ -1,5 +1,5 @@
 import type { SemanticSearchClient } from "./client";
-import { createSemanticSearchClient } from "./client";
+import { resolveSemanticClient } from "./client";
 import { buildArticleEmbeddingChunks } from "./chunking";
 import { encodeFloat32Vector } from "./vector";
 import { deleteArticleEmbeddings } from "./storage";
@@ -31,7 +31,7 @@ export async function indexPublishedArticleRevision(articleId: number, revisionI
     throw new Error("Embedding batch size must be an integer between 1 and 32.");
   }
 
-  const client = options.client === undefined ? createSemanticSearchClient() : options.client;
+  const client = resolveSemanticClient(options.client);
   if (!client) return { status: "disabled" as const, articleId, revisionId };
   if (!isCurrentPublishedRevision(articleId, revisionId)) return { status: "stale" as const, articleId, revisionId };
 

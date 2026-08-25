@@ -183,3 +183,9 @@ export function createSemanticSearchClient(env: Record<string, string | undefine
   const config = readSemanticSearchConfig(env);
   return config ? new SemanticSearchClient(config, fetchImpl) : null;
 }
+
+// Callers accept an optional client override: `undefined` means "build the default
+// client from env", while `null` explicitly disables semantic search.
+export function resolveSemanticClient<C extends object>(option: C | null | undefined): C | null {
+  return option === undefined ? (createSemanticSearchClient() as C | null) : option;
+}

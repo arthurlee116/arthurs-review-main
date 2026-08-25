@@ -3,6 +3,11 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { articleInput } from "@/test/factories";
+import { searchArticleResults } from "@/lib/services/search";
+
+function searchArticles(query: string) {
+  return searchArticleResults(query, { pageSize: 50 }).results.map((result) => result.article);
+}
 
 let tmpDir: string;
 
@@ -44,7 +49,6 @@ describe("keyword search", () => {
   it("finds published articles by body text and ignores drafts", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
-    const { searchArticles } = await import("@/lib/services/search");
     migrate();
 
     const published = createArticle(
@@ -78,7 +82,6 @@ describe("keyword search", () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { getDb } = await import("@/lib/db/connection");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
-    const { searchArticles } = await import("@/lib/services/search");
     migrate();
 
     publishArticle(
@@ -107,7 +110,6 @@ describe("keyword search", () => {
   it("keeps the FTS index when migrate runs again", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
-    const { searchArticles } = await import("@/lib/services/search");
     migrate();
 
     const published = createArticle(
@@ -132,7 +134,6 @@ describe("keyword search", () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { getDb } = await import("@/lib/db/connection");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
-    const { searchArticles } = await import("@/lib/services/search");
     migrate();
 
     const published = createArticle(

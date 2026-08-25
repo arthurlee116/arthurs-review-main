@@ -1,15 +1,17 @@
 import { getDb } from "@/lib/db/connection";
+import { tokenizeForFts } from "@/lib/db/fts";
 import { categoryLabel } from "@/lib/content/categories";
 import { readMarkdownBody } from "@/lib/content/markdown";
+import { pageWindow } from "@/lib/pagination";
 import { MAX_SEARCH_CODE_POINTS, MAX_SEARCH_TOKENS } from "@/lib/search-limits";
 import {
-  createSemanticSearchClient,
+  resolveSemanticClient,
   SemanticServiceError,
   type SemanticSearchClient,
 } from "@/lib/semantic/client";
 import { applyRerankerScores, reciprocalRankFusion } from "@/lib/semantic/ranking";
 import { rankDenseArticleChunks, type StoredEmbeddingChunk } from "@/lib/semantic/vector";
-import { mapArticleRows } from "./articles";
+import { articleSelectColumns, mapArticleRows } from "./articles";
 import type { Article, ArticleRow } from "./articles";
 
 export const SEARCH_PAGE_SIZE = 10;
@@ -84,15 +86,6 @@ type DenseChunkRow = {
   published_at: string | null;
 };
 
-// Insert spaces between consecutive CJK characters so the unicode61 tokenizer
-// treats each as a separate token (unicode61 groups contiguous CJK into one token).
-function tokenizeForFts(text: string): string {
-  return text
-    .replace(/([\p{Script=Han}])/gu, " $1 ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 // Require each contiguous Han run to occupy consecutive FTS positions. Keep
 // prefix matching for non-Han terms, where word prefixes remain useful.
 export function normalizeSearchQuery(raw: string) {
@@ -161,11 +154,6 @@ function emptySearchPage(query: string, pageSize: number): SearchArticleResultsP
     hasNextPage: false,
     results: [],
   };
-}
-
-function normalizedPage(value: number | undefined) {
-  if (!value || !Number.isFinite(value)) return 1;
-  return Math.max(1, Math.floor(value));
 }
 
 function isHan(value: string) {
@@ -272,29 +260,12 @@ export function searchArticleResults(query: string, options: { page?: number; pa
 
   if (total === 0) return emptySearchPage(normalized, pageSize);
 
-  const totalPages = Math.ceil(total / pageSize);
-  const page = Math.min(normalizedPage(options.page), totalPages);
-  const offset = (page - 1) * pageSize;
+  const window = pageWindow(total, options.page, pageSize);
+  const { offset, ...pageInfo } = window;
 
   const rows = db
     .prepare(
-      `SELECT a.id,
-              r.id as revision_id,
-              a.draft_revision_id,
-              a.published_revision_id,
-              r.title_zh,
-              r.title_en,
-              r.slug,
-              r.category,
-              a.published_at,
-              a.updated_at,
-              r.excerpt_zh,
-              r.excerpt_en,
-              r.cover_image_path,
-              a.is_featured,
-              r.seo_description,
-              r.body_zh_path,
-              r.body_en_path,
+      `SELECT ${articleSelectColumns("a", "r")},
               snippet(article_search, -1, '${highlightStart}', '${highlightEnd}', '...', 24) as snippet
        FROM articles a
        JOIN article_revisions r ON r.id = a.published_revision_id
@@ -303,17 +274,12 @@ export function searchArticleResults(query: string, options: { page?: number; pa
        ORDER BY rank, coalesce(a.published_at, a.updated_at) DESC, a.id DESC
        LIMIT ? OFFSET ?`,
     )
-    .all(ftsQuery, pageSize, offset) as SearchArticleRow[];
+    .all(ftsQuery, window.pageSize, offset) as SearchArticleRow[];
 
   const articles = mapArticleRows(rows);
   return {
     query: normalized,
-    page,
-    pageSize,
-    total,
-    totalPages,
-    hasPreviousPage: page > 1,
-    hasNextPage: page < totalPages,
+    ...pageInfo,
     results: rows.map((row, index) => ({
       article: articles[index]!,
       excerptParts: splitHighlightParts(row.snippet || row.excerpt_zh),
@@ -321,31 +287,10 @@ export function searchArticleResults(query: string, options: { page?: number; pa
   };
 }
 
-/** Full-text search across published articles using FTS5 with BM25 ranking. */
-export function searchArticles(query: string): Article[] {
-  return searchArticleResults(query, { page: 1, pageSize: 50 }).results.map((result) => result.article);
-}
-
 function searchFtsCandidates(ftsQuery: string): FtsArticleCandidate[] {
   const rows = getDb()
     .prepare(
-      `SELECT a.id,
-              r.id as revision_id,
-              a.draft_revision_id,
-              a.published_revision_id,
-              r.title_zh,
-              r.title_en,
-              r.slug,
-              r.category,
-              a.published_at,
-              a.updated_at,
-              r.excerpt_zh,
-              r.excerpt_en,
-              r.cover_image_path,
-              a.is_featured,
-              r.seo_description,
-              r.body_zh_path,
-              r.body_en_path,
+      `SELECT ${articleSelectColumns("a", "r")},
               bm25(article_search) as fts_score,
               snippet(article_search, -1, '${highlightStart}', '${highlightEnd}', '...', 24) as snippet
        FROM articles a
@@ -405,23 +350,7 @@ function loadPublishedArticlesById(ids: readonly number[]) {
   if (ids.length === 0) return new Map<number, Article>();
   const rows = getDb()
     .prepare(
-      `select a.id,
-              r.id as revision_id,
-              a.draft_revision_id,
-              a.published_revision_id,
-              r.title_zh,
-              r.title_en,
-              r.slug,
-              r.category,
-              a.published_at,
-              a.updated_at,
-              r.excerpt_zh,
-              r.excerpt_en,
-              r.cover_image_path,
-              a.is_featured,
-              r.seo_description,
-              r.body_zh_path,
-              r.body_en_path
+      `select ${articleSelectColumns("a", "r")}
        from articles as a
        join article_revisions as r on r.id = a.published_revision_id
        where a.id in (${ids.map(() => "?").join(", ")})`,
@@ -459,7 +388,7 @@ export async function searchArticleResultsHybrid(
   const ftsQuery = buildFtsQuery(normalized);
   if (!ftsQuery) return emptySearchPage(normalized, pageSize);
 
-  const client = options.client === undefined ? createSemanticSearchClient() : options.client;
+  const client = resolveSemanticClient(options.client);
   if (!client) return searchArticleResults(normalized, options);
   const denseRows = loadDenseRows(client);
   if (denseRows.length === 0) return searchArticleResults(normalized, options);
@@ -522,9 +451,18 @@ export async function searchArticleResultsHybrid(
 
   const fusedHead = fused.slice(0, HYBRID_FUSED_RESULT_LIMIT);
   const fusedHeadArticleIds = new Set(fusedHead.map((candidate) => candidate.articleId));
-  const remainingFtsCandidates = reciprocalRankFusion(allFtsCandidates, [] as typeof denseCandidates, 60).filter(
-    (candidate) => !fusedHeadArticleIds.has(candidate.articleId),
-  );
+  // FTS tail beyond the fused head, kept in original FTS order. The RRF-shaped
+  // score/rank fields only feed the benchmark trace, not the result ordering.
+  const remainingFtsCandidates = allFtsCandidates
+    .map((candidate, index) => ({
+      articleId: candidate.articleId,
+      score: 1 / (60 + index + 1),
+      ftsRank: index + 1,
+      denseRank: null,
+      fts: candidate,
+      dense: null,
+    }))
+    .filter((candidate) => !fusedHeadArticleIds.has(candidate.articleId));
   fused = [...fusedHead, ...remainingFtsCandidates];
 
   options.onTrace?.({
@@ -552,17 +490,12 @@ export async function searchArticleResultsHybrid(
 
   const total = fused.length;
   if (total === 0) return emptySearchPage(normalized, pageSize);
-  const totalPages = Math.ceil(total / pageSize);
-  const page = Math.min(normalizedPage(options.page), totalPages);
-  const pageCandidates = fused.slice((page - 1) * pageSize, page * pageSize);
+  const window = pageWindow(total, options.page, pageSize);
+  const { offset, ...pageInfo } = window;
+  const pageCandidates = fused.slice(offset, offset + window.pageSize);
   return {
     query: normalized,
-    page,
-    pageSize,
-    total,
-    totalPages,
-    hasPreviousPage: page > 1,
-    hasNextPage: page < totalPages,
+    ...pageInfo,
     results: pageCandidates.map((candidate) => {
       const article = articles.get(candidate.articleId)!;
       return {

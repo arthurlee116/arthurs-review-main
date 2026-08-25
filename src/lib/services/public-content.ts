@@ -2,6 +2,8 @@
 
 import { cacheLife, cacheTag } from "next/cache";
 import type { CategoryId } from "@/lib/content/categories";
+import { countLifeMedia } from "@/lib/content/life-body";
+import { readMarkdownBody } from "@/lib/content/markdown";
 import {
   getPublishedArticle,
   getArticleUrlRedirect,
@@ -65,4 +67,24 @@ export async function listCachedPublicationProofs(articleId: number) {
   cacheLife("publicContent");
   cacheTag(publicArticleProofsTag(articleId));
   return listPublicationProofs(articleId);
+}
+
+// Media counts derive from on-disk markdown bodies; caching them with the article
+// list keeps the life archive from re-reading every body file on each request.
+export async function getCachedLifeListing(limit = 50) {
+  cacheLife("publicContent");
+  cacheTag(PUBLIC_ARTICLE_LIST_TAG);
+  const articles = listPublishedArticles("life", { limit });
+  const mediaCounts = Object.fromEntries(
+    articles
+      .map((article) => {
+        try {
+          return [article.id, countLifeMedia(readMarkdownBody(article.bodyZhPath))] as const;
+        } catch {
+          return [article.id, 0] as const;
+        }
+      })
+      .filter(([, count]) => count > 1),
+  );
+  return { articles, mediaCounts };
 }

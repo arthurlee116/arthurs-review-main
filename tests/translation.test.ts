@@ -226,14 +226,14 @@ describe("translation article service", () => {
 
   it("updates English title, excerpt, and body together", async () => {
     await setupDb();
-    const { createArticle, getArticleById, updateArticleEnglishFields } = await import("@/lib/services/articles");
+    const { createArticle, getArticleById, updateArticle } = await import("@/lib/services/articles");
     const article = createArticle(articleInput({ slug: "needs-english", titleEn: null, excerptEn: null, bodyEn: null }));
 
-    updateArticleEnglishFields(article.id, {
-      titleEn: "English title",
-      excerptEn: "English excerpt",
-      bodyEn: "English body",
-    });
+    updateArticle(
+      article.id,
+      articleInput({ slug: "needs-english", titleEn: "English title", excerptEn: "English excerpt", bodyEn: "English body" }),
+      article.draftRevisionId,
+    );
 
     expect(getArticleById(article.id, { includeDraft: true })).toMatchObject({
       titleEn: "English title",

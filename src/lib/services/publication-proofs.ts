@@ -5,9 +5,11 @@ import path from "node:path";
 import { promisify } from "node:util";
 import type { CategoryId } from "@/lib/content/categories";
 import type { Article } from "./articles";
+import { safeDataPath } from "@/lib/content/markdown";
 import { articlePath } from "@/lib/content/urls";
 import { getDb } from "@/lib/db/connection";
 import { getDataPaths } from "@/lib/env";
+import { errorMessage, NotFoundError } from "@/lib/errors";
 import { pageWindow, type PageResult } from "@/lib/pagination";
 
 const execFileAsync = promisify(execFile);
@@ -184,10 +186,6 @@ function articleContent(article: Article) {
   };
 }
 
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error);
-}
-
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -305,15 +303,19 @@ async function verifyAttestationsAgainstEsplora(
   return "anchored";
 }
 
-async function verifyAgainstEsplora(executable: string, documentPath: string, otsPath: string): Promise<"anchored" | "pending_confirmation"> {
-  let output: string;
+// `ots --no-bitcoin verify` reports attestations on stderr and exits non-zero;
+// a zero exit would mean it verified something we didn't ask for, so fail closed.
+async function runNoBitcoinVerify(executable: string, documentPath: string, otsPath: string) {
   try {
     await execFileAsync(executable, ["--no-bitcoin", "verify", "-f", documentPath, otsPath], { timeout: 60_000 });
-    throw new Error("OpenTimestamps --no-bitcoin verify unexpectedly succeeded.");
   } catch (error) {
-    if (error instanceof Error && error.message === "OpenTimestamps --no-bitcoin verify unexpectedly succeeded.") throw error;
-    output = commandText(error);
+    return commandText(error);
   }
+  throw new Error("OpenTimestamps --no-bitcoin verify unexpectedly succeeded.");
+}
+
+async function verifyAgainstEsplora(executable: string, documentPath: string, otsPath: string): Promise<"anchored" | "pending_confirmation"> {
+  const output = await runNoBitcoinVerify(executable, documentPath, otsPath);
   const attestations = parseAttestations(output);
   if (attestations.length === 0) {
     if (isPendingConfirmation(output)) return "pending_confirmation";
@@ -471,19 +473,31 @@ export function listPublicPublicationProofPage({ page, pageSize = 50 }: { page?:
 }
 
 export function resolveProofPath(relativePath: string) {
-  const root = path.resolve(getDataPaths().root);
-  const fullPath = path.resolve(root, relativePath);
-  if (!fullPath.startsWith(`${root}${path.sep}`)) throw new Error("Proof path escapes DATA_DIR");
-  return fullPath;
+  return safeDataPath(getDataPaths().root, relativePath);
+}
+
+type ProofStateFields = {
+  ots_path?: string | null;
+  ots_status?: OpenTimestampStatus;
+  ots_error?: string | null;
+  wayback_url?: string | null;
+  wayback_status?: WaybackStatus;
+  wayback_error?: string | null;
+};
+
+function updateProofState(id: number, fields: ProofStateFields) {
+  const entries = Object.entries(fields);
+  const assignments = entries.map(([column]) => `${column} = ?`).join(", ");
+  getDb()
+    .prepare(`update publication_proofs set ${assignments} where id = ?`)
+    .run(...entries.map(([, value]) => value), id);
 }
 
 async function finishOpenTimestamps(proof: PublicationProof, services: ProofServices) {
   if (proof.otsStatus === "anchored") return;
   const fullDocumentPath = resolveProofPath(proof.documentPath);
   if (sha256File(fullDocumentPath) !== proof.documentSha256) {
-    getDb()
-      .prepare("update publication_proofs set ots_status = 'verification_failed', ots_error = ? where id = ?")
-      .run("Proof source document hash mismatch.", proof.id);
+    updateProofState(proof.id, { ots_status: "verification_failed", ots_error: "Proof source document hash mismatch." });
     return;
   }
 
@@ -498,68 +512,61 @@ async function finishOpenTimestamps(proof: PublicationProof, services: ProofServ
       const receipt = await services.stamp(fullDocumentPath);
       if (receipt.byteLength === 0) throw new Error("OpenTimestamps produced an empty receipt.");
       atomicWriteBytes(fullOtsPath, receipt);
-      getDb()
-        .prepare("update publication_proofs set ots_path = ?, ots_status = 'pending_confirmation', ots_error = null where id = ?")
-        .run(relativeOtsPath, proof.id);
+      updateProofState(proof.id, { ots_path: relativeOtsPath, ots_status: "pending_confirmation", ots_error: null });
     } catch (error) {
       fs.rmSync(fullOtsPath, { force: true });
-      getDb()
-        .prepare("update publication_proofs set ots_path = null, ots_status = 'verification_failed', ots_error = ? where id = ?")
-        .run(errorMessage(error), proof.id);
+      updateProofState(proof.id, { ots_path: null, ots_status: "verification_failed", ots_error: errorMessage(error) });
       return;
     }
   }
 
   if (!fs.existsSync(fullOtsPath) || fs.statSync(fullOtsPath).size === 0) {
     if (proof.otsStatus === "verification_failed") return;
-    getDb()
-      .prepare("update publication_proofs set ots_path = null, ots_status = 'verification_failed', ots_error = ? where id = ?")
-      .run("OpenTimestamps receipt is missing or empty.", proof.id);
+    updateProofState(proof.id, {
+      ots_path: null,
+      ots_status: "verification_failed",
+      ots_error: "OpenTimestamps receipt is missing or empty.",
+    });
     return;
   }
 
   try {
     const upgrade = await (services.upgrade ?? (async () => "pending_confirmation" as const))(fullOtsPath);
     if (upgrade === "pending_confirmation") {
-      getDb()
-        .prepare("update publication_proofs set ots_status = 'pending_confirmation', ots_error = null where id = ?")
-        .run(proof.id);
+      updateProofState(proof.id, { ots_status: "pending_confirmation", ots_error: null });
       return;
     }
     const verification = await (services.verify ?? (async () => "pending_confirmation" as const))(fullDocumentPath, fullOtsPath);
-    getDb()
-      .prepare("update publication_proofs set ots_status = ?, ots_error = null where id = ?")
-      .run(verification, proof.id);
+    updateProofState(proof.id, { ots_status: verification, ots_error: null });
   } catch (error) {
-    getDb()
-      .prepare("update publication_proofs set ots_status = 'verification_failed', ots_error = ? where id = ?")
-      .run(errorMessage(error), proof.id);
+    updateProofState(proof.id, { ots_status: "verification_failed", ots_error: errorMessage(error) });
   }
 }
 
 export async function advanceOpenTimestampProof(id: number, services: ProofServices = defaultServices) {
   const proof = getPublicationProof(id);
-  if (!proof) throw new Error("Publication proof not found.");
+  if (!proof) throw new NotFoundError("Publication proof not found.");
   await finishOpenTimestamps(proof, services);
   return getPublicationProof(id);
 }
 
-export async function captureWaybackProof(id: number, capture: ProofServices["capture"] = captureWithWayback) {
-  const proof = getPublicationProof(id);
-  if (!proof) throw new Error("Publication proof not found.");
-  if (proof.waybackStatus === "complete") return proof;
+async function runWaybackCapture(id: number, publicUrl: string, capture: ProofServices["capture"]) {
   try {
-    const waybackUrl = await capture(proof.publicUrl);
-    getDb()
-      .prepare("update publication_proofs set wayback_url = ?, wayback_status = 'complete', wayback_error = null where id = ?")
-      .run(waybackUrl, proof.id);
-    return getPublicationProof(proof.id);
+    const waybackUrl = await capture(publicUrl);
+    updateProofState(id, { wayback_url: waybackUrl, wayback_status: "complete", wayback_error: null });
+    return waybackUrl;
   } catch (error) {
-    getDb()
-      .prepare("update publication_proofs set wayback_status = 'failed', wayback_error = ? where id = ?")
-      .run(errorMessage(error), proof.id);
+    updateProofState(id, { wayback_status: "failed", wayback_error: errorMessage(error) });
     throw error;
   }
+}
+
+export async function captureWaybackProof(id: number, capture: ProofServices["capture"] = captureWithWayback) {
+  const proof = getPublicationProof(id);
+  if (!proof) throw new NotFoundError("Publication proof not found.");
+  if (proof.waybackStatus === "complete") return proof;
+  await runWaybackCapture(id, proof.publicUrl, capture);
+  return getPublicationProof(proof.id);
 }
 
 async function finishPublicationProof(proof: PublicationProof, services: ProofServices) {
@@ -567,27 +574,14 @@ async function finishPublicationProof(proof: PublicationProof, services: ProofSe
   const needsWayback = proof.waybackStatus !== "complete";
   if (!needsOts && !needsWayback) return proof;
 
-  const [otsResult, waybackResult] = await Promise.allSettled([
+  // Wayback persists its own outcome in runWaybackCapture; OTS failures are marked here.
+  const [otsResult] = await Promise.allSettled([
     needsOts ? finishOpenTimestamps(proof, services) : null,
-    needsWayback ? services.capture(proof.publicUrl) : null,
+    needsWayback ? runWaybackCapture(proof.id, proof.publicUrl, services.capture) : null,
   ]);
 
   if (needsOts && otsResult.status === "rejected") {
-    getDb()
-      .prepare("update publication_proofs set ots_status = 'verification_failed', ots_error = ? where id = ?")
-      .run(errorMessage(otsResult.reason), proof.id);
-  }
-
-  if (needsWayback) {
-    if (waybackResult.status === "fulfilled" && waybackResult.value) {
-      getDb()
-        .prepare("update publication_proofs set wayback_url = ?, wayback_status = 'complete', wayback_error = null where id = ?")
-        .run(waybackResult.value, proof.id);
-    } else if (waybackResult.status === "rejected") {
-      getDb()
-        .prepare("update publication_proofs set wayback_status = 'failed', wayback_error = ? where id = ?")
-        .run(errorMessage(waybackResult.reason), proof.id);
-    }
+    updateProofState(proof.id, { ots_status: "verification_failed", ots_error: errorMessage(otsResult.reason) });
   }
 
   return getPublicationProof(proof.id);

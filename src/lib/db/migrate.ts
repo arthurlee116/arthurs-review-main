@@ -3,7 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type Database from "better-sqlite3";
 import { getDb } from "./connection";
-import { getDataPaths } from "@/lib/env";
+import { tokenizeForFts } from "./fts";
+import { readMarkdownBody } from "@/lib/content/markdown";
 
 export type Migration = {
   version: number;
@@ -12,72 +13,39 @@ export type Migration = {
   up: (db: Database.Database) => void;
 };
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-export const migrations: Migration[] = [
-  {
-    version: 1,
-    name: "initial",
-    filename: "001_initial.sql",
-    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "001_initial.sql"), "utf8")),
+const migrationsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "migrations");
+
+function execSql(filename: string) {
+  return (db: Database.Database) => db.exec(fs.readFileSync(path.join(migrationsDir, filename), "utf8"));
+}
+
+// Migrations whose up() is more than "execute the SQL file".
+const customUps: Record<string, (db: Database.Database) => void> = {
+  "002_rebuild_fts_shadow.sql": (db) => rebuildArticleSearchWithShadow(db),
+  "003_article_revisions.sql": (db) => {
+    execSql("003_article_revisions.sql")(db);
+    rebuildArticleSearchWithShadow(db);
   },
-  {
-    version: 2,
-    name: "rebuild_fts_shadow",
-    filename: "002_rebuild_fts_shadow.sql",
-    up: (db) => rebuildArticleSearchWithShadow(db),
-  },
-  {
-    version: 3,
-    name: "article_revisions",
-    filename: "003_article_revisions.sql",
-    up: (db) => {
-      db.exec(fs.readFileSync(path.join(dirname, "migrations", "003_article_revisions.sql"), "utf8"));
-      rebuildArticleSearchWithShadow(db);
-    },
-  },
-  {
-    version: 4,
-    name: "article_url_history",
-    filename: "004_article_url_history.sql",
-    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "004_article_url_history.sql"), "utf8")),
-  },
-  {
-    version: 5,
-    name: "ots_verification_states",
-    filename: "005_ots_verification_states.sql",
-    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "005_ots_verification_states.sql"), "utf8")),
-  },
-  {
-    version: 6,
-    name: "durable_jobs",
-    filename: "006_durable_jobs.sql",
-    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "006_durable_jobs.sql"), "utf8")),
-  },
-  {
-    version: 7,
-    name: "translation_batches",
-    filename: "007_translation_batches.sql",
-    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "007_translation_batches.sql"), "utf8")),
-  },
-  {
-    version: 8,
-    name: "admin_auth_state",
-    filename: "008_admin_auth_state.sql",
-    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "008_admin_auth_state.sql"), "utf8")),
-  },
-  {
-    version: 9,
-    name: "semantic_search",
-    filename: "009_semantic_search.sql",
-    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "009_semantic_search.sql"), "utf8")),
-  },
-  {
-    version: 10,
-    name: "life_category",
-    filename: "010_life_category.sql",
-    up: (db) => db.exec(fs.readFileSync(path.join(dirname, "migrations", "010_life_category.sql"), "utf8")),
-  },
-];
+};
+
+// Migrations are discovered from the migrations directory: NNN_name.sql files,
+// version = position in numeric order (= file count), per AGENTS.md convention.
+function loadMigrations(): Migration[] {
+  const filenames = fs
+    .readdirSync(migrationsDir)
+    .filter((filename) => /^\d{3}_.+\.sql$/.test(filename))
+    .sort();
+  return filenames.map((filename, index) => {
+    const version = index + 1;
+    if (Number(filename.slice(0, 3)) !== version) {
+      throw new Error(`Migration filenames must be numbered sequentially from 001; got ${filename} at position ${version}.`);
+    }
+    const name = filename.slice(4, -4);
+    return { version, name, filename, up: customUps[filename] ?? execSql(filename) };
+  });
+}
+
+export const migrations: Migration[] = loadMigrations();
 
 type ArticleSearchRow = {
   id: number;
@@ -91,23 +59,16 @@ type ArticleSearchRow = {
   tags: string | null;
 };
 
-function tokenizeForFts(text: string): string {
-  return text
-    .replace(/([\p{Script=Han}])/gu, " $1 ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function readDataFile(relativePath: string | null) {
   if (!relativePath) return "";
-  const { root } = getDataPaths();
-  const fullPath = path.resolve(root, relativePath);
-  const normalizedRoot = path.resolve(root);
-  if (fullPath !== normalizedRoot && !fullPath.startsWith(normalizedRoot + path.sep)) {
-    throw new Error("Path escapes DATA_DIR.");
+  try {
+    return readMarkdownBody(relativePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(`Missing Markdown body file: ${relativePath}`);
+    }
+    throw error;
   }
-  if (!fs.existsSync(fullPath)) throw new Error(`Missing Markdown body file: ${relativePath}`);
-  return fs.readFileSync(fullPath, "utf8");
 }
 
 function articleSearchRows(db: Database.Database) {
@@ -165,7 +126,7 @@ function populateArticleSearch(db: Database.Database, tableName: "article_search
 }
 
 export function rebuildArticleSearchWithShadow(db: Database.Database, beforeSwap: () => void = () => undefined) {
-  db.exec(fs.readFileSync(path.join(dirname, "migrations", "002_rebuild_fts_shadow.sql"), "utf8"));
+  db.exec(fs.readFileSync(path.join(migrationsDir, "002_rebuild_fts_shadow.sql"), "utf8"));
   const expected = populateArticleSearch(db, "article_search_shadow").map((row) => row.id);
   const actual = (db.prepare("select rowid from article_search_shadow order by rowid").all() as Array<{ rowid: number }>).map((row) => row.rowid);
   if (actual.length !== expected.length || actual.some((rowid, index) => rowid !== expected[index])) {

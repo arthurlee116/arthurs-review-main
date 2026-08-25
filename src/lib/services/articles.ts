@@ -2,6 +2,7 @@ import { deleteMarkdownBody, readMarkdownBody, writeMarkdownBody } from "@/lib/c
 import { assertValidSlug } from "@/lib/content/slugs";
 import type { CategoryId } from "@/lib/content/categories";
 import { getDb } from "@/lib/db/connection";
+import { NotFoundError } from "@/lib/errors";
 import { setSetting } from "@/lib/services/settings";
 import { pageWindow, type PageResult } from "@/lib/pagination";
 import { MAX_SEARCH_CODE_POINTS } from "@/lib/search-limits";
@@ -79,24 +80,28 @@ export class ArticleRevisionConflictError extends Error {
   }
 }
 
-const selectArticleColumns = `
-  articles.id,
-  revisions.id as revision_id,
-  articles.draft_revision_id,
-  articles.published_revision_id,
-  revisions.title_zh,
-  revisions.title_en,
-  revisions.slug,
-  revisions.category,
-  articles.published_at,
-  articles.updated_at,
-  revisions.excerpt_zh,
-  revisions.excerpt_en,
-  revisions.cover_image_path,
-  articles.is_featured,
-  revisions.seo_description,
-  revisions.body_zh_path,
-  revisions.body_en_path`;
+export function articleSelectColumns(articlesAlias = "articles", revisionsAlias = "revisions") {
+  return `
+  ${articlesAlias}.id,
+  ${revisionsAlias}.id as revision_id,
+  ${articlesAlias}.draft_revision_id,
+  ${articlesAlias}.published_revision_id,
+  ${revisionsAlias}.title_zh,
+  ${revisionsAlias}.title_en,
+  ${revisionsAlias}.slug,
+  ${revisionsAlias}.category,
+  ${articlesAlias}.published_at,
+  ${articlesAlias}.updated_at,
+  ${revisionsAlias}.excerpt_zh,
+  ${revisionsAlias}.excerpt_en,
+  ${revisionsAlias}.cover_image_path,
+  ${articlesAlias}.is_featured,
+  ${revisionsAlias}.seo_description,
+  ${revisionsAlias}.body_zh_path,
+  ${revisionsAlias}.body_en_path`;
+}
+
+const selectArticleColumns = articleSelectColumns();
 
 function nowIso() {
   return new Date().toISOString();
@@ -219,7 +224,7 @@ export function updateArticle(id: number, input: ArticleInput, expectedDraftRevi
     throw new ArticleRevisionConflictError();
   }
   const existing = getArticleById(id, { includeDraft: true });
-  if (!existing) throw new Error("Article not found.");
+  if (!existing) throw new NotFoundError("Article not found.");
   if (existing.draftRevisionId !== expectedDraftRevisionId) throw new ArticleRevisionConflictError();
 
   const bodyZhPath = writeMarkdownBody(id, "zh", input.bodyZh);
@@ -227,7 +232,7 @@ export function updateArticle(id: number, input: ArticleInput, expectedDraftRevi
   const db = getDb();
   return db.transaction(() => {
     const current = db.prepare("select draft_revision_id from articles where id = ?").get(id) as { draft_revision_id: number } | undefined;
-    if (!current) throw new Error("Article not found.");
+    if (!current) throw new NotFoundError("Article not found.");
     if (current.draft_revision_id !== expectedDraftRevisionId) throw new ArticleRevisionConflictError();
 
     const timestamp = nowIso();
@@ -238,28 +243,6 @@ export function updateArticle(id: number, input: ArticleInput, expectedDraftRevi
     if (result.changes !== 1) throw new ArticleRevisionConflictError();
     return getArticleById(id, { includeDraft: true })!;
   }).immediate();
-}
-
-export function updateArticleEnglishFields(id: number, input: { titleEn: string; excerptEn: string; bodyEn: string }) {
-  const existing = getArticleById(id, { includeDraft: true });
-  if (!existing?.bodyZh) throw new Error("Article not found.");
-  return updateArticle(
-    id,
-    {
-      titleZh: existing.titleZh,
-      titleEn: input.titleEn,
-      slug: existing.slug,
-      category: existing.category,
-      excerptZh: existing.excerptZh,
-      excerptEn: input.excerptEn,
-      seoDescription: existing.seoDescription,
-      bodyZh: existing.bodyZh,
-      bodyEn: input.bodyEn,
-      tagIds: existing.tags.map((tag) => tag.id),
-      coverImagePath: existing.coverImagePath,
-    },
-    existing.draftRevisionId,
-  );
 }
 
 export function applyTranslationToPublishedRevision(
@@ -334,6 +317,16 @@ function deleteMarkdownBodyIfUnreferenced(bodyPath: string) {
   if (!referenced) deleteMarkdownBody(bodyPath);
 }
 
+function articleInvalidationTags(article: Article, published: Article | null) {
+  return [
+    PUBLIC_ARTICLE_LIST_TAG,
+    ...(published ? [publicArticleTag(published.category, published.slug)] : []),
+    PUBLIC_PROOFS_TAG,
+    publicArticleProofsTag(article.id),
+    ...(article.isFeatured ? [PUBLIC_SETTINGS_TAG] : []),
+  ];
+}
+
 export function deleteArticle(id: number) {
   const article = getArticleById(id, { includeDraft: true });
   if (!article) return false;
@@ -350,13 +343,7 @@ export function deleteArticle(id: number) {
     if (article.isFeatured) clearFeaturedArticleState(db);
     enqueueCacheInvalidation(
       {
-        tags: [
-          PUBLIC_ARTICLE_LIST_TAG,
-          ...(published ? [publicArticleTag(published.category, published.slug)] : []),
-          PUBLIC_PROOFS_TAG,
-          publicArticleProofsTag(id),
-          ...(article.isFeatured ? [PUBLIC_SETTINGS_TAG] : []),
-        ],
+        tags: articleInvalidationTags(article, published),
         dedupeKey: `article:${id}:delete:${timestamp}`,
         now: new Date(timestamp),
       },
@@ -450,6 +437,18 @@ export function listPublishedArticles(category?: CategoryId, options: PublishedA
     )
     .all(...params) as ArticleRow[];
   return mapArticleRows(rows);
+}
+
+export function listPublishedArticleOptions() {
+  const rows = getDb()
+    .prepare(
+      `select articles.id, revisions.title_zh
+       from articles
+       join article_revisions as revisions on revisions.id = articles.published_revision_id
+       order by articles.published_at desc, articles.id desc`,
+    )
+    .all() as Array<{ id: number; title_zh: string }>;
+  return rows.map((row) => ({ id: row.id, titleZh: row.title_zh }));
 }
 
 export function listPublishedArticlePage({
@@ -569,7 +568,7 @@ export function listPublishedArticlesMissingEnglish() {
 
 export function publishArticle(id: number) {
   const article = getArticleById(id, { includeDraft: true });
-  if (!article) throw new Error("Article not found.");
+  if (!article) throw new NotFoundError("Article not found.");
   if (!article.titleZh || !article.slug || !article.bodyZh) throw new Error("Required fields are missing.");
   const db = getDb();
   return db.transaction(() => {
@@ -626,7 +625,7 @@ export function publishArticle(id: number) {
 
 export function unpublishArticle(id: number) {
   const existing = getArticleById(id, { includeDraft: true });
-  if (!existing) throw new Error("Article not found.");
+  if (!existing) throw new NotFoundError("Article not found.");
   const published = getArticleById(id, { includeDraft: false });
   const db = getDb();
   return db.transaction(() => {
@@ -638,13 +637,7 @@ export function unpublishArticle(id: number) {
     if (published) {
       enqueueCacheInvalidation(
         {
-          tags: [
-            PUBLIC_ARTICLE_LIST_TAG,
-            publicArticleTag(published.category, published.slug),
-            PUBLIC_PROOFS_TAG,
-            publicArticleProofsTag(id),
-            ...(existing.isFeatured ? [PUBLIC_SETTINGS_TAG] : []),
-          ],
+          tags: articleInvalidationTags(existing, published),
           dedupeKey: `article:${id}:unpublish:${timestamp}`,
           now: new Date(timestamp),
         },
@@ -658,7 +651,7 @@ export function unpublishArticle(id: number) {
 export function setFeaturedArticle(id: number) {
   const db = getDb();
   const existing = getArticleById(id, { includeDraft: true });
-  if (!existing) throw new Error("Article not found.");
+  if (!existing) throw new NotFoundError("Article not found.");
   if (existing.status !== "published") throw new Error("Featured article must be published.");
   return db.transaction(() => {
     const timestamp = nowIso();
