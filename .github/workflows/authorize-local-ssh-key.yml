@@ -47,11 +47,13 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-      - name: Capture live sshd log during local login attempt
+      - name: Run debug sshd on port 2222 and capture one auth attempt
         run: |
           ssh root@72.60.195.46 'set -eu
-            ( journalctl -u ssh.service -f --since now > /tmp/sshd-live.log 2>&1 & echo $! > /tmp/j.pid )
-            sleep 80
-            kill "$(cat /tmp/j.pid)" 2>/dev/null || true
+            (ufw allow 2222/tcp 2>/dev/null || iptables -I INPUT -p tcp --dport 2222 -j ACCEPT 2>/dev/null || true)
+            ( /usr/sbin/sshd -d -p 2222 > /tmp/sshd-debug.log 2>&1 & echo $! > /tmp/sshd-debug.pid )
+            sleep 70
+            kill "$(cat /tmp/sshd-debug.pid)" 2>/dev/null || true
             sleep 1
-            tail -50 /tmp/sshd-live.log'
+            (ufw delete allow 2222/tcp 2>/dev/null || true)
+            tail -80 /tmp/sshd-debug.log'
