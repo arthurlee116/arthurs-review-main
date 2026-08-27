@@ -9,7 +9,7 @@ import { HomeContent } from "@/app/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
-const contactNotice = "非常欢迎向我的邮箱（laoliarthur@outlook.com）或者微信（bookspiano）留言，说说你的想法，给我提意见！";
+const contactNotice = "非常欢迎向我的邮箱（laoliarthur@outlook.com 或 iii7201027@proton.me）或者微信（bookspiano）留言，说说你的想法，给我提意见！";
 
 beforeEach(async () => {
   const storage = new Map<string, string>();
@@ -55,6 +55,7 @@ describe("public article pages", () => {
     expect(within(footer).getByRole("link", { name: "Proofs" })).toHaveAttribute("href", "/proofs");
     expect(within(footer).getByRole("link", { name: "RSS" })).toHaveAttribute("href", "/feed.xml");
     expect(within(footer).getByRole("link", { name: "laoliarthur@outlook.com" })).toHaveAttribute("href", "mailto:laoliarthur@outlook.com");
+    expect(within(footer).getByRole("link", { name: "iii7201027@proton.me" })).toHaveAttribute("href", "mailto:iii7201027@proton.me");
     await user.click(within(footer).getByRole("button", { name: "复制微信号 bookspiano" }));
     expect(writeText).toHaveBeenCalledWith("bookspiano");
     expect(within(footer).getByRole("status")).toHaveTextContent("微信号已复制");

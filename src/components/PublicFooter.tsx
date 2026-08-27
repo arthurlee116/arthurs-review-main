@@ -12,6 +12,9 @@ export function PublicFooter() {
           <a className="sans mt-6 inline-block text-sm font-bold underline decoration-[var(--accent)] decoration-2 underline-offset-4" href="mailto:laoliarthur@outlook.com">
             laoliarthur@outlook.com
           </a>
+          <a className="sans ml-4 inline-block text-sm font-bold underline decoration-[var(--accent)] decoration-2 underline-offset-4" href="mailto:iii7201027@proton.me">
+            iii7201027@proton.me
+          </a>
           <FooterWechat />
         </div>
 

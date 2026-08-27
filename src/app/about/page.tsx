@@ -72,6 +72,7 @@ export async function AboutContent() {
 
           <p className="sans mt-8 border-t border-[var(--rule)] pt-8 text-sm">
             Contact: <a href={`mailto:${settings.contactEmail}`} className="underline decoration-[var(--accent)] decoration-2 underline-offset-4">{settings.contactEmail}</a>
+            {" "}or <a href="mailto:iii7201027@proton.me" className="underline decoration-[var(--accent)] decoration-2 underline-offset-4">iii7201027@proton.me</a>
           </p>
         </section>
       </main>
