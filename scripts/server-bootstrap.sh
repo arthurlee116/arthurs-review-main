@@ -45,7 +45,6 @@ case "${ID}" in
     ufw allow OpenSSH
     ufw allow 80/tcp
     ufw allow 443/tcp
-    ufw allow 2443/tcp
     ufw --force enable
     ;;
   centos)
@@ -53,7 +52,6 @@ case "${ID}" in
       firewall-cmd --permanent --add-service=ssh
       firewall-cmd --permanent --add-port=80/tcp
       firewall-cmd --permanent --add-port=443/tcp
-      firewall-cmd --permanent --add-port=2443/tcp
       firewall-cmd --reload
     fi
     ;;

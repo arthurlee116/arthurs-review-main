@@ -3,8 +3,6 @@ set -euo pipefail
 
 APP_DIR="${APP_DIR:-/opt/arthurs-review}"
 COMPOSE_FILE="${APP_DIR}/deploy/docker-compose.yml"
-XRAY_2443_UNIT="${XRAY_2443_UNIT:-xray-test.service}"
-XRAY_2443_CONFIG="${XRAY_2443_CONFIG:-/usr/local/etc/xray/config-test-2443.json}"
 XRAY_9443_UNIT="${XRAY_9443_UNIT:-xray-443.service}"
 XRAY_9443_CONFIG="${XRAY_9443_CONFIG:-/usr/local/etc/xray/config-443.json}"
 
@@ -25,21 +23,18 @@ require_xray() {
 }
 
 validate_xray() {
-  require_xray "${XRAY_2443_UNIT}" "${XRAY_2443_CONFIG}" 2443
   require_xray "${XRAY_9443_UNIT}" "${XRAY_9443_CONFIG}" 9443
 }
 
 xray_fingerprint() {
   validate_xray
   {
-    for unit in "${XRAY_2443_UNIT}" "${XRAY_9443_UNIT}"; do
-      fragment="$(systemctl show "${unit}" -p FragmentPath --value)"
-      [[ -f "${fragment}" ]] || fail "missing unit file for ${unit}"
-      printf '%s\n' "${unit}"
-      systemctl show "${unit}" -p FragmentPath -p ExecStart
-      sha256sum "${fragment}"
-    done
-    sha256sum "${XRAY_2443_CONFIG}" "${XRAY_9443_CONFIG}"
+    fragment="$(systemctl show "${XRAY_9443_UNIT}" -p FragmentPath --value)"
+    [[ -f "${fragment}" ]] || fail "missing unit file for ${XRAY_9443_UNIT}"
+    printf '%s\n' "${XRAY_9443_UNIT}"
+    systemctl show "${XRAY_9443_UNIT}" -p FragmentPath -p ExecStart
+    sha256sum "${fragment}"
+    sha256sum "${XRAY_9443_CONFIG}"
   } | sha256sum | cut -d' ' -f1
 }
 
@@ -52,7 +47,6 @@ validate_topology() {
   systemctl is-active --quiet haproxy.service || fail "haproxy.service is not active"
   expect_process_on_port haproxy 80
   expect_process_on_port haproxy 443
-  expect_process_on_port xray 2443
   expect_process_on_port xray 9443
   listener 8444 | grep -q ':8444' || fail "Caddy is not published on loopback port 8444"
   docker compose -f "${COMPOSE_FILE}" ps --status running --services | grep -qx caddy \
@@ -77,9 +71,9 @@ case "${mode}" in
     ;;
   status)
     validate_xray
-    systemctl show "${XRAY_2443_UNIT}" "${XRAY_9443_UNIT}" haproxy.service \
+    systemctl show "${XRAY_9443_UNIT}" haproxy.service \
       -p Id -p LoadState -p ActiveState -p SubState -p FragmentPath
-    for port in 80 443 2443 8444 9443; do listener "${port}"; done
+    for port in 80 443 8444 9443; do listener "${port}"; done
     ;;
   *)
     echo "Usage: production-topology-preflight.sh [status|fingerprint|verify <sha256> [--expect-topology]]" >&2

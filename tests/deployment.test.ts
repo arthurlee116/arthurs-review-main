@@ -333,7 +333,7 @@ describe("deployment scripts", () => {
     expect(fs.readFileSync("scripts/server-bootstrap.sh", "utf8")).toContain("util-linux haproxy");
   });
 
-  it("keeps the 2443 Xray service read-only across topology checks and deployments", () => {
+  it("keeps the Xray 443 service read-only across topology checks and deployments", () => {
     expect(fs.existsSync("scripts/production-topology-preflight.sh")).toBe(true);
     expect(fs.existsSync("deploy/README.md")).toBe(true);
 
@@ -348,15 +348,16 @@ describe("deployment scripts", () => {
       fs.readFileSync("scripts/remote-switch-xray-caddy.sh", "utf8"),
     ].join("\n");
 
-    expect(preflight).toContain("xray-test.service");
     expect(preflight).toContain("xray-443.service");
-    expect(preflight).toContain("config-test-2443.json");
     expect(preflight).toContain("config-443.json");
+    expect(preflight).not.toContain("xray-test.service");
+    expect(preflight).not.toContain("2443");
     expect(preflight).toContain("sha256sum");
-    expect(preflight).toContain('require_xray "${XRAY_2443_UNIT}" "${XRAY_2443_CONFIG}" 2443');
     expect(preflight).toContain('require_xray "${XRAY_9443_UNIT}" "${XRAY_9443_CONFIG}" 9443');
     expect(preflight).toContain("--expect-topology");
-    expect(deploy).toContain("probe_external_xray");
+    expect(deploy).toContain("probe_public_frontend");
+    expect(deploy).toContain('${PROXY_PUBLIC_PORT}');
+    expect(deploy).not.toContain("2443");
     expect(remoteRelease).toContain("production-topology-preflight.sh");
     expect(remoteRelease).toContain("install-haproxy-config.sh");
     expect(remoteRelease).toContain("XRAY_FINGERPRINT");

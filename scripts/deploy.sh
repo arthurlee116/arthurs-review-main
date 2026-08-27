@@ -12,11 +12,12 @@ EXPECTED_SCHEMA_VERSION="${EXPECTED_SCHEMA_VERSION:-}"
 REGISTRY_USERNAME="${REGISTRY_USERNAME:-}"
 REGISTRY_TOKEN="${REGISTRY_TOKEN:-}"
 ROLLBACK_ONLY="${ROLLBACK_ONLY:-0}"
-XRAY_PUBLIC_HOST="${XRAY_PUBLIC_HOST:-72.60.195.46}"
+PROXY_PUBLIC_HOST="${PROXY_PUBLIC_HOST:-72.60.195.46}"
+PROXY_PUBLIC_PORT="${PROXY_PUBLIC_PORT:-443}"
 MAINTENANCE_LOCK_FILE="${MAINTENANCE_LOCK_FILE:-/var/lock/arthurs-review-maintenance.lock}"
 MAINTENANCE_LOCK_WAIT_SECONDS="${MAINTENANCE_LOCK_WAIT_SECONDS:-1800}"
 STAGING_DIR=""
-VERIFY_XRAY_ON_EXIT=0
+VERIFY_PROXY_ON_EXIT=0
 
 fail() {
   echo "Deploy failed: $*" >&2
@@ -49,7 +50,7 @@ validate_deploy_inputs() {
   fi
 }
 
-probe_external_xray() {
+probe_public_frontend() {
   node -e '
     const net = require("node:net");
     const [host, rawPort] = process.argv.slice(1);
@@ -57,22 +58,22 @@ probe_external_xray() {
     const timer = setTimeout(() => socket.destroy(new Error("connection timed out")), 10_000);
     socket.once("connect", () => { clearTimeout(timer); socket.destroy(); });
     socket.once("close", (hadError) => { process.exitCode = hadError ? 1 : 0; });
-    socket.once("error", (error) => console.error(`Xray TCP probe failed: ${error.message}`));
-  ' "${XRAY_PUBLIC_HOST}" 2443
+    socket.once("error", (error) => console.error(`Proxy TCP probe failed: ${error.message}`));
+  ' "${PROXY_PUBLIC_HOST}" "${PROXY_PUBLIC_PORT}"
 }
 
 cleanup() {
-  local exit_code=$? cleanup_status=0 xray_status=0 staging_quoted
+  local exit_code=$? cleanup_status=0 proxy_status=0 staging_quoted
   trap - EXIT
   if [[ -n "${STAGING_DIR}" && "${STAGING_DIR}" == "${APP_DIR}"/.release-stage.* ]]; then
     printf -v staging_quoted '%q' "${STAGING_DIR}"
     ssh "${REMOTE}" "rm -rf -- ${staging_quoted}" || cleanup_status=$?
   fi
-  if [[ "${VERIFY_XRAY_ON_EXIT}" == "1" ]]; then
-    probe_external_xray || xray_status=$?
+  if [[ "${VERIFY_PROXY_ON_EXIT}" == "1" ]]; then
+    probe_public_frontend || proxy_status=$?
   fi
-  if [[ "${xray_status}" != "0" ]]; then
-    echo "Xray on public port 2443 became unreachable; no repair was attempted." >&2
+  if [[ "${proxy_status}" != "0" ]]; then
+    echo "The public proxy frontend on port ${PROXY_PUBLIC_PORT} became unreachable; no repair was attempted." >&2
     exit_code="${xray_status}"
   elif [[ "${exit_code}" == "0" && "${cleanup_status}" != "0" ]]; then
     exit_code="${cleanup_status}"
@@ -116,8 +117,8 @@ main() {
   validate_deploy_inputs || return
   trap cleanup EXIT
   ssh "${REMOTE}" "command -v flock >/dev/null" || { fail "The VPS is missing flock"; return; }
-  probe_external_xray || { fail "Xray public port 2443 is unreachable before deployment"; return; }
-  VERIFY_XRAY_ON_EXIT=1
+  probe_public_frontend || { fail "The public proxy frontend on port ${PROXY_PUBLIC_PORT} is unreachable before deployment"; return; }
+  VERIFY_PROXY_ON_EXIT=1
   stage_release_files || return
   if [[ "${ROLLBACK_ONLY}" == "1" ]]; then mode="rollback"; fi
   run_remote_release "${mode}"
