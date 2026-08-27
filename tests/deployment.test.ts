@@ -180,7 +180,7 @@ describe("deployment scripts", () => {
     expect(workflow).toContain("schedule:");
     expect(workflow).toContain("scripts/verify-backup.sh");
     expect(workflow).toContain("actions/upload-artifact@v7");
-    expect(workflow).toContain("retention-days: 30");
+    expect(workflow).toContain("retention-days: 14");
     expect(workflow).toContain("-mtime -1");
     expect(workflow).not.toContain("backup-data.sh");
   });
