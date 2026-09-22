@@ -50,7 +50,9 @@ jobs:
           fi
           DEPLOY_HOST="${DEPLOY_HOST:-72.60.195.46}"
           if [ "$DEPLOY_HOST" = "72.60.195.46" ]; then
-            printf '%s\n' '72.60.195.46 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPW6DVc3HbWdUhmPpQxR2De5SrdmSsmYyxm+RrHgedSl' >> ~/.ssh/known_hosts
+            # Rotated 2026-09 (VPS host keys regenerated). Re-derive with:
+            # ssh-keygen -lf <(ssh-keyscan -t ed25519 72.60.195.46)
+            printf '%s\n' '72.60.195.46 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDffFanc/LlnVjKZ/7oV1xiT5nhrFStrLI9wh9iOXwPl' >> ~/.ssh/known_hosts
           else
             ssh-keyscan -T 30 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
           fi
