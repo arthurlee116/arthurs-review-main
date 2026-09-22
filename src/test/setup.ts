@@ -1,5 +1,13 @@
 import "@testing-library/jest-dom/vitest";
+import { ReadableStream } from "node:stream/web";
 import { vi } from "vitest";
+
+// vmThreads pool doesn't inject web stream globals into the vm context,
+// but next/og's ImageResponse needs ReadableStream.
+if (typeof globalThis.ReadableStream === "undefined") {
+  globalThis.ReadableStream =
+    ReadableStream as unknown as typeof globalThis.ReadableStream;
+}
 
 const emptyRect = {
   bottom: 0,

@@ -130,7 +130,9 @@ describe("LifeQuickPost", () => {
       "fetch",
       vi.fn(async (url: string, init?: RequestInit) => {
         if (url === "/studio/api/media") {
-          const file = (init?.body as FormData).get("file") as File;
+          const body = init?.body;
+          if (!(body instanceof FormData)) throw new Error("expected FormData body");
+          const file = body.get("file") as File;
           return imageUpload(file.name.replace(/\.jpg$/, ""));
         }
         if (url === "/studio/api/articles") {

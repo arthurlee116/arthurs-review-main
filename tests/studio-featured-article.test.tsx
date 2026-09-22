@@ -37,7 +37,7 @@ describe("featured article controls in Studio", () => {
     migrate();
 
     const current = publishArticle(createArticle(articleInput({ titleZh: "当前封面", slug: "current-featured" })).id);
-    const alternative = publishArticle(createArticle(articleInput({ titleZh: "候选文章", slug: "featured-alternative" })).id);
+    publishArticle(createArticle(articleInput({ titleZh: "候选文章", slug: "featured-alternative" })).id);
     createArticle(articleInput({ titleZh: "草稿文章", slug: "featured-draft" }));
     setFeaturedArticle(current.id);
 

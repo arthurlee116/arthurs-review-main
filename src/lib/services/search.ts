@@ -107,7 +107,7 @@ export function buildFtsQuery(raw: string): string {
       continue;
     }
 
-    const escaped = part.replace(/[*"()\[\]{}^~|]/g, "");
+    const escaped = part.replace(/[*"()[\]{}^~|]/g, "");
     if (!escaped || !/[\p{L}\p{N}]/u.test(escaped)) continue;
     clauses.push(`"${escaped}"*`);
     tokenCount += 1;

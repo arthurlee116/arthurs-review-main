@@ -15,7 +15,7 @@ describe("project scaffold", () => {
 
   it("runs the TypeScript 7 CLI from the lint gate", () => {
     expect(packageJson.scripts.lint).toBe("pnpm lint:js && pnpm lint:ts");
-    expect(packageJson.scripts["lint:js"]).toBe("eslint");
+    expect(packageJson.scripts["lint:js"]).toBe("oxlint");
     expect(packageJson.scripts["lint:ts"]).toBe("tsc --noEmit");
     expect(packageJson.scripts.typecheck).toBe("pnpm lint:ts");
   });
@@ -24,6 +24,8 @@ describe("project scaffold", () => {
     expect(nextConfig).toContain("typedRoutes: true");
     expect(nextConfig).toContain("cacheComponents: true");
     expect(nextConfig).toContain("reactCompiler: true");
+    expect(packageJson.dependencies.next).not.toContain("canary");
+    expect(packageJson.devDependencies.typescript).not.toContain("dev");
     expect(packageJson.devDependencies).toHaveProperty("babel-plugin-react-compiler");
   });
 

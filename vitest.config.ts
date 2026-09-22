@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    pool: "vmThreads",
     setupFiles: ["./src/test/setup.ts"],
     exclude: ["**/node_modules/**", "**/.git/**", "**/.claude/**", "**/e2e/**"],
   },

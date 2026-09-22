@@ -200,7 +200,7 @@ function insertRevision(
 
 function insertRevisionTags(revisionId: number, tagIds: number[]) {
   const insert = getDb().prepare("insert into article_revision_tags(revision_id, tag_id) values (?, ?)");
-  for (const tagId of [...new Set(tagIds)]) insert.run(revisionId, tagId);
+  for (const tagId of new Set(tagIds)) insert.run(revisionId, tagId);
 }
 
 export function createArticle(input: ArticleInput) {

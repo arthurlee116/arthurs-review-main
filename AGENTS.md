@@ -30,10 +30,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Project
 
-**Arthur's Review** — a single-user Next.js 16 (canary) publication app. Public content is read from SQLite metadata + Markdown body files under `DATA_DIR`; editing happens in the private `/studio` backend.
+**Arthur's Review** — a single-user Next.js 16 publication app. Public content is read from SQLite metadata + Markdown body files under `DATA_DIR`; editing happens in the private `/studio` backend.
 
 - **Runtime**: Node 26 (`.nvmrc` / `.node-version`), pnpm 10.28.1
-- **Framework**: Next.js 16 canary (exact pin in `package.json`), React 19, React Compiler on, typed routes, native TS CLI (`experimental.useTypeScriptCli`)
+- **Framework**: Next.js 16 (exact pin in `package.json`), React 19, React Compiler on, typed routes, native TS CLI (`experimental.useTypeScriptCli`)
 - **Database**: better-sqlite3, migrations in `src/lib/db/migrations/` (numbered SQL, schema version = file count)
 - **Semantic search**: optional Python ONNX service (`semantic/`), wired via `SEMANTIC_SEARCH_URL`. App falls back to FTS5 when absent.
 - **Jobs**: durable SQLite-based queue, worker via `pnpm jobs:work`. Job types: `proof.create`, `proof.ots_upgrade_verify`, `proof.wayback_capture`, `cache.invalidate`, `translation.article`, `search.embed`.
@@ -79,7 +79,7 @@ Generate the admin password hash with `pnpm hash-password` (interactive, scrypt)
 pnpm dev            # dev server (http://localhost:3000)
 pnpm build          # production build
 pnpm start          # production server
-pnpm lint           # eslint + tsc --noEmit (in that order)
+pnpm lint           # oxlint + tsc --noEmit (in that order; there is no eslint)
 pnpm typecheck      # tsc --noEmit (alias for lint:ts)
 pnpm test           # vitest unit tests (jsdom, @/ alias, globals)
 pnpm test:watch     # vitest watch
@@ -92,7 +92,9 @@ pnpm backup:database # create SQLite snapshot
 pnpm proofs:backfill # backfill publication proofs
 pnpm proof:replay <id> # advance one stuck proof (ots+wayback) to done; --list to see unfinished ones
 pnpm search:backfill # backfill semantic search vectors
+pnpm search:benchmark:index # index the benchmark corpus
 pnpm search:benchmark # run semantic search benchmark
+pnpm search:benchmark:stress # generate a stress corpus
 ```
 
 ### Verification order
@@ -124,7 +126,7 @@ Playwright single test: `pnpm exec playwright test e2e/studio.spec.ts -g "studio
 
 ## Testing
 
-- **Vitest** (`tests/`): jsdom environment, `@/` alias, global `vi`/`expect`. Setup mocks `next/font/local`, `next/cache`, `next/server`. Test factories in `src/test/factories.ts`.
+- **Vitest** (`tests/`): jsdom environment, `pool: "vmThreads"`, `@/` alias, global `vi`/`expect`. Setup mocks `next/font/local`, `next/cache`, `next/server` and polyfills `ReadableStream` (the vmThreads sandbox doesn't provide it; `next/og` needs it). Test factories in `src/test/factories.ts`.
 - **Playwright** (`e2e/`): 2 projects (chromium, mobile Pixel 7). Sequential, 1 worker. `pnpm test:e2e` runs `scripts/run-e2e.sh`, which sets the wall of env vars — do not try to split it. The Playwright config auto-starts the dev server via `scripts/start-e2e-server.sh` (seeds + `next dev` + `jobs:work`) unless `PLAYWRIGHT_BASE_URL` is set.
 - **Python pytest** (`semantic/tests`): tests the semantic search service. Install with `pip install -e "./semantic[test]"`.
 
@@ -152,14 +154,26 @@ Playwright single test: `pnpm exec playwright test e2e/studio.spec.ts -g "studio
 
 ## Deployment
 
-Production is Docker Compose behind Caddy. See `deploy/docker-compose.yml` and `deploy/production.env.example`.
+The VPS is **dual-purpose**: this blog plus a personal proxy stack (xray etc.). Don't casually `docker compose down` or restart host services — you can take down more than the blog.
+
+The edge is **not Caddy**. Request path:
+
+```
+browser → haproxy (host :443, SNI routing, systemd unit) → Caddy (:8444) → app
+                            ↘ everything else → xray_reality (:9443)
+```
+
+- `deploy/haproxy.cfg` is the live edge config (installed to `/etc/haproxy/haproxy.cfg` by `scripts/install-haproxy-config.sh`, checked by `scripts/production-topology-preflight.sh`). It routes `blog.leesaitool.com` / `studio.*` to Caddy by SNI; all other TLS traffic is camouflage for xray.
+- **Ghost failures**: haproxy's idle timeout kills browser-pooled h2 connections. The client then fails with `ERR_HTTP2` / "Failed to fetch" (e.g. a phantom "Publish failed" in studio) with **no trace in Caddy or app logs**. If a report smells like this, check haproxy first. Keep `timeout client/server` well above browser keep-alive (currently 1h).
+
+See `deploy/docker-compose.yml` and `deploy/production.env.example`.
 
 ```bash
 ssh root@72.60.195.46 'bash -s' < scripts/server-bootstrap.sh
 REMOTE=root@72.60.195.46 ./scripts/deploy.sh
 ```
 
-Runtime data mounts at `/var/www/arthurs-review/data` (host) → `/data` (container). Caddy serves `blog.leesaitool.com` with automatic HTTPS.
+Runtime data mounts at `/var/www/arthurs-review/data` (host) → `/data` (container).
 
 ### Required repo secrets (deploy.yml)
 
@@ -179,4 +193,4 @@ Daily cron `arthurs-review-backup` (installed by `scripts/server-bootstrap.sh`).
 DATA_DIR=/var/www/arthurs-review/data BACKUP_DIR=/var/www/arthurs-review/backups APP_DIR=/opt/arthurs-review scripts/backup-data.sh
 ```
 
-Verify without restoring: `scripts/verify-backup.sh <archive>`. 30-day retention on VPS, 14-day on GitHub Actions artifact (artifact storage quota).
+Verify without restoring: `scripts/verify-backup.sh <archive>`. Restore: `scripts/restore-backup.sh`. Other maintenance scripts: `scripts/reindex-fts5.mjs` (rebuild the FTS5 index), `scripts/production-topology-preflight.sh` (checks the haproxy/Caddy/xray topology on the VPS). 30-day retention on VPS, 14-day on GitHub Actions artifact (artifact storage quota).

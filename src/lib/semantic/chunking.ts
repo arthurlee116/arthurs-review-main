@@ -52,7 +52,7 @@ function cleanInlineMarkdown(value: string) {
     .replace(/[`*~]/g, "")
     .replace(/(^|[^\p{L}\p{N}])_+/gu, "$1")
     .replace(/_+($|[^\p{L}\p{N}])/gu, "$1")
-    .replace(/\\([\\`*{}\[\]()#+\-.!_>])/g, "$1")
+    .replace(/\\([\\`*{[}\]()#+\-.!_>])/g, "$1")
     .replace(/[ \t]+/g, " ")
     .trim();
 }

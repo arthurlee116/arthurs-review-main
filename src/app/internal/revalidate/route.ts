@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   try {
     const { tags } = BodySchema.parse(await request.json());
     invalidateCacheTags(tags);
-    return Response.json({ revalidated: [...new Set(tags)].length });
+    return Response.json({ revalidated: new Set(tags).size });
   } catch {
     return Response.json({ error: "Invalid cache tags" }, { status: 400 });
   }
