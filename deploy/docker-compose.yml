@@ -73,11 +73,21 @@ services:
       retries: 3
 
   caddy:
-    image: caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    # 2.11.7's official binary is ahead of the container release; install it
+    # with scripts/install-caddy-binary.sh before starting this service.
+    image: caddy:2.11.6-alpine@sha256:c776e0c6413b544d0459665e54ec7b8b2a15000c0cbee8b254da0067b1d184ff
+    environment:
+      CADDY_VERSION: v2.11.7
     restart: unless-stopped
     ports:
       - "127.0.0.1:8444:443"
     volumes:
+      - type: bind
+        source: /opt/arthurs-review-runtime/caddy/2.11.7/caddy
+        target: /usr/bin/caddy
+        read_only: true
+        bind:
+          create_host_path: false
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./studio-client-ca.pem:/etc/caddy/pki/studio-client-ca.pem:ro
       - caddy_data:/data
