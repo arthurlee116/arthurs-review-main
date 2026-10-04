@@ -13,7 +13,11 @@ Internet :443/udp -> hysteria-final
 
 HAProxy sends PROXY v2 only to Caddy. Caddy accepts it solely through its loopback-published port and overwrites upstream client-IP headers from the resulting peer address. The Xray backends do not receive PROXY protocol.
 
-The current VPS runs CentOS Stream 9. `scripts/server-bootstrap.sh` supports that production OS as well as Debian and Ubuntu, installs Docker from Docker's official repository, and selects `crond` or `cron` accordingly. On CentOS it adds the public port rules only when `firewalld` is already active; otherwise the provider firewall must allow SSH plus TCP 80 and 443.
+The current VPS runs Ubuntu 26.04 LTS. `scripts/server-bootstrap.sh` also supports Debian and CentOS Stream 9, installs Docker from Docker's official repository, and selects `crond` or `cron` accordingly. On CentOS it adds the public port rules only when `firewalld` is already active; otherwise the provider firewall must allow SSH plus TCP 80 and 443.
+
+HAProxy is installed as the `haproxy` Debian package from Vincent Bernat's `haproxy-3.4` PPA for Ubuntu `resolute` (3.4.6 as of 2026-10-04). The repository key is `/etc/apt/keyrings/haproxy-3.4.asc`, fingerprint `3D653970FBAB0A890E4E4E9A0F14D8B0CF4EFE96`; the source is `/etc/apt/sources.list.d/haproxy-3.4.sources`. `/etc/apt/preferences.d/haproxy-34` restricts that PPA to the HAProxy package. Routine updates can use `apt-get install --only-upgrade haproxy`; do not run a host-wide upgrade as part of blog maintenance.
+
+Caddy runs 2.11.7 from the official GitHub release. Its official container tag was not yet published on 2026-10-04, so Compose pins the 2.11.6 Alpine image by digest and mounts the verified 2.11.7 binary read-only over `/usr/bin/caddy`. Before first deployment on a new VPS, run `bash scripts/install-caddy-binary.sh` as root. The installer pins the archive SHA-256, checks the executable version, and refuses to overwrite a differing installed binary. `/opt/arthurs-review-runtime/caddy/2.11.7/caddy` lives outside the release directories so deployment staging cannot delete it; Compose refuses to start if it is missing. Once the official 2.11.7 image is available, pin its digest and remove the binary mount and installer.
 
 `xray-443.service`, its config, certificates, protocol, firewall rules, and port are external production assets. Deployments hash and verify them before and after but never stop, restart, enable, disable, rewrite, or repair them.
 

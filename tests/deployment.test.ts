@@ -320,8 +320,12 @@ describe("deployment scripts", () => {
     expect(workerSection).not.toContain("ports:");
     expect(caddySection).toContain('- "127.0.0.1:8444:443"');
     expect(caddySection).toContain(
-      "caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648",
+      "caddy:2.11.6-alpine@sha256:c776e0c6413b544d0459665e54ec7b8b2a15000c0cbee8b254da0067b1d184ff",
     );
+    expect(caddySection).toContain("CADDY_VERSION: v2.11.7");
+    expect(caddySection).toContain("source: /opt/arthurs-review-runtime/caddy/2.11.7/caddy");
+    expect(caddySection).toContain("target: /usr/bin/caddy");
+    expect(caddySection).toContain("create_host_path: false");
     expect(haproxy).toContain("bind *:80");
     expect(haproxy).toContain("bind *:443");
     expect(haproxy).toContain("acl sni_blog req.ssl_sni -i blog.leesaitool.com");
