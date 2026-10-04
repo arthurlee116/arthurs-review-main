@@ -1,5 +1,6 @@
 {
   servers :443 {
+    protocols h1 h2 h3
     listener_wrappers {
       proxy_protocol {
         timeout 2s
@@ -24,6 +25,8 @@ blog.leesaitool.com {
     format json
   }
   header {
+    # Public UDP 8443 maps to this server's QUIC port 443.
+    Alt-Svc "h3=\":8443\"; ma=86400"
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
     X-Content-Type-Options nosniff
     Referrer-Policy strict-origin-when-cross-origin
@@ -62,6 +65,7 @@ studio.blog.leesaitool.com {
     format json
   }
   header {
+    Alt-Svc "h3=\":8443\"; ma=86400"
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
     X-Content-Type-Options nosniff
     Referrer-Policy strict-origin-when-cross-origin

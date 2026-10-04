@@ -81,6 +81,7 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8444:443"
+      - "8443:443/udp"
     volumes:
       - type: bind
         source: /opt/arthurs-review-runtime/caddy/2.11.7/caddy

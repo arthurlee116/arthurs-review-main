@@ -9,11 +9,16 @@ Internet :443 -> HAProxy TCP/SNI
   studio.blog.leesaitool.com -> Caddy 127.0.0.1:8444 -> app:3000
   www.bing.com / default     -> Xray 127.0.0.1:9443
 Internet :443/udp -> hysteria-final
+Internet :8443/udp -> Caddy QUIC :443 -> app:3000 (HTTP/3)
 ```
 
 HAProxy sends PROXY v2 only to Caddy. Caddy accepts it solely through its loopback-published port and overwrites upstream client-IP headers from the resulting peer address. The Xray backends do not receive PROXY protocol.
 
-The current VPS runs Ubuntu 26.04 LTS. `scripts/server-bootstrap.sh` also supports Debian and CentOS Stream 9, installs Docker from Docker's official repository, and selects `crond` or `cron` accordingly. On CentOS it adds the public port rules only when `firewalld` is already active; otherwise the provider firewall must allow SSH plus TCP 80 and 443.
+HTTP/3 reaches Caddy directly over public UDP 8443; TCP 443 still goes through HAProxy. Compose publishes `8443:443/udp`, and both HTTPS sites override Caddy's automatic advertisement with `Alt-Svc: h3=":8443"; ma=86400`. UDP 443 belongs to Hysteria, so advertising that port would send browsers to the wrong service. The same site routes, client-IP header replacement, and Studio client-certificate policy apply to QUIC. Bootstrap opens UDP 8443 in UFW or active firewalld; any provider firewall must allow it too. A port mapping change requires recreating only the Caddy service (`up -d --no-deps caddy`), since a config reload cannot change container port publication.
+
+Verify discovery with `curl -sSI https://blog.leesaitool.com/healthz`. With an HTTP/3-capable curl, verify the UDP path without TCP fallback using `curl --noproxy '*' --http3-only --connect-to blog.leesaitool.com:443:blog.leesaitool.com:8443 -w '\nHTTP %{http_version}\n' https://blog.leesaitool.com/healthz`; expect HTTP 3 and a healthy response. The URL retains the original authority while the QUIC connection uses the advertised alternative port. Also verify `/studio` still returns 404 on the public host and the Studio hostname still rejects clients without a certificate over QUIC.
+
+The current VPS runs Ubuntu 26.04 LTS. `scripts/server-bootstrap.sh` also supports Debian and CentOS Stream 9, installs Docker from Docker's official repository, and selects `crond` or `cron` accordingly. On CentOS it adds the public port rules only when `firewalld` is already active; otherwise the provider firewall must allow SSH, TCP 80 and 443, and UDP 8443.
 
 HAProxy is installed as the `haproxy` Debian package from Vincent Bernat's `haproxy-3.4` PPA for Ubuntu `resolute` (3.4.6 as of 2026-10-04). The repository key is `/etc/apt/keyrings/haproxy-3.4.asc`, fingerprint `3D653970FBAB0A890E4E4E9A0F14D8B0CF4EFE96`; the source is `/etc/apt/sources.list.d/haproxy-3.4.sources`. `/etc/apt/preferences.d/haproxy-34` restricts that PPA to the HAProxy package. Routine updates can use `apt-get install --only-upgrade haproxy`; do not run a host-wide upgrade as part of blog maintenance.
 

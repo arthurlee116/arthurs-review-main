@@ -319,6 +319,7 @@ describe("deployment scripts", () => {
     expect(appSection).not.toContain("ports:");
     expect(workerSection).not.toContain("ports:");
     expect(caddySection).toContain('- "127.0.0.1:8444:443"');
+    expect(caddySection).toContain('- "8443:443/udp"');
     expect(caddySection).toContain(
       "caddy:2.11.6-alpine@sha256:c776e0c6413b544d0459665e54ec7b8b2a15000c0cbee8b254da0067b1d184ff",
     );
@@ -366,6 +367,59 @@ describe("deployment scripts", () => {
     expect(remoteRelease).toContain("install-haproxy-config.sh");
     expect(remoteRelease).toContain("XRAY_FINGERPRINT");
     expect(scripts).not.toMatch(/systemctl\s+(?:stop|restart|disable|enable).*xray/i);
+  });
+
+  it("advertises the public QUIC port for both sites and opens only UDP 8443", () => {
+    const caddy = fs.readFileSync("deploy/Caddyfile", "utf8");
+    const bootstrap = fs.readFileSync("scripts/server-bootstrap.sh", "utf8");
+    const compose = fs.readFileSync("deploy/docker-compose.yml", "utf8");
+
+    expect(caddy).toContain("protocols h1 h2 h3");
+    expect(caddy.match(/Alt-Svc "h3=\\":8443\\"; ma=86400"/g)).toHaveLength(2);
+    expect(bootstrap).toContain("ufw allow 8443/udp");
+    expect(bootstrap).toContain("firewall-cmd --permanent --add-port=8443/udp");
+    expect(compose).not.toContain('"8443:443/tcp"');
+    expect(compose).not.toContain('"443:443/udp"');
+  });
+
+  it.each([
+    ["public QUIC mapping", true, "0.0.0.0:8443", 0],
+    ["missing UDP listener", false, "0.0.0.0:8443", 1],
+    ["wrong public UDP port", true, "0.0.0.0:443", 1],
+    ["loopback-only UDP port", true, "127.0.0.1:8443", 1],
+  ])("checks the live topology with %s", (_label, listening, mapping, status) => {
+    const preflight = fs.readFileSync("scripts/production-topology-preflight.sh", "utf8");
+    const functions = preflight.slice(0, preflight.indexOf('mode="${1:-status}"'));
+    const harness = `${functions}
+systemctl() { return 0; }
+cmp() { return 0; }
+ss() {
+  case "$*" in
+    *-lunp*)
+      if [[ "$QUIC_LISTENING" == 1 ]]; then printf 'UNCONN 0 0 0.0.0.0:8443 0.0.0.0:*\\n'; fi
+      ;;
+    *":80"*|*":443"*) printf 'LISTEN 0 4096 0.0.0.0:443 users:(("haproxy"))\\n' ;;
+    *":9443"*) printf 'LISTEN 0 4096 127.0.0.1:9443 users:(("xray"))\\n' ;;
+    *":8444"*) printf 'LISTEN 0 4096 127.0.0.1:8444 users:(("docker-proxy"))\\n' ;;
+  esac
+}
+docker() {
+  case "$*" in
+    *"ps --status running --services"*) printf 'caddy\\n' ;;
+    *"port --protocol udp caddy 443"*) printf '%s\\n' "$QUIC_MAPPING" ;;
+    *"port caddy 443"*) printf '127.0.0.1:8444\\n' ;;
+    *) return 1 ;;
+  esac
+}
+validate_topology
+`;
+    const result = spawnSync("bash", ["-c", harness], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: { ...process.env, QUIC_LISTENING: listening ? "1" : "0", QUIC_MAPPING: mapping },
+    });
+    expect(result.status, result.stderr).toBe(status);
+    if (status !== 0) expect(result.stderr).toContain("Topology preflight failed: Caddy QUIC");
   });
 
   it("overwrites client IP headers with Caddy's direct peer address", () => {
