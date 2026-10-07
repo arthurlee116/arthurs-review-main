@@ -110,11 +110,13 @@ install_server_dependencies() {
 }
 
 production_compose() {
-  (cd "${COMPOSE_DIR}" && docker compose "$@")
+  # The selected release is recorded in .env. Exported candidate variables must
+  # not override that file when the same process restores an older release.
+  (unset APP_IMAGE SEMANTIC_IMAGE DEPLOY_COMMIT_SHA IMAGE_DIGEST; cd "${COMPOSE_DIR}" && docker compose "$@")
 }
 
 staging_compose() {
-  (cd "${STAGING_DIR}/deploy" && docker compose "$@")
+  (unset APP_IMAGE SEMANTIC_IMAGE DEPLOY_COMMIT_SHA IMAGE_DIGEST; cd "${STAGING_DIR}/deploy" && docker compose "$@")
 }
 
 production_app_logs() {

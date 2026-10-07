@@ -149,6 +149,32 @@ rollback_candidate
 }
 
 describe("deployment scripts", () => {
+  it("uses the release env file instead of exported candidate variables during rollback", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-compose-env-"));
+    fs.mkdirSync(path.join(directory, "deploy"));
+    const result = spawnSync("bash", ["-c", `
+source scripts/remote-release.sh
+docker() {
+  [[ "$*" == 'compose config' ]] || return 1
+  [[ -z "\${APP_IMAGE+x}" && -z "\${SEMANTIC_IMAGE+x}" && -z "\${DEPLOY_COMMIT_SHA+x}" && -z "\${IMAGE_DIGEST+x}" ]] || return 1
+  [[ "$UNRELATED_SETTING" == preserved ]] || return 1
+}
+production_compose config
+staging_compose config
+[[ "$APP_IMAGE" == candidate && "$DEPLOY_COMMIT_SHA" == candidate ]]
+`], {
+      cwd: process.cwd(), encoding: "utf8",
+      env: {
+        ...process.env, APP_DIR: directory, STAGING_DIR: directory,
+        APP_IMAGE: "candidate", SEMANTIC_IMAGE: "candidate", DEPLOY_COMMIT_SHA: "candidate",
+        IMAGE_DIGEST: "candidate", UNRELATED_SETTING: "preserved",
+      },
+    });
+    fs.rmSync(directory, { recursive: true, force: true });
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
+  });
+
   it("installs an automatic daily backup schedule during server bootstrap", () => {
     const bootstrap = fs.readFileSync("scripts/server-bootstrap.sh", "utf8");
     const deploymentReadme = fs.readFileSync("deploy/README.md", "utf8");
