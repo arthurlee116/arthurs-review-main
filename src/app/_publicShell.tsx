@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { Masthead } from "@/components/Masthead";
 import { PublicNav, PublicNavStatic } from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicFooter";
+import { CloudflareWebAnalytics } from "@/components/CloudflareWebAnalytics";
+import { getCloudflareWebAnalyticsToken } from "@/lib/env";
 
 export function PublicShell({
   children,
@@ -18,6 +20,7 @@ export function PublicShell({
       </Suspense>
       <div className="flex-1">{children}</div>
       <PublicFooter />
+      <CloudflareWebAnalytics token={getCloudflareWebAnalyticsToken()} />
     </div>
   );
 }

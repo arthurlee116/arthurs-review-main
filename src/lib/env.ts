@@ -11,6 +11,11 @@ const EnvSchema = z.object({
   LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(8),
 });
 const DataEnvSchema = EnvSchema.pick({ DATA_DIR: true });
+const CloudflareTokenSchema = z.string().trim().regex(/^[0-9a-f]{32}$/).or(z.literal("")).optional();
+
+export function getCloudflareWebAnalyticsToken() {
+  return CloudflareTokenSchema.parse(process.env.NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN) || null;
+}
 
 export type AppEnv = z.infer<typeof EnvSchema>;
 

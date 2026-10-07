@@ -509,6 +509,18 @@ validate_topology
     expect(workflow).toContain("SITE_URL=https://blog.leesaitool.com");
   });
 
+  it("bakes the optional analytics token into the tested production image", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
+    const ci = fs.readFileSync(".github/workflows/ci.yml", "utf8");
+    const name = "NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN";
+    expect(dockerfile.indexOf(`ARG ${name}=""`)).toBeLessThan(dockerfile.indexOf("RUN pnpm build"));
+    expect(dockerfile).toContain(`ENV ${name}=$${name}`);
+    expect(workflow).toContain(`${name}=\${{ vars.${name} }}`);
+    expect(workflow).toContain(`${name}: \${{ vars.${name} }}`);
+    expect(ci).toContain(`${name}=00000000000000000000000000000000`);
+  });
+
   it("resolves the robots sitemap URL from the runtime environment", () => {
     const robots = fs.readFileSync("src/app/robots.ts", "utf8");
 

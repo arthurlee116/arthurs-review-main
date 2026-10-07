@@ -20,6 +20,24 @@ Required environment variables:
 
 See `.env.example` and `deploy/production.env.example`.
 
+## Web Analytics
+
+Cloudflare Web Analytics uses the official script on public pages only. Studio
+pages and the `studio.*` hostname are excluded. SPA tracking is provided by the
+beacon itself; no cookies or custom event collector are added.
+
+Set the optional `NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN` before `pnpm build`.
+For production, set the GitHub repository variable with the same name; Deploy
+passes it into the image build. This is a public site identifier, not an API key.
+Leave it blank to disable analytics, then rebuild and deploy. Runtime container
+environment changes alone cannot change a token baked into the frontend.
+Use manual snippet installation in Cloudflare and keep automatic injection off.
+
+Playwright intercepts beacon scripts and uploads across the suite. The analytics
+tests load the current official script but intercept every upload. If a local
+network blocks the script download, `E2E_CLOUDFLARE_BEACON_PATH` can point to an
+official script downloaded through an accessible connection.
+
 ## Verification
 
 ```bash

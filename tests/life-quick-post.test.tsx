@@ -3,14 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LifeQuickPost } from "@/components/studio/LifeQuickPost";
 
-const router = vi.hoisted(() => ({
-  push: vi.fn(),
-  refresh: vi.fn(),
-}));
+const navigate = vi.hoisted(() => vi.fn());
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => router,
-}));
+vi.mock("@/lib/client/public-navigation", () => ({ navigateToPublicPage: navigate }));
 
 vi.mock("@/lib/studio/precompress", () => ({
   precompressImage: vi.fn(async (file: File) => file),
@@ -40,7 +35,7 @@ function imageFile(name = "a.jpg") {
 }
 
 beforeEach(() => {
-  router.push.mockReset();
+  navigate.mockReset();
 });
 
 afterEach(() => {
@@ -90,7 +85,7 @@ describe("LifeQuickPost", () => {
     await waitFor(() => expect(publish).toBeEnabled());
     await user.click(publish);
 
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/life"));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith("/life"));
     const create = calls.find((call) => call.url === "/studio/api/articles");
     expect(create?.body).toMatchObject({
       category: "life",
@@ -121,7 +116,7 @@ describe("LifeQuickPost", () => {
     await waitFor(() => expect(publish).toBeEnabled());
     await user.click(publish);
     expect(await screen.findByText(/Slug already exists/)).toBeInTheDocument();
-    expect(router.push).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it("publishes with the selected cover first in the body and as the cover image", async () => {
@@ -154,7 +149,7 @@ describe("LifeQuickPost", () => {
     expect(within(row).getByText("封面")).toBeInTheDocument();
 
     await user.click(publish);
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/life"));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith("/life"));
     const create = calls.find((call) => call.url === "/studio/api/articles");
     expect(create?.body).toMatchObject({
       bodyZh: "![](/media/2026/07/b.webp)\n![](/media/2026/07/a.webp)",

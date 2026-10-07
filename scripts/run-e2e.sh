@@ -11,6 +11,8 @@ export DATA_DIR="${data_dir}"
 export NO_PROXY="127.0.0.1,localhost"
 export no_proxy="127.0.0.1,localhost"
 export SITE_URL="http://127.0.0.1:3100"
+# Tests intercept the official script and all beacon uploads.
+export NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN="${NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN-00000000000000000000000000000000}"
 export INTERNAL_APP_URL="http://127.0.0.1:3100"
 export WORKER_REVALIDATE_SECRET="e2e-worker-revalidate-secret"
 export OTS_CLI_PATH="/bin/false"

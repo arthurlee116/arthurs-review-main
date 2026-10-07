@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { csrfToken } from "@/lib/client/csrf";
+import { navigateToPublicPage } from "@/lib/client/public-navigation";
 import { buildLifePost, type UploadedMedia } from "@/lib/studio/life-post";
 import { precompressImage } from "@/lib/studio/precompress";
 
@@ -32,7 +32,6 @@ function statusLabel(item: MediaItem) {
 }
 
 export function LifeQuickPost() {
-  const router = useRouter();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [coverId, setCoverId] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
@@ -140,7 +139,7 @@ export function LifeQuickPost() {
         setMessage(data.error ? `发布失败：${data.error}` : "发布失败");
         return;
       }
-      router.push("/life");
+      navigateToPublicPage("/life");
     } catch {
       setMessage("发布失败");
     } finally {

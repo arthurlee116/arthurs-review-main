@@ -62,6 +62,7 @@ jobs:
           tags: arthurs-review-ci:${{ github.sha }}
           build-args: |
             SITE_URL=https://blog.leesaitool.com
+            NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN=00000000000000000000000000000000
             GIT_COMMIT_SHA=${{ github.sha }}
           cache-from: type=gha,scope=app
           cache-to: type=gha,mode=max,scope=app
@@ -196,6 +197,7 @@ jobs:
           E2E_EXPECTED_DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
           E2E_ADMIN_PASSWORD: admin-password
           E2E_EXPECT_SEMANTIC: "1"
+          NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN: "00000000000000000000000000000000"
         run: pnpm exec playwright test
 
       - name: Stop tested images

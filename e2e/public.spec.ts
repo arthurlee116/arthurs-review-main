@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100";
 const expectedSiteURL = (process.env.E2E_EXPECTED_SITE_URL ?? baseURL).replace(/\/$/, "");

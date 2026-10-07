@@ -76,6 +76,7 @@ jobs:
           tags: ${{ env.IMAGE_TAG }}
           build-args: |
             SITE_URL=https://blog.leesaitool.com
+            NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN=${{ vars.NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN }}
             GIT_COMMIT_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -251,6 +252,7 @@ jobs:
           E2E_EXPECTED_DIGEST: ${{ env.E2E_DIGEST }}
           E2E_ADMIN_PASSWORD: admin-password
           E2E_EXPECT_SEMANTIC: "1"
+          NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN: ${{ vars.NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN }}
         run: pnpm exec playwright test
 
       - name: Stop the E2E image

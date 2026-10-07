@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 const PNG_1PX = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
@@ -27,9 +27,11 @@ test("quick-post publishes a life article from the studio", async ({ page }) => 
   await page.getByLabel("Caption").fill(caption);
   const publishButton = page.getByRole("button", { name: "发布", exact: true });
   await expect(publishButton).toBeEnabled();
+  await page.evaluate(() => { document.documentElement.dataset.studioDocument = "initial"; });
   await publishButton.click();
 
   await expect(page).toHaveURL(/\/life$/);
+  expect(await page.locator("html").getAttribute("data-studio-document")).toBeNull();
 
   // The photo wall revalidates asynchronously via the cache.invalidate worker job.
   const wallItem = page.locator("main a").first();
