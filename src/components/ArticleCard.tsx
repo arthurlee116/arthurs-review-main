@@ -27,7 +27,7 @@ export function ArticleCard({
         ) : null}
       </div>
       {featured && !article.coverImagePath ? <div className="mt-4 h-1.5 w-16 bg-[var(--accent)]" aria-hidden="true" /> : null}
-      <h2 className={large ? "mt-3 text-4xl font-bold leading-none md:text-5xl" : "mt-3 text-2xl font-bold leading-tight md:text-3xl"}>
+      <h2 className={large ? "mt-3 text-2xl font-bold leading-tight md:text-5xl md:leading-none" : "mt-3 text-2xl font-bold leading-tight md:text-3xl"}>
         <Link className="transition-colors group-hover:text-[var(--accent)] focus-visible:text-[var(--accent)]" href={articlePath(article.category, article.slug)}>{article.titleZh}</Link>
       </h2>
       {article.excerptZh ? <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--muted)]">{article.excerptZh}</p> : null}

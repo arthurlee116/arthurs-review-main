@@ -92,7 +92,7 @@ describe("public listing limits", () => {
     expect(cards[0]).toContainElement(screen.getByRole("link", { name: "文章 15" }));
     expect(screen.queryByText("Featured")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "文章 1" })).not.toBeInTheDocument();
-    expect(cards[0].querySelector("h2")).toHaveClass("text-4xl");
+    expect(cards[0].querySelector("h2")).toHaveClass("text-2xl", "md:text-5xl");
   });
 
   it("limits RSS to the newest 50 articles", async () => {

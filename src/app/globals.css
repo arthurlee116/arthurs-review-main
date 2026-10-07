@@ -159,10 +159,6 @@ button {
   padding-left: 0.6em;
 }
 
-.prose > p:first-of-type {
-  font-size: 1.12em;
-}
-
 .prose h3 {
   font-size: 1.3em;
 }

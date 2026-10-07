@@ -47,6 +47,30 @@ test("mobile masthead stays stable above the nav", async ({ page }) => {
   expect(layout.noticeOnHome).toBe(false);
 });
 
+test("mobile home article titles share one size", async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 956 });
+  await page.goto("/");
+  const titles = page.locator("main article h2");
+  await expect(titles).toHaveCount(12);
+  const sizes = await titles.evaluateAll((titles) => titles.map((title) => getComputedStyle(title).fontSize));
+  expect(new Set(sizes)).toEqual(new Set(["24px"]));
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(titles.first()).toHaveCSS("font-size", "48px");
+  await expect(titles.nth(1)).toHaveCSS("font-size", "30px");
+});
+
+test("article opening paragraph shares the body size", async ({ page }) => {
+  for (const width of [393, 1280]) {
+    await page.setViewportSize({ width, height: 956 });
+    await page.goto("/misc/night-lines");
+    const paragraphs = page.locator("main article .prose > p");
+    await expect(paragraphs).toHaveCount(2);
+    const sizes = await paragraphs.evaluateAll((paragraphs) => paragraphs.map((paragraph) => getComputedStyle(paragraph).fontSize));
+    expect(sizes).toEqual([width === 393 ? "18px" : "20px", width === 393 ? "18px" : "20px"]);
+  }
+});
+
 test("mobile article titles use the seven-character wrapping threshold", async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 956 });
 
