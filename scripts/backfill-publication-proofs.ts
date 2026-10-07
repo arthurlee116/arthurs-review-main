@@ -1,6 +1,7 @@
 import { migrate } from "@/lib/db/migrate";
 import { getArticleById, listPublishedArticles } from "@/lib/services/articles";
 import { createPublicationProof } from "@/lib/services/publication-proofs";
+import { isArticleProofEligible } from "@/lib/services/proof-eligibility";
 
 async function backfillPublicationProofs() {
   migrate();
@@ -8,8 +9,9 @@ async function backfillPublicationProofs() {
 
   let failures = 0;
   const articles = listPublishedArticles()
-    .map((summary) => getArticleById(summary.id, { includeDraft: true }))
-    .filter((article) => article !== null);
+    .map((summary) => getArticleById(summary.id, { includeDraft: false }))
+    .filter((article) => article !== null)
+    .filter((article) => isArticleProofEligible(article));
   let nextIndex = 0;
 
   async function worker() {

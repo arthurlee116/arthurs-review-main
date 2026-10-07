@@ -29,6 +29,9 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
     query,
     page: parsePageParam(params.page),
   });
+  // Recommendation eligibility follows the public revision, even with an unpublished life draft.
+  const recommendable = new Set(articlePage.items.filter((article) => article.status === "published" &&
+    article.publishedCategory !== "life").map((article) => article.id));
   return (
     <section>
       <h1 className="text-4xl font-bold">Articles</h1>
@@ -68,12 +71,12 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Pro
                 {article.titleZh}
               </Link>
               {article.isFeatured ? (
-                <span className="border border-[var(--accent)] bg-[var(--accent)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--paper)]">Featured</span>
+                <span className="border border-[var(--accent)] bg-[var(--accent)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--paper)]">推荐</span>
               ) : null}
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--muted)] sm:justify-end">
               <span>{article.status}</span>
-              {article.status === "published" && !article.isFeatured ? <FeaturedArticleButton articleId={article.id} title={article.titleZh} /> : null}
+              {recommendable.has(article.id) || article.isFeatured ? <FeaturedArticleButton articleId={article.id} title={article.titleZh} isFeatured={article.isFeatured} /> : null}
             </div>
           </li>
         ))}

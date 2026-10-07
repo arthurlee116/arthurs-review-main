@@ -15,8 +15,8 @@ export function generateMetadata() {
 
 export async function HomeContent() {
   await io();
-  const articles = await listCachedPublishedArticles(undefined, { featuredFirst: true, limit: 12 });
-  const featured = articles.find((article) => article.isFeatured) ?? articles[0];
+  const articles = await listCachedPublishedArticles(undefined, { excludeLife: true, limit: 12 });
+  const featured = articles[0];
   const feed = articles.filter((article) => article.id !== featured?.id).slice(0, 11);
 
   return (
@@ -26,7 +26,7 @@ export async function HomeContent() {
           <section className="grid gap-8 border-b-2 border-[var(--rule)] pb-8 md:grid-cols-[1.35fr_1fr]">
             {/* ponytail: -mt-7 cancels ArticleCard's own py-7 so the section hugs the nav rule */}
             <div className="-mt-7">
-              <ArticleCard article={featured} large eagerImage featured />
+              <ArticleCard article={featured} large eagerImage />
             </div>
             <div className="-mt-7">
               {feed.slice(0, 3).map((article) => (

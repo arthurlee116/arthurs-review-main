@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 const links = [
   ["Home", "/"],
+  ["推荐", "/recommended"],
   ["时事评论", "/commentary"],
   ["社会分析", "/society"],
   ["杂七杂八", "/misc"],

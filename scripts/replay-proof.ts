@@ -1,7 +1,9 @@
 import { migrate } from "@/lib/db/migrate";
+import { isPublicationProofEligible } from "@/lib/services/proof-eligibility";
 import { getDb } from "@/lib/db/connection";
 import {
   advanceOpenTimestampProof,
+  getPublicationProof,
   captureWaybackProof,
 } from "@/lib/services/publication-proofs";
 
@@ -53,6 +55,10 @@ async function main() {
   }
   const id = Number(rawId);
   if (!Number.isInteger(id) || id <= 0) fail(`invalid proof id: ${rawId}`);
+  if (getPublicationProof(id) && !isPublicationProofEligible(id)) {
+    console.log(JSON.stringify({ id, skipped: true, reason: "Life posts do not require publication proofs or new archives." }));
+    return;
+  }
 
   let otsError: string | null = null;
   let waybackError: string | null = null;

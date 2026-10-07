@@ -11,6 +11,7 @@ import { getDb } from "@/lib/db/connection";
 import { getDataPaths } from "@/lib/env";
 import { errorMessage, NotFoundError } from "@/lib/errors";
 import { pageWindow, type PageResult } from "@/lib/pagination";
+import { isArticleProofEligible, isPublicationProofEligible } from "./proof-eligibility";
 
 const execFileAsync = promisify(execFile);
 
@@ -546,6 +547,7 @@ async function finishOpenTimestamps(proof: PublicationProof, services: ProofServ
 export async function advanceOpenTimestampProof(id: number, services: ProofServices = defaultServices) {
   const proof = getPublicationProof(id);
   if (!proof) throw new NotFoundError("Publication proof not found.");
+  if (!isPublicationProofEligible(id)) return null;
   await finishOpenTimestamps(proof, services);
   return getPublicationProof(id);
 }
@@ -564,12 +566,14 @@ async function runWaybackCapture(id: number, publicUrl: string, capture: ProofSe
 export async function captureWaybackProof(id: number, capture: ProofServices["capture"] = captureWithWayback) {
   const proof = getPublicationProof(id);
   if (!proof) throw new NotFoundError("Publication proof not found.");
+  if (!isPublicationProofEligible(id)) return null;
   if (proof.waybackStatus === "complete") return proof;
   await runWaybackCapture(id, proof.publicUrl, capture);
   return getPublicationProof(proof.id);
 }
 
 async function finishPublicationProof(proof: PublicationProof, services: ProofServices) {
+  if (!isPublicationProofEligible(proof.id)) return null;
   const needsOts = proof.otsStatus === "submitted" || proof.otsStatus === "pending_confirmation";
   const needsWayback = proof.waybackStatus !== "complete";
   if (!needsOts && !needsWayback) return proof;
@@ -588,7 +592,7 @@ async function finishPublicationProof(proof: PublicationProof, services: ProofSe
 }
 
 export function ensurePublicationProofRecord(article: Article, { createdAt = new Date().toISOString() }: { createdAt?: string } = {}) {
-  if (article.status !== "published") return null;
+  if (article.status !== "published" || !isArticleProofEligible(article)) return null;
   const content = articleContent(article);
   const contentFingerprint = sha256(JSON.stringify(content));
   const duplicate = getDb()

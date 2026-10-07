@@ -34,7 +34,7 @@ function pageNumber(value: string | undefined) {
 
 export async function ArchiveContent({ page = 1 }: { page?: number } = {}) {
   await io();
-  const articlePage = await listCachedPublishedArticlePage(page);
+  const articlePage = await listCachedPublishedArticlePage(page, 50, { excludeLife: true });
   const groups = groupByYear(articlePage.items);
 
   return (

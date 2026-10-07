@@ -80,7 +80,7 @@ describe("public listing limits", () => {
     prepare.mockRestore();
   });
 
-  it("renders the featured article first in the large homepage slot", async () => {
+  it("keeps the newest article in the large homepage slot even when an older article is recommended", async () => {
     await publishArticles(15);
     const { listPublishedArticles, setFeaturedArticle } = await import("@/lib/services/articles");
     const oldest = listPublishedArticles().find((article) => article.slug === "article-1")!;
@@ -89,8 +89,9 @@ describe("public listing limits", () => {
     const { container } = render(await HomeContent());
 
     const cards = container.querySelectorAll("main article");
-    expect(cards[0]).toContainElement(screen.getByRole("link", { name: "文章 1" }));
-    expect(cards[0]).toContainElement(screen.getByText("Featured"));
+    expect(cards[0]).toContainElement(screen.getByRole("link", { name: "文章 15" }));
+    expect(screen.queryByText("Featured")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "文章 1" })).not.toBeInTheDocument();
     expect(cards[0].querySelector("h2")).toHaveClass("text-4xl");
   });
 

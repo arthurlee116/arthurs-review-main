@@ -65,6 +65,24 @@ afterEach(async () => {
 });
 
 describe("schema migrations", () => {
+  it("adds life URL history without losing redirects, uniqueness or cascading deletion", async () => {
+    const { runMigrations, migrations } = await import("@/lib/db/migrate");
+    const db = new Database(":memory:");
+    db.pragma("foreign_keys = ON");
+    runMigrations(db, migrations.slice(0, 10));
+    db.prepare("insert into articles(id, updated_at) values (1, '2026-01-01')").run();
+    db.prepare("insert into article_url_history(id, article_id, category, slug, created_at) values (7, 1, 'misc', 'old-text', '2026-01-01')").run();
+    runMigrations(db, migrations);
+    expect(db.prepare("select id, category, slug from article_url_history").all()).toEqual([{ id: 7, category: "misc", slug: "old-text" }]);
+    const insert = db.prepare("insert into article_url_history(article_id, category, slug, created_at) values (1, ?, ?, '2026-01-01')");
+    expect(() => insert.run("life", "old-photo")).not.toThrow();
+    expect(() => insert.run("life", "old-photo")).toThrow();
+    expect(() => insert.run("invalid", "unknown")).toThrow();
+    expect(db.pragma("foreign_key_check")).toEqual([]);
+    db.prepare("delete from articles where id = 1").run();
+    expect(db.prepare("select count(*) as total from article_url_history").get()).toEqual({ total: 0 });
+    db.close();
+  });
   it("applies and records the ordered schema once on a fresh database", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { getDb } = await import("@/lib/db/connection");
@@ -83,6 +101,7 @@ describe("schema migrations", () => {
       { version: 8, name: "admin_auth_state" },
       { version: 9, name: "semantic_search" },
       { version: 10, name: "life_category" },
+      { version: 11, name: "life_url_history" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -108,6 +127,7 @@ describe("schema migrations", () => {
       { version: 8, name: "admin_auth_state" },
       { version: 9, name: "semantic_search" },
       { version: 10, name: "life_category" },
+      { version: 11, name: "life_url_history" },
     ]);
   });
 
@@ -169,11 +189,10 @@ describe("schema migrations", () => {
   });
 
   it("allows the life category in article_revisions and preserves rows and ownership triggers", async () => {
-    const { migrate, runMigrations, migrations } = await import("@/lib/db/migrate");
-    const { getDb } = await import("@/lib/db/connection");
-    const db = getDb();
-
-    migrate();
+    const { runMigrations, migrations } = await import("@/lib/db/migrate");
+    const db = new Database(":memory:");
+    db.pragma("foreign_keys = ON");
+    runMigrations(db, migrations.slice(0, 9));
 
     db.prepare("insert into articles(id, published_at, updated_at, is_featured) values (1, null, ?, 0)")
       .run("2026-07-21T00:00:00.000Z");
@@ -220,6 +239,7 @@ describe("schema migrations", () => {
     expect(indexNames).toContain("article_revisions_path_idx");
     expect(db.prepare("select name from sqlite_master where name = 'article_revisions_new'").get()).toBeUndefined();
     expect(db.pragma("integrity_check")).toEqual([{ integrity_check: "ok" }]);
+    db.close();
   });
 
   it("rolls back a failed migration and can retry it", async () => {

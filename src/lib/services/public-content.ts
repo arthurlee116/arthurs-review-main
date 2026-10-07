@@ -27,10 +27,10 @@ export async function listCachedPublishedArticles(category?: CategoryId, options
   return listPublishedArticles(category, options);
 }
 
-export async function listCachedPublishedArticlePage(page: number, pageSize = 50) {
+export async function listCachedPublishedArticlePage(page: number, pageSize = 50, options: Pick<PublishedArticleListOptions, "featuredOnly" | "excludeLife"> = {}) {
   cacheLife("publicContent");
   cacheTag(PUBLIC_ARTICLE_LIST_TAG);
-  return listPublishedArticlePage({ page, pageSize });
+  return listPublishedArticlePage({ page, pageSize, ...options });
 }
 
 export async function getCachedPublishedArticle(category: CategoryId, slug: string) {

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { getDb } from "@/lib/db/connection";
 import { getArticleRevisionById, type Article } from "@/lib/services/articles";
+import { isArticleProofEligible, isPublicationProofEligible } from "@/lib/services/proof-eligibility";
 import {
   advanceOpenTimestampProof,
   captureWaybackProof,
@@ -70,7 +71,7 @@ export function createJobHandlers(overrides: Partial<JobHandlerDependencies> = {
     "proof.create": async (job) => {
       const payload = ProofCreatePayload.parse(job.payload);
       const revision = dependencies.getArticleRevisionById(payload.articleId, payload.revisionId);
-      if (!revision) return;
+      if (!revision || !isArticleProofEligible(revision)) return;
       const article: Article = {
         ...revision,
         revisionId: payload.revisionId,
@@ -114,6 +115,7 @@ export function createJobHandlers(overrides: Partial<JobHandlerDependencies> = {
 
     "proof.ots_upgrade_verify": async (job) => {
       const { proofId } = ProofPayload.parse(job.payload);
+      if (!isPublicationProofEligible(proofId)) return;
       const proof = await dependencies.advanceOpenTimestampProof(proofId);
       if (!proof) return;
       enqueueProofCache(proof.articleId, proof.id, `ots:${proof.otsStatus}`);
@@ -125,6 +127,7 @@ export function createJobHandlers(overrides: Partial<JobHandlerDependencies> = {
 
     "proof.wayback_capture": async (job) => {
       const { proofId } = ProofPayload.parse(job.payload);
+      if (!isPublicationProofEligible(proofId)) return;
       try {
         const proof = await dependencies.captureWaybackProof(proofId);
         if (proof) enqueueProofCache(proof.articleId, proof.id, `wayback:${proof.waybackStatus}`);

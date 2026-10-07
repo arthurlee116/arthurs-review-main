@@ -97,28 +97,41 @@ test("admin can filter the article list by status category and search", async ({
   await expect(page.getByRole("link", { name: /一座城市如何把人训练成旁观者/ })).toHaveCount(0);
 });
 
-test("admin can pin a featured article to the first homepage slot", async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== "chromium", "The E2E projects share one featured article setting.");
+test("admin can recommend multiple articles without reordering home and cancel one independently", async ({ page }) => {
+  await page.goto("/");
+  const homeLinks = page.getByRole("main").locator("article h2 a");
+  await expect(homeLinks.first()).toBeVisible();
+  const originalOrder = await homeLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href")));
   await login(page);
-  let title = "短评的锋利应该留一点余温";
-  await page.goto(`/studio/articles?q=${encodeURIComponent("余温")}`);
-  let setFeatured = page.getByRole("button", { name: `Set ${title} as featured article` });
-  if ((await setFeatured.count()) === 0) {
-    title = "一座城市如何把人训练成旁观者";
-    await page.goto(`/studio/articles?q=${encodeURIComponent("城市")}`);
-    setFeatured = page.getByRole("button", { name: `Set ${title} as featured article` });
+  const titles = ["短评的锋利应该留一点余温", "夜里写下的几行诗"];
+  for (const title of titles) {
+    await page.goto(`/studio/articles?q=${encodeURIComponent(title)}`);
+    const set = page.getByRole("button", { name: `设为推荐：${title}`, exact: true });
+    if (await set.count()) await set.click();
+    await expect(page.getByRole("button", { name: `取消推荐：${title}`, exact: true })).toBeVisible();
   }
-
-  const articleRow = page.getByRole("listitem").filter({ has: page.getByRole("link", { name: title, exact: true }) });
-  await setFeatured.click();
-  await expect(articleRow.getByText("Featured", { exact: true })).toBeVisible();
-
+  await page.goto("/studio/settings");
+  await expect(page.getByLabel("featuredArticleId")).toHaveCount(0);
+  // The development cache badge can overlap this short form; submit with the keyboard.
+  const saveSettings = page.getByRole("button", { name: "Save settings" });
+  await saveSettings.focus();
+  await saveSettings.press("Enter");
+  await expect(page.getByText("Settings saved")).toBeVisible();
   await expect.poll(async () => {
-    await page.goto("/");
-    const firstCard = page.getByRole("main").locator("article").first();
-    await firstCard.waitFor();
-    return firstCard.getByRole("link", { name: title, exact: true }).count();
-  }).toBe(1);
+    await page.goto("/recommended");
+    return Promise.all(titles.map((title) => page.getByRole("main").getByRole("link", { name: title, exact: true }).count()));
+  }).toEqual([1, 1]);
+  await expect(page.locator("nav").getByRole("link", { name: "推荐", exact: true })).toHaveAttribute("aria-current", "page");
+  await page.goto("/");
+  await expect(homeLinks.first()).toBeVisible();
+  expect(await homeLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href")))).toEqual(originalOrder);
+  await page.goto(`/studio/articles?q=${encodeURIComponent(titles[0])}`);
+  await page.getByRole("button", { name: `取消推荐：${titles[0]}`, exact: true }).click();
+  await expect(page.getByRole("button", { name: `设为推荐：${titles[0]}`, exact: true })).toBeVisible();
+  await expect.poll(async () => {
+    await page.goto("/recommended");
+    return Promise.all(titles.map((title) => page.getByRole("main").getByRole("link", { name: title, exact: true }).count()));
+  }).toEqual([0, 1]);
 });
 
 test("publishing an existing article saves current editor input first", async ({ page }, testInfo) => {

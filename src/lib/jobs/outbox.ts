@@ -1,6 +1,7 @@
 import type Database from "better-sqlite3";
 import type { CategoryId } from "@/lib/content/categories";
 import type { Article } from "@/lib/services/articles";
+import { isArticleProofEligible } from "@/lib/services/proof-eligibility";
 import {
   PUBLIC_ARTICLE_LIST_TAG,
   PUBLIC_PROOFS_TAG,
@@ -45,7 +46,7 @@ export function enqueuePublishedRevisionJobs(
   },
   db: Database.Database,
 ) {
-  enqueueJob(
+  if (isArticleProofEligible(article, db)) enqueueJob(
     {
       type: "proof.create",
       payload: {

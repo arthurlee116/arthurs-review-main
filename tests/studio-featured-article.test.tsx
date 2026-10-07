@@ -46,9 +46,9 @@ describe("featured article controls in Studio", () => {
     const currentRow = screen.getByRole("link", { name: "当前封面" }).closest("li")!;
     const alternativeRow = screen.getByRole("link", { name: "候选文章" }).closest("li")!;
     const draftRow = screen.getByRole("link", { name: "草稿文章" }).closest("li")!;
-    expect(within(currentRow).getByText("Featured")).toBeVisible();
-    expect(within(currentRow).queryByRole("button")).not.toBeInTheDocument();
-    expect(within(alternativeRow).getByRole("button", { name: "Set 候选文章 as featured article" })).toBeVisible();
+    expect(within(currentRow).getByText("推荐")).toBeVisible();
+    expect(within(currentRow).getByRole("button", { name: "取消推荐：当前封面" })).toBeVisible();
+    expect(within(alternativeRow).getByRole("button", { name: "设为推荐：候选文章" })).toBeVisible();
     expect(within(draftRow).queryByRole("button")).not.toBeInTheDocument();
   });
 
@@ -63,10 +63,10 @@ describe("featured article controls in Studio", () => {
     const article = publishArticle(createArticle(articleInput({ titleZh: "设为封面", slug: "set-featured" })).id);
 
     render(await ArticlesPage({ searchParams: Promise.resolve({}) }));
-    await user.click(screen.getByRole("button", { name: "Set 设为封面 as featured article" }));
+    await user.click(screen.getByRole("button", { name: "设为推荐：设为封面" }));
 
     expect(fetchMock).toHaveBeenCalledWith(`/studio/api/articles/${article.id}/featured`, expect.objectContaining({ method: "POST" }));
-    expect(await screen.findByRole("status")).toHaveTextContent("Featured article updated");
+    expect(await screen.findByRole("status")).toHaveTextContent("已设为推荐");
     expect(router.refresh).toHaveBeenCalledOnce();
   });
 
@@ -90,5 +90,23 @@ describe("featured article controls in Studio", () => {
     const pageQuery = prepare.mock.calls.map(([sql]) => String(sql)).find((sql) => /limit\s+\?\s+offset\s+\?/i.test(sql));
     expect(pageQuery).toContain("article_revision_tags");
     prepare.mockRestore();
+  });
+
+  it("removes a recommendation using DELETE and hides the control on public life posts", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(async () => Response.json({ article: { isFeatured: false } }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle, setFeaturedArticle } = await import("@/lib/services/articles");
+    const { default: ArticlesPage } = await import("@/app/studio/(protected)/articles/page");
+    migrate();
+    const article = publishArticle(createArticle(articleInput({ titleZh: "推荐文字", slug: "recommended-text" })).id);
+    publishArticle(createArticle(articleInput({ titleZh: "相册", slug: "photos", category: "life" })).id);
+    setFeaturedArticle(article.id);
+    render(await ArticlesPage({ searchParams: Promise.resolve({}) }));
+    expect(within(screen.getByRole("link", { name: "相册" }).closest("li")!).queryByRole("button")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "取消推荐：推荐文字" }));
+    expect(fetchMock).toHaveBeenCalledWith(`/studio/api/articles/${article.id}/featured`, expect.objectContaining({ method: "DELETE" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("已取消推荐");
   });
 });

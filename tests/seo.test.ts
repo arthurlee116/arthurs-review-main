@@ -123,6 +123,7 @@ describe("SEO and discovery metadata", () => {
     expect(urls).toContain("https://blog.leesaitool.com/archive");
     expect(urls).toContain("https://blog.leesaitool.com/proofs");
     expect(urls).toContain("https://blog.leesaitool.com/life");
+    expect(urls).toContain("https://blog.leesaitool.com/recommended");
   });
 
   it("emits site and author JSON-LD from the root layout", async () => {

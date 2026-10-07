@@ -104,7 +104,7 @@ describe("article service", () => {
     expect(fs.existsSync(path.join(tmpDir, "markdown", "0.zh.md"))).toBe(false);
   });
 
-  it("publishes one featured article at a time", async () => {
+  it("recommends multiple published articles independently", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle, setFeaturedArticle, listPublishedArticles } = await import("@/lib/services/articles");
     migrate();
@@ -138,10 +138,10 @@ describe("article service", () => {
 
     publishArticle(first.id);
     publishArticle(second.id);
+    setFeaturedArticle(first.id);
     setFeaturedArticle(second.id);
 
     const published = listPublishedArticles();
-    expect(published.filter((article) => article.isFeatured)).toHaveLength(1);
-    expect(published.find((article) => article.isFeatured)?.id).toBe(second.id);
+    expect(published.filter((article) => article.isFeatured).map((article) => article.id).sort()).toEqual([first.id, second.id]);
   });
 });

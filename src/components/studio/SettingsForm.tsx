@@ -7,17 +7,11 @@ type Settings = {
   siteName: string;
   contactEmail: string;
   about: string;
-  featuredArticleId: string;
   rssDescription: string;
   openrouterTranslationModel: string;
 };
 
-type ArticleOption = {
-  id: number;
-  titleZh: string;
-};
-
-export function SettingsForm({ initialSettings, publishedArticles }: { initialSettings: Settings; publishedArticles: ArticleOption[] }) {
+export function SettingsForm({ initialSettings }: { initialSettings: Settings }) {
   const [settings, setSettings] = useState<Settings>(initialSettings);
   const [message, setMessage] = useState("");
 
@@ -48,17 +42,6 @@ export function SettingsForm({ initialSettings, publishedArticles }: { initialSe
             value={settings.openrouterTranslationModel}
             onChange={(event) => setSettings({ ...settings, openrouterTranslationModel: event.target.value })}
           />
-        </label>
-        <label className="grid gap-2">
-          featuredArticleId
-          <select className="border border-[var(--rule)] bg-white p-3" value={settings.featuredArticleId} onChange={(event) => setSettings({ ...settings, featuredArticleId: event.target.value })}>
-            <option value="">No featured article</option>
-            {publishedArticles.map((article) => (
-              <option key={article.id} value={String(article.id)}>
-                {article.titleZh}
-              </option>
-            ))}
-          </select>
         </label>
         <label className="grid gap-2">
           about

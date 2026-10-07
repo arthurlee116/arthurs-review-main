@@ -3,7 +3,6 @@ import { assertValidSlug } from "@/lib/content/slugs";
 import type { CategoryId } from "@/lib/content/categories";
 import { getDb } from "@/lib/db/connection";
 import { NotFoundError } from "@/lib/errors";
-import { setSetting } from "@/lib/services/settings";
 import { pageWindow, type PageResult } from "@/lib/pagination";
 import { MAX_SEARCH_CODE_POINTS } from "@/lib/search-limits";
 import { enqueueCacheInvalidation, enqueuePublishedRevisionJobs } from "@/lib/jobs/outbox";
@@ -340,7 +339,6 @@ export function deleteArticle(id: number) {
   db.transaction(() => {
     deleteArticleFromFts(id);
     deleteArticleEmbeddings(id, db);
-    if (article.isFeatured) clearFeaturedArticleState(db);
     enqueueCacheInvalidation(
       {
         tags: articleInvalidationTags(article, published),
@@ -414,18 +412,28 @@ export function getArticleUrlRedirect(category: CategoryId, slug: string) {
 }
 
 export type PublishedArticleListOptions = {
-  featuredFirst?: boolean;
+  featuredOnly?: boolean;
+  excludeLife?: boolean;
   limit?: number;
   offset?: number;
 };
 
+function publishedArticleFilter(category: CategoryId | undefined, options: PublishedArticleListOptions) {
+  const conditions: string[] = [];
+  const params: Array<string | number> = [];
+  if (category) {
+    conditions.push("revisions.category = ?");
+    params.push(category);
+  }
+  if (options.excludeLife) conditions.push("revisions.category <> 'life'");
+  if (options.featuredOnly) conditions.push("articles.is_featured = 1", "revisions.category <> 'life'");
+  return { where: conditions.length ? `where ${conditions.join(" and ")}` : "", params };
+}
+
 export function listPublishedArticles(category?: CategoryId, options: PublishedArticleListOptions = {}) {
-  const where = category ? "where revisions.category = ?" : "";
-  const order = options.featuredFirst
-    ? "articles.is_featured desc, articles.published_at desc, articles.id desc"
-    : "articles.published_at desc, articles.id desc";
+  const { where, params } = publishedArticleFilter(category, options);
+  const order = "articles.published_at desc, articles.id desc";
   const limit = options.limit === undefined ? "" : " limit ? offset ?";
-  const params: Array<string | number> = category ? [category] : [];
   if (options.limit !== undefined) params.push(options.limit, options.offset ?? 0);
   const rows = getDb()
     .prepare(
@@ -455,24 +463,30 @@ export function listPublishedArticlePage({
   category,
   page,
   pageSize = 50,
+  featuredOnly = false,
+  excludeLife = false,
 }: {
   category?: CategoryId;
   page?: number;
   pageSize?: number;
+  featuredOnly?: boolean;
+  excludeLife?: boolean;
 } = {}): PageResult<Article> {
+  const filters = { featuredOnly, excludeLife };
+  const { where, params } = publishedArticleFilter(category, filters);
   const countRow = getDb()
     .prepare(
       `select count(*) as total
        from articles
        join article_revisions as revisions on revisions.id = articles.published_revision_id
-       ${category ? "where revisions.category = ?" : ""}`,
+       ${where}`,
     )
-    .get(...(category ? [category] : [])) as { total: number };
+    .get(...params) as { total: number };
   const window = pageWindow(countRow.total, page, pageSize);
   const { offset, ...pageInfo } = window;
   return {
     ...pageInfo,
-    items: listPublishedArticles(category, { limit: window.pageSize, offset }),
+    items: listPublishedArticles(category, { ...filters, limit: window.pageSize, offset }),
   };
 }
 
@@ -502,7 +516,7 @@ export function listStudioArticlePage({
   status = "all",
   category = "all",
   query = "",
-}: StudioArticleListOptions = {}): PageResult<Article> {
+}: StudioArticleListOptions = {}): PageResult<Article & { publishedCategory: CategoryId | null }> {
   const where: string[] = [];
   const params: Array<string | number> = [];
   if (status === "published") where.push("articles.published_revision_id is not null");
@@ -540,15 +554,16 @@ export function listStudioArticlePage({
   const { offset, ...pageInfo } = window;
   const rows = getDb()
     .prepare(
-      `select ${selectArticleColumns}
+      `select ${selectArticleColumns}, published.category as published_category
        from articles
        join article_revisions as revisions on revisions.id = articles.draft_revision_id
+       left join article_revisions as published on published.id = articles.published_revision_id
        ${clause}
        order by articles.updated_at desc, articles.id desc
        limit ? offset ?`,
     )
-    .all(...params, window.pageSize, offset) as ArticleRow[];
-  return { ...pageInfo, items: mapArticleRows(rows) };
+    .all(...params, window.pageSize, offset) as Array<ArticleRow & { published_category: CategoryId | null }>;
+  return { ...pageInfo, items: mapArticleRows(rows).map((article, index) => ({ ...article, publishedCategory: rows[index].published_category })) };
 }
 
 export function listPublishedArticlesMissingEnglish() {
@@ -616,6 +631,7 @@ export function publishArticle(id: number) {
            updated_at = ?
        where id = ?`,
     ).run(timestamp, timestamp, id);
+    if (article.category === "life") db.prepare("update articles set is_featured = 0 where id = ?").run(id);
     const published = getArticleById(id, { includeDraft: true })!;
     syncArticleToFts(published);
     enqueuePublishedRevisionJobs({ article: published, oldPath: previous }, db);
@@ -631,7 +647,7 @@ export function unpublishArticle(id: number) {
   return db.transaction(() => {
     const timestamp = nowIso();
     db.prepare("update articles set published_revision_id = null, updated_at = ? where id = ?").run(timestamp, id);
-    if (existing.isFeatured) clearFeaturedArticleState(db);
+    db.prepare("update articles set is_featured = 0 where id = ?").run(id);
     deleteArticleFromFts(id);
     deleteArticleEmbeddings(id, db);
     if (published) {
@@ -649,44 +665,30 @@ export function unpublishArticle(id: number) {
 }
 
 export function setFeaturedArticle(id: number) {
+  return updateFeaturedArticle(id, true);
+}
+
+export function clearFeaturedArticle(id: number) {
+  return updateFeaturedArticle(id, false);
+}
+
+function updateFeaturedArticle(id: number, featured: boolean) {
   const db = getDb();
-  const existing = getArticleById(id, { includeDraft: true });
-  if (!existing) throw new NotFoundError("Article not found.");
-  if (existing.status !== "published") throw new Error("Featured article must be published.");
+  const existing = getArticleById(id, { includeDraft: false });
+  if (!existing && !getArticleById(id, { includeDraft: true })) throw new NotFoundError("Article not found.");
+  if (featured && !existing) throw new Error("Recommended article must be published.");
+  if (featured && existing?.category === "life") throw new Error("Life posts cannot be recommended.");
   return db.transaction(() => {
     const timestamp = nowIso();
-    db.prepare("update articles set is_featured = 0").run();
-    db.prepare("update articles set is_featured = 1 where id = ?").run(id);
-    setSetting("featuredArticleId", String(id));
+    db.prepare("update articles set is_featured = ? where id = ?").run(featured ? 1 : 0, id);
     enqueueCacheInvalidation(
       {
         tags: [PUBLIC_ARTICLE_LIST_TAG, PUBLIC_SETTINGS_TAG],
-        dedupeKey: `featured:${id}:${timestamp}`,
+        dedupeKey: `featured:${id}:${featured}:${timestamp}`,
         now: new Date(timestamp),
       },
       db,
     );
     return getArticleById(id, { includeDraft: true })!;
   }).immediate();
-}
-
-export function clearFeaturedArticle() {
-  const db = getDb();
-  db.transaction(() => {
-    const timestamp = nowIso();
-    clearFeaturedArticleState(db);
-    enqueueCacheInvalidation(
-      {
-        tags: [PUBLIC_ARTICLE_LIST_TAG, PUBLIC_SETTINGS_TAG],
-        dedupeKey: `featured:clear:${timestamp}`,
-        now: new Date(timestamp),
-      },
-      db,
-    );
-  }).immediate();
-}
-
-function clearFeaturedArticleState(db: ReturnType<typeof getDb>) {
-  db.prepare("update articles set is_featured = 0").run();
-  setSetting("featuredArticleId", "");
 }

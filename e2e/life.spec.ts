@@ -23,7 +23,7 @@ test("life page loads and the public nav links to it", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "生活", exact: true })).toBeVisible();
 });
 
-test("admin publishes a life article and the photo wall links through to it", async ({ page }, testInfo) => {
+test("admin publishes a life article and the photo wall links through to it", async ({ page, request }, testInfo) => {
   const slug = `life-${testInfo.project.name}-${Date.now()}-${testInfo.workerIndex}`;
   const title = `生活测试文章 ${testInfo.project.name}`;
   await login(page);
@@ -51,4 +51,17 @@ test("admin publishes a life article and the photo wall links through to it", as
   await expect(page).toHaveURL(new RegExp(`/life/${slug}$`));
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
   await expect(page.getByText("生活正文内容")).toBeVisible();
+  for (const route of ["/", "/recommended", "/archive"]) {
+    await page.goto(route);
+    await expect(page.getByRole("main").getByRole("link", { name: title, exact: true })).toHaveCount(0);
+  }
+  await expect.poll(async () => {
+    await page.goto(`/search?q=${encodeURIComponent(title)}`);
+    return page.getByRole("main").getByRole("link", { name: title, exact: true }).count();
+  }).toBe(1);
+  await expect.poll(async () => (await (await request.get("/feed.xml")).text()).includes(title)).toBe(true);
+  await page.goto(`/studio/articles?q=${encodeURIComponent(title)}`);
+  await expect(page.getByRole("button", { name: `设为推荐：${title}`, exact: true })).toHaveCount(0);
+  await page.getByRole("link", { name: title, exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Publication proofs" })).toHaveCount(0);
 });
