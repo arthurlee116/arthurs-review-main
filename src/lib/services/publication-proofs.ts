@@ -1,3 +1,4 @@
+import { hasEnglishArticle } from "@/lib/i18n/article";
 import { execFile } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
@@ -118,7 +119,7 @@ function mapPublicProof(row: PublicProofRow): PublicPublicationProof {
     articleId: row.article_id,
     articleTitle: row.article_title,
     articleTitleEn: row.article_title_en,
-    articleHasEnglish: Boolean(row.article_title_en?.trim() && row.article_body_en_path),
+    articleHasEnglish: hasEnglishArticle({ titleEn: row.article_title_en, bodyEnPath: row.article_body_en_path }),
     articleSlug: row.article_slug,
     articleCategory: row.article_category,
     createdAt: row.created_at,

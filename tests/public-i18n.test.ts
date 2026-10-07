@@ -71,6 +71,18 @@ describe("bilingual article presentation", () => {
     expect(articleDisplay({ ...full, bodyEn: "", bodyEnPath: null }, "en")).toMatchObject({ locale: "zh", title: "中文标题", excerpt: "中文摘要" });
     expect(articleDisplay({ ...full, titleEn: "" }, "en").locale).toBe("zh");
   });
+  it("rejects empty or missing English bodies in metadata-only listings and sitemap", async () => {
+    const full = await article({ bodyEn: "   " });
+    const { listPublishedArticles } = await import("@/lib/services/articles");
+    const { articleDisplay, hasEnglishArticle } = await import("@/lib/i18n/article");
+    const [listed] = listPublishedArticles();
+    expect(hasEnglishArticle(listed!)).toBe(false);
+    expect(articleDisplay(listed!, "en").title).toBe("中文标题");
+    const { default: sitemap } = await import("@/app/sitemap");
+    expect((await sitemap()).some((entry) => entry.url.endsWith("/en/commentary/bilingual"))).toBe(false);
+    fs.unlinkSync(path.join(dir, full.bodyEnPath!));
+    expect(hasEnglishArticle(listed!)).toBe(false);
+  });
   it("searches both languages and displays snippets from the selected article language", async () => {
     await article();
     const { searchArticleResults } = await import("@/lib/services/search");

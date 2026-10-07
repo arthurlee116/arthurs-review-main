@@ -2,8 +2,11 @@ import { readMarkdownBody } from "@/lib/content/markdown";
 import type { Article } from "@/lib/services/articles";
 import type { Locale } from "./locale";
 
-export function hasEnglishArticle(article: Article) {
-  return Boolean(article.titleEn?.trim() && (article.bodyEn !== undefined ? article.bodyEn?.trim() : article.bodyEnPath));
+export function hasEnglishArticle(article: Pick<Article, "titleEn" | "bodyEn" | "bodyEnPath">) {
+  if (!article.titleEn?.trim()) return false;
+  if (article.bodyEn !== undefined) return Boolean(article.bodyEn?.trim());
+  if (!article.bodyEnPath) return false;
+  try { return Boolean(readMarkdownBody(article.bodyEnPath).trim()); } catch { return false; }
 }
 
 export function plainExcerpt(markdown: string, limit = 240) {
