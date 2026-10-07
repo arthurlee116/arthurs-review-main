@@ -52,3 +52,5 @@ vi.mock("next/server", async (importOriginal) => ({
   after: vi.fn((callback: () => unknown) => void callback()),
   connection: vi.fn(),
 }));
+
+vi.mock("@/lib/i18n/server", () => ({ getLocale: vi.fn(async () => "zh") }));

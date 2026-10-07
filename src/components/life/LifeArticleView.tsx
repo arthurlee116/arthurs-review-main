@@ -1,14 +1,17 @@
+import { languageTag, type Locale } from "@/lib/i18n/locale";
+import { articleDisplay } from "@/lib/i18n/article";
 import { parseLifeBody } from "@/lib/content/life-body";
 import type { Article } from "@/lib/services/articles";
 
-export function LifeArticleView({ article }: { article: Article }) {
-  const { media, caption } = parseLifeBody(article.bodyZh ?? "");
-  const date = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString("zh-CN") : null;
+export function LifeArticleView({ article, locale = "zh" }: { article: Article; locale?: Locale }) {
+  const display = articleDisplay(article, locale);
+  const { media, caption } = parseLifeBody(display.body);
+  const date = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString(languageTag[locale], { timeZone: "UTC" }) : null;
 
   return (
-    <article className="container pb-12 pt-8">
-      <p className="sans text-xs uppercase tracking-[0.12em] text-[var(--muted)]">{date}</p>
-      <h1 className="mt-2 text-4xl font-bold">{article.titleZh}</h1>
+    <article lang={languageTag[display.locale]} className="container pb-12 pt-8">
+      <p lang={languageTag[locale]} className="sans text-xs uppercase tracking-[0.12em] text-[var(--muted)]">{date}</p>
+      <h1 className="mt-2 text-4xl font-bold">{display.title}</h1>
 
       {media.length ? (
         <section className="mt-8 columns-1 gap-4 md:columns-2 lg:columns-3">

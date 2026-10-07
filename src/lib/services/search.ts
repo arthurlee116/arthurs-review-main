@@ -1,3 +1,5 @@
+import { articleDisplay, plainExcerpt } from "@/lib/i18n/article";
+import type { Locale } from "@/lib/i18n/locale";
 import { getDb } from "@/lib/db/connection";
 import { tokenizeForFts } from "@/lib/db/fts";
 import { categoryLabel } from "@/lib/content/categories";
@@ -128,12 +130,12 @@ export function syncArticleToFts(article: Article): void {
   ).run(
     article.id,
     tokenizeForFts(article.titleZh),
-    "",
+    tokenizeForFts(article.titleEn ?? ""),
     tokenizeForFts(article.excerptZh),
-    "",
+    tokenizeForFts(article.excerptEn ?? ""),
     tokenizeForFts(bodyZh),
-    "",
-    tokenizeForFts(categoryLabel(article.category)),
+    tokenizeForFts(article.bodyEnPath ? readMarkdownBody(article.bodyEnPath) : ""),
+    tokenizeForFts(`${categoryLabel(article.category)} ${categoryLabel(article.category, "en")}`),
     tokenizeForFts(tags),
   );
 }
@@ -239,7 +241,7 @@ export function splitHighlightParts(snippet: string): SearchHighlightPart[] {
   return normalizeHighlightParts(parts);
 }
 
-export function searchArticleResults(query: string, options: { page?: number; pageSize?: number } = {}): SearchArticleResultsPage {
+export function searchArticleResults(query: string, options: { page?: number; pageSize?: number; locale?: Locale } = {}): SearchArticleResultsPage {
   const normalized = normalizeSearchQuery(query);
   const pageSize = Math.max(1, Math.floor(options.pageSize ?? SEARCH_PAGE_SIZE));
   if (!normalized) return emptySearchPage(normalized, pageSize);
@@ -280,9 +282,9 @@ export function searchArticleResults(query: string, options: { page?: number; pa
   return {
     query: normalized,
     ...pageInfo,
-    results: rows.map((row, index) => ({
+    results: rows.map((_row, index) => ({
       article: articles[index]!,
-      excerptParts: splitHighlightParts(row.snippet || row.excerpt_zh),
+      excerptParts: localizedExcerpt(articles[index]!, normalized, options.locale ?? "zh"),
     })),
   };
 }
@@ -359,11 +361,6 @@ function loadPublishedArticlesById(ids: readonly number[]) {
   return new Map(mapArticleRows(rows).map((article) => [article.id, article]));
 }
 
-function semanticExcerpt(content: string) {
-  const points = Array.from(content.trim());
-  const limited = points.slice(0, 220).join("");
-  return points.length > 220 ? `${limited}…` : limited;
-}
 
 function fallbackLog(stage: "embed" | "dense" | "rerank", error?: unknown) {
   console.warn("Semantic search fallback", {
@@ -377,6 +374,7 @@ export async function searchArticleResultsHybrid(
   options: {
     page?: number;
     pageSize?: number;
+    locale?: Locale;
     client?: HybridSemanticClient | null;
     rerankEnabled?: boolean;
     onTrace?: (trace: HybridSearchTrace) => void;
@@ -500,10 +498,25 @@ export async function searchArticleResultsHybrid(
       const article = articles.get(candidate.articleId)!;
       return {
         article,
-        excerptParts: candidate.fts?.excerptParts ?? [
-          { text: semanticExcerpt(candidate.dense?.content ?? article.excerptZh), highlighted: false },
-        ],
+        excerptParts: !candidate.fts && candidate.dense && articleDisplay(article, options.locale ?? "zh").locale === "zh"
+          ? [{ text: plainExcerpt(candidate.dense.content), highlighted: false }]
+          : localizedExcerpt(article, normalized, options.locale ?? "zh"),
       };
     }),
   };
+}
+
+export function localizedExcerpt(article: Article, query: string, locale: Locale): SearchHighlightPart[] {
+  const display = articleDisplay(article, locale);
+  const bodyPath = display.locale === "en" ? article.bodyEnPath : article.bodyZhPath;
+  const body = display.body || (bodyPath ? readMarkdownBody(bodyPath) : "");
+  const text = plainExcerpt(`${display.excerpt} ${body}`, Number.MAX_SAFE_INTEGER);
+  const terms = [...new Set(normalizeSearchQuery(query).split(/\s+/).filter(Boolean))].sort((a, b) => b.length - a.length);
+  const first = terms.map((term) => text.toLowerCase().indexOf(term.toLowerCase())).filter((index) => index >= 0).sort((a, b) => a - b)[0];
+  const start = first === undefined ? 0 : Math.max(0, first - 65);
+  const excerpt = `${start ? "…" : ""}${text.slice(start, start + 240)}${text.length > start + 240 ? "…" : ""}`;
+  if (!terms.length) return [{ text: excerpt, highlighted: false }];
+  const escaped = terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const pattern = new RegExp(`(${escaped.join("|")})`, "giu");
+  return excerpt.split(pattern).filter(Boolean).map((part) => ({ text: part, highlighted: terms.some((term) => term.toLowerCase() === part.toLowerCase()) }));
 }

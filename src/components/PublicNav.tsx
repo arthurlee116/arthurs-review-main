@@ -1,39 +1,42 @@
 "use client";
 
+import { dictionary } from "@/lib/i18n/dictionary";
+import { localizedPath, stripLocale, type Locale } from "@/lib/i18n/locale";
 import Link from "next/link";
-import type { Route } from "next";
 import { usePathname } from "next/navigation";
 
 const links = [
-  ["Home", "/"],
-  ["推荐", "/recommended"],
-  ["时事评论", "/commentary"],
-  ["社会分析", "/society"],
-  ["杂七杂八", "/misc"],
-  ["生活", "/life"],
-  ["Archive", "/archive"],
-  ["Proofs", "/proofs"],
-  ["About", "/about"],
+  ["home", "/"],
+  ["recommended", "/recommended"],
+  ["commentary", "/commentary"],
+  ["society", "/society"],
+  ["misc", "/misc"],
+  ["life", "/life"],
+  ["archive", "/archive"],
+  ["proofs", "/proofs"],
+  ["about", "/about"],
 ] as const;
 
 const activeClasses = "underline decoration-[var(--accent)] decoration-2 underline-offset-8";
 const hoverClasses = "hover:underline hover:decoration-[var(--accent)] hover:decoration-2 hover:underline-offset-8";
 
-function NavLinks({ pathname }: { pathname: string | null }) {
+function NavLinks({ pathname, locale }: { pathname: string | null; locale: Locale }) {
+  const t = dictionary(locale);
+  const current = pathname === null ? null : stripLocale(pathname);
   return (
     <div className="mt-5">
       <nav className="container sans border-y border-[var(--rule)] py-3 text-center text-xs uppercase tracking-[0.14em]">
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
           {links.map(([label, href]) => {
-            const isActive = pathname !== null && (href === "/" ? pathname === "/" : pathname.startsWith(href));
+            const isActive = current !== null && (href === "/" ? current === "/" : current.startsWith(href));
             return (
               <Link
                 key={href}
-                href={href as Route}
+                href={localizedPath(href, locale)}
                 aria-current={isActive ? "page" : undefined}
                 className={isActive ? activeClasses : hoverClasses}
               >
-                {label}
+                {t[label]}
               </Link>
             );
           })}
@@ -44,11 +47,11 @@ function NavLinks({ pathname }: { pathname: string | null }) {
 }
 
 // ponytail: static fallback for prerender; active state hydrates in via PublicNav
-export function PublicNavStatic() {
-  return <NavLinks pathname={null} />;
+export function PublicNavStatic({ locale = "zh" }: { locale?: Locale }) {
+  return <NavLinks pathname={null} locale={locale} />;
 }
 
-export function PublicNav() {
+export function PublicNav({ locale = "zh" }: { locale?: Locale }) {
   const pathname = usePathname();
-  return <NavLinks pathname={pathname} />;
+  return <NavLinks pathname={pathname} locale={locale} />;
 }

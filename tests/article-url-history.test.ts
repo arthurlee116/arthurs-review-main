@@ -76,7 +76,7 @@ describe("published article URL history", () => {
     publishArticle(original.id);
 
     await expect(ArticlePage({ category: "commentary", slug: "page-old-path", lang: "en" })).rejects.toMatchObject({
-      digest: expect.stringContaining("/society/page-new-path?lang=en"),
+      digest: expect.stringContaining("/en/society/page-new-path"),
     });
   });
 });

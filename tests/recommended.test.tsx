@@ -7,9 +7,9 @@ import { articleInput } from "@/test/factories";
 import { createArticle, publishArticle, setFeaturedArticle, clearFeaturedArticle, unpublishArticle, deleteArticle, updateArticle, listPublishedArticles, listPublishedArticlePage } from "@/lib/services/articles";
 import { getDb, closeDb } from "@/lib/db/connection";
 import { migrate } from "@/lib/db/migrate";
-import { RecommendedContent } from "@/app/recommended/page";
-import { ArchiveContent } from "@/app/archive/page";
-import { HomeContent } from "@/app/page";
+import { RecommendedContent } from "@/app/[locale]/recommended/page";
+import { ArchiveContent } from "@/app/[locale]/archive/page";
+import { HomeContent } from "@/app/[locale]/page";
 
 vi.mock("@/app/studio/api/_helpers", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/app/studio/api/_helpers")>()),
@@ -88,7 +88,7 @@ describe("recommendations and public list eligibility", () => {
     render(await RecommendedContent({ page: 2 }));
     expect(screen.getByRole("link", { name: "recommended-1" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "recommended-2" })).not.toBeInTheDocument();
-    expect(screen.getByText("Page 2 of 2")).toBeVisible();
+    expect(screen.getByText("第 2 页，共 2 页")).toBeVisible();
   });
 
   it("ignores the old single-feature setting while saving settings", async () => {

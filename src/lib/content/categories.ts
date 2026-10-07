@@ -1,3 +1,5 @@
+import { dictionary } from "@/lib/i18n/dictionary";
+import type { Locale } from "@/lib/i18n/locale";
 export const categories = {
   commentary: { id: "commentary", label: "时事评论", href: "/commentary" },
   society: { id: "society", label: "社会分析", href: "/society" },
@@ -13,6 +15,6 @@ export function isCategoryId(value: string): value is CategoryId {
   return (categoryIds as readonly string[]).includes(value);
 }
 
-export function categoryLabel(category: CategoryId) {
-  return categories[category].label;
+export function categoryLabel(category: CategoryId, locale: Locale = "zh") {
+  return dictionary(locale)[category];
 }

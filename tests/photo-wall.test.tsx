@@ -40,8 +40,8 @@ describe("PhotoWall", () => {
     const links = screen.getAllByRole("link");
     expect(links).toHaveLength(2);
     expect(links.map((link) => link.getAttribute("href")).sort()).toEqual([
-      "/life/first-post",
-      "/life/second-post",
+      "/zh/life/first-post",
+      "/zh/life/second-post",
     ]);
   });
 
@@ -75,7 +75,7 @@ describe("PhotoWall", () => {
 
     expect(screen.getByText("纯文字文章")).toBeInTheDocument();
     expect(screen.getByText("没有封面的摘要")).toBeInTheDocument();
-    expect(screen.getByRole("link")).toHaveAttribute("href", "/life/text-only");
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/zh/life/text-only");
   });
 
   it("shows a media count badge on multi-photo articles", () => {

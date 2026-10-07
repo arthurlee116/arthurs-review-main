@@ -5,7 +5,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CategoryPage } from "@/app/_categoryPage";
-import { HomeContent } from "@/app/page";
+import { HomeContent } from "@/app/[locale]/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;

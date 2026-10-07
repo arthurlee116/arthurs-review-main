@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { SearchResults } from "@/app/search/page";
+import { SearchResults } from "@/app/[locale]/search/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
@@ -30,7 +30,7 @@ describe("public search page", () => {
     const { MAX_SEARCH_CODE_POINTS } = await import("@/lib/services/search");
     render(<SearchBox />);
 
-    expect(screen.getByRole("textbox", { name: "Search" })).toHaveAttribute("maxLength", String(MAX_SEARCH_CODE_POINTS));
+    expect(screen.getByRole("textbox", { name: "搜索" })).toHaveAttribute("maxLength", String(MAX_SEARCH_CODE_POINTS));
   });
 
   it("renders highlighted results and pagination links", async () => {
@@ -54,13 +54,13 @@ describe("public search page", () => {
 
     render(<main>{await SearchResults({ searchParams: Promise.resolve({ q: "共同词", page: "2" }) })}</main>);
 
-    expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
+    expect(screen.getByText("第 2 页，共 2 页")).toBeInTheDocument();
     expect(screen.getAllByText("共同词", { selector: "mark" }).length).toBeGreaterThan(0);
 
-    const previous = screen.getByRole("link", { name: "Previous" });
-    expect(previous).toHaveAttribute("href", "/search?q=%E5%85%B1%E5%90%8C%E8%AF%8D");
+    const previous = screen.getByRole("link", { name: "上一页" });
+    expect(previous).toHaveAttribute("href", "/zh/search?q=%E5%85%B1%E5%90%8C%E8%AF%8D");
 
-    const next = screen.getByText("Next");
+    const next = screen.getByText("下一页");
     expect(next).not.toHaveAttribute("href");
   });
 

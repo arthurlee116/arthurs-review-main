@@ -1,0 +1,152 @@
+import { getLocale } from "@/lib/i18n/server";
+import { dictionary } from "@/lib/i18n/dictionary";
+import { localizedPath, interpolate, languageTag, type Locale } from "@/lib/i18n/locale";
+import Link from "next/link";
+import { io } from "next/cache";
+import { Suspense } from "react";
+
+import { PublicShell } from "@/app/_publicShell";
+import { PageNavigation } from "@/components/PageNavigation";
+import { articlePath } from "@/lib/content/urls";
+import { publicPageMetadata } from "@/lib/metadata";
+import { listCachedPublicPublicationProofPage } from "@/lib/services/public-content";
+import type { PublicPublicationProof } from "@/lib/services/publication-proofs";
+
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return publicPageMetadata({
+    locale,
+    title: dictionary(locale).proofs,
+    description: dictionary(locale).proofsDescription,
+    path: "/proofs",
+  });
+}
+
+function groupByArticle(proofs: PublicPublicationProof[]) {
+  const groups = new Map<number, PublicPublicationProof[]>();
+  for (const proof of proofs) {
+    const current = groups.get(proof.articleId);
+    if (current) current.push(proof);
+    else groups.set(proof.articleId, [proof]);
+  }
+  return [...groups.values()];
+}
+
+function pageNumber(value: string | undefined) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 1;
+}
+
+export async function ProofsContent({ page = 1, locale = "zh" }: { page?: number; locale?: Locale } = {}) {
+  await io();
+  const proofPage = await listCachedPublicPublicationProofPage(page);
+  const proofs = proofPage.items;
+  const groups = groupByArticle(proofs);
+  const complete = proofPage.completeServices;
+  const pending = proofPage.pendingServices;
+  const failed = proofPage.failedServices;
+
+  return (
+    <PublicShell locale={locale} mastheadHeadingLevel={2}>
+      <main className="container overflow-x-hidden pb-16">
+        <header className="max-w-5xl py-10 md:py-14">
+          <p className="sans text-xs font-bold uppercase tracking-[0.12em] text-[var(--accent)]">{dictionary(locale).publicVerification}</p>
+          <h1 className="mt-4 max-w-5xl text-5xl font-bold leading-[0.95] tracking-[-0.04em] md:text-7xl">{dictionary(locale).proofs}</h1>
+          <p className="mt-6 max-w-[62ch] text-lg leading-8 text-[var(--muted)]">
+            {dictionary(locale).proofsIntro}
+          </p>
+        </header>
+
+        <section className="grid border-y border-[var(--rule)] md:grid-cols-12" aria-label={dictionary(locale).proofTotals}>
+          <div className="border-b border-[var(--rule)] py-6 md:col-span-5 md:border-b-0 md:border-r md:pr-8">
+            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{interpolate(dictionary(locale)[proofPage.totalProofs === 1 ? "proofSingular" : "proofCount"], { count: proofPage.totalProofs })}</strong>
+            <span className="sans mt-2 block text-xs text-[var(--muted)]">{dictionary(locale).recordedVersions}</span>
+          </div>
+          <div className="border-b border-[var(--rule)] py-6 md:col-span-7 md:border-b-0 md:pl-8">
+            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{interpolate(dictionary(locale)[proofPage.totalArticles === 1 ? "articleSingular" : "articleCount"], { count: proofPage.totalArticles })}</strong>
+            <span className="sans mt-2 block text-xs text-[var(--muted)]">{dictionary(locale).representedArticles}</span>
+          </div>
+          <div className="py-6 md:col-span-7 md:border-r md:border-t md:pr-8">
+            <strong className="sans block text-4xl font-bold tracking-[-0.04em]">{complete} {dictionary(locale).complete}</strong>
+            <span className="sans mt-2 block text-xs text-[var(--muted)]">{dictionary(locale).verificationServices}</span>
+          </div>
+          <div className="border-t border-[var(--rule)] py-6 md:col-span-5 md:pl-8">
+            <div className="sans flex gap-6 text-2xl font-bold tracking-[-0.03em]">
+              <strong>{pending} {dictionary(locale).pending}</strong>
+              <strong className={failed ? "text-[var(--accent)]" : undefined}>{failed} {dictionary(locale).failed}</strong>
+            </div>
+            <span className="sans mt-2 block text-xs text-[var(--muted)]">{dictionary(locale).combinedServices}</span>
+          </div>
+        </section>
+
+        {groups.length ? (
+          <div className="py-6 md:py-10">
+            {groups.map((articleProofs) => {
+              const article = articleProofs[0]!;
+              const headingId = `proof-article-${article.articleId}`;
+              return (
+                <section key={article.articleId} className="grid gap-6 border-b border-[var(--rule)] py-10 md:grid-cols-[minmax(12rem,0.8fr)_2fr] md:gap-12" aria-labelledby={headingId}>
+                  <div>
+                    <p className="sans text-xs text-[var(--muted)]">{interpolate(dictionary(locale)[articleProofs.length === 1 ? "versionSingular" : "versionCount"], { count: articleProofs.length })}</p>
+                    <h2 id={headingId} className="mt-2 text-3xl font-bold leading-tight">
+                      <Link className="transition-colors hover:text-[var(--accent)] focus-visible:text-[var(--accent)]" href={localizedPath(articlePath(article.articleCategory, article.articleSlug), locale)}>
+                        {locale === "en" && article.articleHasEnglish ? article.articleTitleEn : article.articleTitle}
+                      </Link>
+                    </h2>
+                  </div>
+
+                  <ol className="grid gap-5 sm:grid-cols-2">
+                    {articleProofs.map((proof) => (
+                      <li key={proof.id} className="border border-[var(--rule)] bg-white/30 p-5 transition-transform duration-200 hover:-translate-y-0.5 focus-within:-translate-y-0.5">
+                        <time className="sans text-xs text-[var(--muted)]" dateTime={proof.createdAt}>
+                          {new Date(proof.createdAt).toLocaleString(languageTag[locale], { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC
+                        </time>
+                        <dl className="sans mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-xs">
+                          <dt className="text-[var(--muted)]">OpenTimestamps</dt>
+                          <dd className="text-right font-bold">{dictionary(locale)[proof.otsStatus]}</dd>
+                          <dt className="text-[var(--muted)]">Wayback</dt>
+                          <dd className="text-right font-bold">{dictionary(locale)[proof.waybackStatus]}</dd>
+                        </dl>
+                        <p className="sans mt-5 text-[0.68rem] uppercase tracking-[0.08em] text-[var(--muted)]">SHA-256</p>
+                        <code className="mt-2 block break-all text-xs leading-5">{proof.documentSha256}</code>
+                        <div className="sans mt-6 flex flex-wrap gap-x-5 gap-y-3 text-xs font-bold underline decoration-[var(--accent)] decoration-2 underline-offset-4">
+                          <Link href={`/proofs/${proof.id}/source`}>{dictionary(locale).sourceJson}</Link>
+                          {proof.otsAvailable ? <Link href={`/proofs/${proof.id}/ots`}>OpenTimestamps</Link> : null}
+                          {proof.waybackUrl ? (
+                            <a href={proof.waybackUrl} rel="noreferrer" target="_blank">
+                              {dictionary(locale).waybackSnapshot}
+                            </a>
+                          ) : null}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              );
+            })}
+          </div>
+        ) : (
+          <section className="border-b border-[var(--rule)] py-16">
+            <h2 className="text-3xl font-bold">{dictionary(locale).noProofs}</h2>
+            <p className="mt-3 max-w-[55ch] text-[var(--muted)]">{dictionary(locale).firstProof}</p>
+          </section>
+        )}
+        <PageNavigation locale={locale} basePath="/proofs" page={proofPage.page} totalPages={proofPage.totalPages} label={dictionary(locale).pages} />
+      </main>
+    </PublicShell>
+  );
+}
+
+async function ProofsContentFromParams({ searchParams, locale }: { searchParams: Promise<{ page?: string }>; locale: Locale }) {
+  const { page } = await searchParams;
+  return <ProofsContent locale={locale} page={pageNumber(page)} />;
+}
+
+export default async function ProofsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const locale = await getLocale();
+  return (
+    <Suspense fallback={<PublicShell locale={locale} mastheadHeadingLevel={2}><main className="container min-h-[50vh]" aria-busy="true" /></PublicShell>}>
+      <ProofsContentFromParams locale={locale} searchParams={searchParams} />
+    </Suspense>
+  );
+}

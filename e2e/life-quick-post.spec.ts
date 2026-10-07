@@ -36,7 +36,7 @@ test("quick-post publishes a life article from the studio", async ({ page }) => 
   // The photo wall revalidates asynchronously via the cache.invalidate worker job.
   const wallItem = page.locator("main a").first();
   await expect(async () => {
-    await page.goto("/life");
+    await page.goto("/zh/life");
     await expect(wallItem).toBeVisible();
   }).toPass();
   await wallItem.click();

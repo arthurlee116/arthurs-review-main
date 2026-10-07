@@ -1,0 +1,3 @@
+SHELL=/bin/bash
+# Check daily, downloading only when a new monthly database is available; retry failed updates next day.
+17 4 * * * root /opt/arthurs-review/scripts/refresh-geoip.sh >/var/log/arthurs-review-geoip.log 2>&1

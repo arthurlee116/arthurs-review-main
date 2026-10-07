@@ -117,7 +117,7 @@ describe("database backups", () => {
       const restored = new Database(path.join(target, "arthurs-review.sqlite3"), { readonly: true });
       try {
         expect(restored.pragma("integrity_check", { simple: true })).toBe("ok");
-        expect(restored.prepare("select max(version) from schema_migrations").pluck().get()).toBe(11);
+        expect(restored.prepare("select max(version) from schema_migrations").pluck().get()).toBe(12);
       } finally {
         restored.close();
       }

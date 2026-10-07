@@ -4,17 +4,17 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100";
 const expectedSiteURL = (process.env.E2E_EXPECTED_SITE_URL ?? baseURL).replace(/\/$/, "");
 
 test("home page keeps the classic masthead and exposes every public archive", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/zh");
   await expect(page.getByRole("heading", { name: "Arthur's Review" })).toBeVisible();
   const publicNav = page.getByRole("navigation").first();
-  for (const label of ["Home", "推荐", "时事评论", "社会分析", "杂七杂八", "生活", "Archive", "Proofs", "About"]) {
+  for (const label of ["首页", "推荐", "时事评论", "社会分析", "杂七杂八", "生活", "归档", "发表存证", "关于"]) {
     await expect(publicNav.getByRole("link", { name: label, exact: true })).toBeVisible();
   }
 });
 
 test("mobile masthead stays stable above the nav", async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 956 });
-  await page.goto("/");
+  await page.goto("/zh");
   await page.waitForLoadState("networkidle");
   await page.addStyleTag({ content: 'html { font-size: 22px; } header h1 { font-family: Georgia, serif; }' });
 
@@ -49,7 +49,7 @@ test("mobile masthead stays stable above the nav", async ({ page }) => {
 
 test("mobile home article titles share one size", async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 956 });
-  await page.goto("/");
+  await page.goto("/zh");
   const titles = page.locator("main article h2");
   await expect(titles).toHaveCount(12);
   const sizes = await titles.evaluateAll((titles) => titles.map((title) => getComputedStyle(title).fontSize));
@@ -63,7 +63,7 @@ test("mobile home article titles share one size", async ({ page }) => {
 test("article opening paragraph shares the body size", async ({ page }) => {
   for (const width of [393, 1280]) {
     await page.setViewportSize({ width, height: 956 });
-    await page.goto("/misc/night-lines");
+    await page.goto("/zh/misc/night-lines");
     const paragraphs = page.locator("main article .prose > p");
     await expect(paragraphs).toHaveCount(2);
     const sizes = await paragraphs.evaluateAll((paragraphs) => paragraphs.map((paragraph) => getComputedStyle(paragraph).fontSize));
@@ -90,33 +90,34 @@ test("mobile article titles use the seven-character wrapping threshold", async (
     });
   };
 
-  await expect(titleLayout("/misc/night-lines")).resolves.toMatchObject({ lines: 1 });
-  await expect(titleLayout("/society/city-bystander")).resolves.toMatchObject({ lines: 2, textWrap: "balance" });
+  await expect(titleLayout("/zh/misc/night-lines")).resolves.toMatchObject({ lines: 1 });
+  await expect(titleLayout("/zh/society/city-bystander")).resolves.toMatchObject({ lines: 2, textWrap: "balance" });
 });
 
 test("listing caps move the thirteenth article into Archive", async ({ page }) => {
   const archivedTitle = "E2E 上限文章 13";
 
-  await page.goto("/");
+  await page.goto("/zh");
   await expect(page.getByRole("main").locator("article")).toHaveCount(12);
   await expect(page.getByRole("main").getByRole("link", { name: archivedTitle })).toHaveCount(0);
 
-  await page.goto("/commentary");
+  await page.goto("/zh/commentary");
   await expect(page.getByRole("main").locator("article")).toHaveCount(8);
   await expect(page.getByRole("main").getByRole("link", { name: archivedTitle })).toHaveCount(0);
 
-  await page.goto("/archive");
+  await page.goto("/zh/archive");
   await expect(page.getByRole("main").getByRole("link", { name: archivedTitle })).toBeVisible();
 });
 
-test("article without English body hides language switch", async ({ page }) => {
-  await page.goto("/commentary/short-note");
-  await expect(page.getByText("中文 / English")).toHaveCount(0);
+test("article without English body still offers the footer language switch", async ({ page }) => {
+  await page.goto("/zh/commentary/short-note");
+  await expect(page.locator("main [data-language-switch]")).toHaveCount(0);
+  await expect(page.locator("footer [data-language-switch]")).toBeVisible();
 });
 
 test("article feedback stays out of the way and copies the WeChat id", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseURL).origin });
-  await page.goto("/commentary/short-note");
+  await page.goto("/zh/commentary/short-note");
 
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "读完了？来挑错。" })).toBeVisible();
@@ -125,15 +126,15 @@ test("article feedback stays out of the way and copies the WeChat id", async ({ 
 });
 
 test("RSS discovery, Proofs, and the dynamic social card are reachable", async ({ page, request }) => {
-  await page.goto("/");
+  await page.goto("/zh");
   const feedLinks = await page.locator('link[rel="alternate"][type="application/rss+xml"]').evaluateAll((links) =>
     links.map((link) => link.getAttribute("href")),
   );
   expect(feedLinks.length).toBeGreaterThan(0);
-  expect(new Set(feedLinks)).toEqual(new Set([`${expectedSiteURL}/feed.xml`]));
+  expect(new Set(feedLinks)).toEqual(new Set([`${expectedSiteURL}/zh/feed.xml`]));
 
-  await page.goto("/proofs");
-  await expect(page.getByRole("heading", { level: 1, name: "Proofs" })).toBeVisible();
+  await page.goto("/zh/proofs");
+  await expect(page.getByRole("heading", { level: 1, name: "发表存证" })).toBeVisible();
 
   const feed = await request.get("/feed.xml");
   expect(feed.ok()).toBe(true);
@@ -157,25 +158,25 @@ test("production runtime exposes health, immutable version metadata, and product
   expect(await version.json()).toEqual({
     commit: process.env.E2E_EXPECTED_COMMIT ?? "development",
     digest: process.env.E2E_EXPECTED_DIGEST ?? "development",
-    schemaVersion: 11,
+    schemaVersion: 12,
   });
 
-  await page.goto("/");
+  await page.goto("/zh");
   const socialURLs = await page.locator('meta[property="og:url"]').evaluateAll((tags) =>
     tags.map((tag) => tag.getAttribute("content")),
   );
   expect(socialURLs.length).toBeGreaterThan(0);
-  expect(new Set(socialURLs)).toEqual(new Set([expectedSiteURL]));
+  expect(new Set(socialURLs)).toEqual(new Set([`${expectedSiteURL}/zh`]));
 });
 
 test("search returns matching published article", async ({ page }) => {
-  await page.goto("/search?q=城市");
+  await page.goto("/zh/search?q=城市");
   await expect(page.getByRole("link", { name: /城市/ })).toBeVisible();
 });
 
 test("semantic search finds a published article without an FTS match", async ({ page }) => {
   test.skip(process.env.E2E_EXPECT_SEMANTIC !== "1", "requires the locked real model and completed embeddings");
 
-  await page.goto(`/search?q=${encodeURIComponent("群居生活如何把袖手旁观塑造成得体行为")}`);
+  await page.goto(`/zh/search?q=${encodeURIComponent("群居生活如何把袖手旁观塑造成得体行为")}`);
   await expect(page.getByRole("link", { name: "一座城市如何把人训练成旁观者" })).toBeVisible();
 });

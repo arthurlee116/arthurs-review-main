@@ -4,7 +4,7 @@ import path from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { ArchiveContent } from "@/app/archive/page";
+import { ArchiveContent } from "@/app/[locale]/archive/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
@@ -39,10 +39,10 @@ describe("archive page", () => {
 
     const currentYear = screen.getByRole("region", { name: "2026" });
     const previousYear = screen.getByRole("region", { name: "2025" });
-    expect(within(currentYear).getByRole("link", { name: "今年文章" })).toHaveAttribute("href", "/commentary/this-year");
-    expect(within(currentYear).getByText("2026-07-01")).toBeVisible();
-    expect(within(previousYear).getByRole("link", { name: "去年文章" })).toHaveAttribute("href", "/society/last-year");
-    expect(within(previousYear).getByRole("link", { name: "社会分析" })).toHaveAttribute("href", "/society");
+    expect(within(currentYear).getByRole("link", { name: "今年文章" })).toHaveAttribute("href", "/zh/commentary/this-year");
+    expect(within(currentYear).getByText("2026/7/1")).toBeVisible();
+    expect(within(previousYear).getByRole("link", { name: "去年文章" })).toHaveAttribute("href", "/zh/society/last-year");
+    expect(within(previousYear).getByRole("link", { name: "社会分析" })).toHaveAttribute("href", "/zh/society");
   });
 
   it("paginates the archive at 50 articles", async () => {
@@ -57,7 +57,7 @@ describe("archive page", () => {
 
     expect(screen.getByRole("link", { name: "归档文章 1" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "归档文章 2" })).not.toBeInTheDocument();
-    expect(screen.getByText("Page 2 of 2")).toBeVisible();
-    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute("href", "/archive");
+    expect(screen.getByText("第 2 页，共 2 页")).toBeVisible();
+    expect(screen.getByRole("link", { name: "上一页" })).toHaveAttribute("href", "/zh/archive");
   });
 });

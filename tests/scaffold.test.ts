@@ -49,19 +49,19 @@ describe("project scaffold", () => {
 
   it("keeps public routes eligible for instant rendering", () => {
     const files = [
-      "src/app/page.tsx",
+      "src/app/[locale]/page.tsx",
       "src/app/_categoryPage.tsx",
       "src/app/_articlePage.tsx",
-      "src/app/about/page.tsx",
-      "src/app/archive/page.tsx",
-      "src/app/proofs/page.tsx",
-      "src/app/search/page.tsx",
-      "src/app/commentary/page.tsx",
-      "src/app/commentary/[slug]/page.tsx",
-      "src/app/society/page.tsx",
-      "src/app/society/[slug]/page.tsx",
-      "src/app/misc/page.tsx",
-      "src/app/misc/[slug]/page.tsx",
+      "src/app/[locale]/about/page.tsx",
+      "src/app/[locale]/archive/page.tsx",
+      "src/app/[locale]/proofs/page.tsx",
+      "src/app/[locale]/search/page.tsx",
+      "src/app/[locale]/commentary/page.tsx",
+      "src/app/[locale]/commentary/[slug]/page.tsx",
+      "src/app/[locale]/society/page.tsx",
+      "src/app/[locale]/society/[slug]/page.tsx",
+      "src/app/[locale]/misc/page.tsx",
+      "src/app/[locale]/misc/[slug]/page.tsx",
     ];
 
     for (const file of files) {
@@ -70,29 +70,29 @@ describe("project scaffold", () => {
       expect(source, file).not.toContain("connection()");
     }
 
-    const searchPage = fs.readFileSync("src/app/search/page.tsx", "utf8");
+    const searchPage = fs.readFileSync("src/app/[locale]/search/page.tsx", "utf8");
     expect(searchPage).toContain("<Suspense");
   });
 
   it("defers build-time SQLite reads behind PPR boundaries", () => {
     for (const file of [
-      "src/app/page.tsx",
+      "src/app/[locale]/page.tsx",
       "src/app/_categoryPage.tsx",
-      "src/app/about/page.tsx",
-      "src/app/archive/page.tsx",
-      "src/app/proofs/page.tsx",
+      "src/app/[locale]/about/page.tsx",
+      "src/app/[locale]/archive/page.tsx",
+      "src/app/[locale]/proofs/page.tsx",
     ]) {
       expect(fs.readFileSync(file, "utf8"), file).toContain("await io()");
     }
 
     for (const file of [
-      "src/app/page.tsx",
-      "src/app/about/page.tsx",
-      "src/app/archive/page.tsx",
-      "src/app/proofs/page.tsx",
-      "src/app/commentary/page.tsx",
-      "src/app/society/page.tsx",
-      "src/app/misc/page.tsx",
+      "src/app/[locale]/page.tsx",
+      "src/app/[locale]/about/page.tsx",
+      "src/app/[locale]/archive/page.tsx",
+      "src/app/[locale]/proofs/page.tsx",
+      "src/app/[locale]/commentary/page.tsx",
+      "src/app/[locale]/society/page.tsx",
+      "src/app/[locale]/misc/page.tsx",
     ]) {
       expect(fs.readFileSync(file, "utf8"), file).toContain("<Suspense");
     }

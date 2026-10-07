@@ -149,6 +149,26 @@ rollback_candidate
 }
 
 describe("deployment scripts", () => {
+  it("prepares the country database before startup and restores its schedule on rollback", () => {
+    const result = spawnSync("bash", ["-c", `
+source scripts/remote-release.sh
+production_compose() { printf '%s\\n' "$*"; }
+sqlite3() { printf '12\\n'; }
+install() { printf 'install:%s\\n' "$*"; }
+rm() { printf 'remove:%s\\n' "$*"; }
+migrate_target_database
+APP_DIR=/missing-old-release
+sync_geoip_schedule
+`], { cwd: process.cwd(), encoding: "utf8", env: { ...process.env, APP_DIR: process.cwd(), EXPECTED_SCHEMA_VERSION: "12" } });
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain("run --rm --no-deps app pnpm geoip:update");
+    expect(result.stdout).toContain("/etc/cron.d/arthurs-review-geoip");
+    expect(result.stdout).toContain("remove:-f /etc/cron.d/arthurs-review-geoip");
+    const remote = fs.readFileSync("scripts/remote-release.sh", "utf8");
+    const restore = remote.slice(remote.indexOf("restore_configuration()"), remote.indexOf("install_recovered_haproxy()"));
+    expect(restore).toContain("sync_geoip_schedule");
+  });
+
   it("uses the release env file instead of exported candidate variables during rollback", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "arthurs-review-compose-env-"));
     fs.mkdirSync(path.join(directory, "deploy"));

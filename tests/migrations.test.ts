@@ -102,6 +102,7 @@ describe("schema migrations", () => {
       { version: 9, name: "semantic_search" },
       { version: 10, name: "life_category" },
       { version: 11, name: "life_url_history" },
+      { version: 12, name: "bilingual_search" },
     ]);
     expect(getDb().prepare("select name from sqlite_master where type = 'table' and name = 'articles'").get()).toBeTruthy();
   });
@@ -128,6 +129,7 @@ describe("schema migrations", () => {
       { version: 9, name: "semantic_search" },
       { version: 10, name: "life_category" },
       { version: 11, name: "life_url_history" },
+      { version: 12, name: "bilingual_search" },
     ]);
   });
 

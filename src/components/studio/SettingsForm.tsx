@@ -7,6 +7,8 @@ type Settings = {
   siteName: string;
   contactEmail: string;
   about: string;
+  aboutZh: string;
+  rssDescriptionZh: string;
   rssDescription: string;
   openrouterTranslationModel: string;
 };
@@ -29,7 +31,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Settings })
     <section className="sans">
       <h1 className="font-serif text-4xl font-bold">Settings</h1>
       <form onSubmit={save} className="mt-6 grid gap-4">
-        {(["siteName", "contactEmail", "rssDescription"] as const).map((key) => (
+        {(["siteName", "contactEmail", "rssDescription", "rssDescriptionZh"] as const).map((key) => (
           <label key={key} className="grid gap-2">
             {key}
             <input className="border border-[var(--rule)] bg-white p-3" value={settings[key]} onChange={(event) => setSettings({ ...settings, [key]: event.target.value })} />
@@ -47,6 +49,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Settings })
           about
           <textarea className="min-h-36 border border-[var(--rule)] bg-white p-3" value={settings.about} onChange={(event) => setSettings({ ...settings, about: event.target.value })} />
         </label>
+        <label className="grid gap-2">aboutZh<textarea className="min-h-36 border border-[var(--rule)] bg-white p-3" value={settings.aboutZh} onChange={(event) => setSettings({ ...settings, aboutZh: event.target.value })} /></label>
         <button type="submit" className="w-fit border border-[var(--rule)] bg-[var(--ink)] px-4 py-2 text-[var(--paper)]">
           Save settings
         </button>

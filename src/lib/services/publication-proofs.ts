@@ -39,6 +39,8 @@ export type PublicPublicationProof = {
   id: number;
   articleId: number;
   articleTitle: string;
+  articleTitleEn: string | null;
+  articleHasEnglish: boolean;
   articleSlug: string;
   articleCategory: CategoryId;
   createdAt: string;
@@ -69,6 +71,8 @@ type ProofRow = {
 
 type PublicProofRow = ProofRow & {
   article_title: string;
+  article_title_en: string | null;
+  article_body_en_path: string | null;
   article_slug: string;
   article_category: CategoryId;
 };
@@ -113,6 +117,8 @@ function mapPublicProof(row: PublicProofRow): PublicPublicationProof {
     id: row.id,
     articleId: row.article_id,
     articleTitle: row.article_title,
+    articleTitleEn: row.article_title_en,
+    articleHasEnglish: Boolean(row.article_title_en?.trim() && row.article_body_en_path),
     articleSlug: row.article_slug,
     articleCategory: row.article_category,
     createdAt: row.created_at,
@@ -398,6 +404,7 @@ export function listPublicPublicationProofs(): PublicPublicationProof[] {
     .prepare(
       `select publication_proofs.*,
               revisions.title_zh as article_title,
+              revisions.title_en as article_title_en, revisions.body_en_path as article_body_en_path,
               revisions.slug as article_slug,
               revisions.category as article_category
        from publication_proofs
@@ -451,6 +458,7 @@ export function listPublicPublicationProofPage({ page, pageSize = 50 }: { page?:
         .prepare(
           `select publication_proofs.*,
                   revisions.title_zh as article_title,
+              revisions.title_en as article_title_en, revisions.body_en_path as article_body_en_path,
                   revisions.slug as article_slug,
                   revisions.category as article_category
            from publication_proofs

@@ -5,6 +5,8 @@ const defaults = {
   contactEmail: "laoliarthur@outlook.com",
   about:
     "Arthur's Review is a personal publication for current-affairs notes, social analysis, poems, travel writing, and other things worth keeping.",
+  aboutZh: "Arthur's Review 是一份个人刊物，收录时事评论、社会分析、诗歌、旅行随笔，以及其他值得保留的东西。",
+  rssDescriptionZh: "Arthur's Review，一份个人思想刊物。",
   rssDescription: "Arthur's Review, a personal intellectual publication.",
   openrouterTranslationModel: "inclusionai/ring-2.6-1t:free",
 };

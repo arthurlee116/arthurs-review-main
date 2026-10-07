@@ -4,76 +4,32 @@ import { articlePath } from "@/lib/content/urls";
 import { uploadPublicPath } from "@/lib/media/paths";
 import type { Article } from "@/lib/services/articles";
 import { absoluteUrl } from "@/lib/seo";
+import { localizedPath, interpolate, type Locale } from "@/lib/i18n/locale";
+import { dictionary } from "@/lib/i18n/dictionary";
+import { articleDisplay, hasEnglishArticle } from "@/lib/i18n/article";
 
 const siteName = "Arthur's Review";
-const defaultDescription = "Arthur's Review, a personal intellectual publication.";
-
 export function socialImageUrl(title: string, kicker = siteName) {
-  const params = new URLSearchParams({ title, kicker });
-  return absoluteUrl(`/og?${params.toString()}`);
+  return absoluteUrl(`/og?${new URLSearchParams({ title, kicker })}`);
 }
-
-export function publicPageMetadata({
-  title,
-  description = defaultDescription,
-  path,
-  imagePath,
-  kicker,
-  type = "website",
-}: {
-  title: string;
-  description?: string;
-  path: string;
-  imagePath?: string | null;
-  kicker?: string;
-  type?: "website" | "article";
+export function publicPageMetadata({ title, description, path, imagePath, kicker, type = "website", locale = "zh", canonicalLocale = locale, hasEnglish = true }: {
+  title: string; description?: string; path: string; imagePath?: string | null; kicker?: string; type?: "website" | "article"; locale?: Locale; canonicalLocale?: Locale; hasEnglish?: boolean;
 }): Metadata {
-  const url = absoluteUrl(path);
+  const url = absoluteUrl(localizedPath(path, canonicalLocale));
   const image = imagePath ? absoluteUrl(uploadPublicPath(imagePath)) : socialImageUrl(title, kicker);
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: url,
-      types: {
-        "application/rss+xml": absoluteUrl("/feed.xml"),
-      },
-    },
-    openGraph: {
-      title,
-      description,
-      url,
-      siteName,
-      type,
-      images: [{ url: image, alt: title }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [{ url: image, alt: title }],
-    },
+  const text = description || dictionary(locale).siteDescription;
+  return { title, description: text,
+    alternates: { canonical: url, languages: { "zh-CN": absoluteUrl(localizedPath(path, "zh")), ...(hasEnglish ? { en: absoluteUrl(localizedPath(path, "en")) } : {}) }, types: { "application/rss+xml": absoluteUrl(localizedPath("/feed.xml", locale)) } },
+    openGraph: { title, description: text, url, siteName, type, locale: canonicalLocale === "zh" ? "zh_CN" : "en_GB", images: [{ url: image, alt: title }] },
+    twitter: { card: "summary_large_image", title, description: text, images: [{ url: image, alt: title }] },
   };
 }
-
 export function articleMetadata(article: Article, lang?: string): Metadata {
-  const useEnglish = lang === "en" && article.bodyEn;
-  const title = useEnglish ? (article.titleEn ?? article.titleZh) : article.titleZh;
-  const description = (useEnglish ? article.excerptEn : article.seoDescription) || article.seoDescription || article.excerptZh || defaultDescription;
-  return publicPageMetadata({
-    title,
-    description,
-    path: articlePath(article.category, article.slug),
-    imagePath: article.coverImagePath,
-    kicker: categoryLabel(article.category),
-    type: "article",
-  });
+  const locale = lang === "en" ? "en" : "zh";
+  const display = articleDisplay(article, locale);
+  return publicPageMetadata({ title: display.title, description: display.locale === "zh" ? article.seoDescription || display.excerpt : display.excerpt, path: articlePath(article.category, article.slug), imagePath: article.coverImagePath, kicker: categoryLabel(article.category, locale), type: "article", locale, canonicalLocale: display.locale, hasEnglish: hasEnglishArticle(article) });
 }
-
-export function categoryMetadata(category: CategoryId, label: string): Metadata {
-  return publicPageMetadata({
-    title: label,
-    description: `${label} archive from Arthur's Review.`,
-    path: `/${category}`,
-  });
+export function categoryMetadata(category: CategoryId, _label?: string, locale: Locale = "zh"): Metadata {
+  const label = categoryLabel(category, locale);
+  return publicPageMetadata({ title: label, description: interpolate(dictionary(locale).categoryDescription, { category: label }), path: `/${category}`, locale });
 }

@@ -78,7 +78,7 @@ describe("keyword search", () => {
     expect(results.map((article) => article.slug)).toEqual(["city-bystander"]);
   });
 
-  it("does not put English manuscript fields into the FTS index", async () => {
+  it("indexes both languages for bilingual public search", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { getDb } = await import("@/lib/db/connection");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
@@ -98,12 +98,12 @@ describe("keyword search", () => {
       ).id,
     );
 
-    expect(searchArticles("UnindexedEnglish")).toEqual([]);
+    expect(searchArticles("UnindexedEnglish").map((article) => article.slug)).toEqual(["chinese-search-corpus-only"]);
     expect(searchArticles("中文正文").map((article) => article.slug)).toEqual(["chinese-search-corpus-only"]);
     expect(getDb().prepare("select title_en, excerpt_en, body_en from article_search").get()).toEqual({
-      title_en: "",
-      excerpt_en: "",
-      body_en: "",
+      title_en: "UnindexedEnglish Title",
+      excerpt_en: "UnindexedEnglish excerpt.",
+      body_en: "UnindexedEnglish manuscript body.",
     });
   });
 

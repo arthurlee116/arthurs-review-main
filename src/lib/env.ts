@@ -11,6 +11,12 @@ const EnvSchema = z.object({
   LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(8),
 });
 const DataEnvSchema = EnvSchema.pick({ DATA_DIR: true });
+const GeoIpEnvSchema = DataEnvSchema.extend({ GEOIP_DATABASE_PATH: z.string().min(1).optional() });
+
+export function getGeoIpPath() {
+  const env = GeoIpEnvSchema.parse(process.env);
+  return path.resolve(/* turbopackIgnore: true */ env.GEOIP_DATABASE_PATH ?? path.join(env.DATA_DIR, "geoip", "country.mmdb"));
+}
 const CloudflareTokenSchema = z.string().trim().regex(/^[0-9a-f]{32}$/).or(z.literal("")).optional();
 
 export function getCloudflareWebAnalyticsToken() {

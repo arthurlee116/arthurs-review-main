@@ -1,3 +1,4 @@
+import { categoryLabel, type CategoryId } from "@/lib/content/categories";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,6 +22,7 @@ function execSql(filename: string) {
 
 // Migrations whose up() is more than "execute the SQL file".
 const customUps: Record<string, (db: Database.Database) => void> = {
+  "012_bilingual_search.sql": (db) => rebuildArticleSearchWithShadow(db),
   "002_rebuild_fts_shadow.sql": (db) => rebuildArticleSearchWithShadow(db),
   "003_article_revisions.sql": (db) => {
     execSql("003_article_revisions.sql")(db);
@@ -113,12 +115,12 @@ function populateArticleSearch(db: Database.Database, tableName: "article_search
     insert.run(
       row.id,
       tokenizeForFts(row.title_zh),
-      row.title_en ?? "",
+      tokenizeForFts(row.title_en ?? ""),
       tokenizeForFts(row.excerpt_zh),
-      row.excerpt_en ?? "",
+      tokenizeForFts(row.excerpt_en ?? ""),
       tokenizeForFts(readDataFile(row.body_zh_path)),
-      readDataFile(row.body_en_path),
-      tokenizeForFts(row.category),
+      tokenizeForFts(readDataFile(row.body_en_path)),
+      tokenizeForFts(`${categoryLabel(row.category as CategoryId)} ${categoryLabel(row.category as CategoryId, "en")}`),
       tokenizeForFts(row.tags ?? ""),
     );
   }

@@ -64,7 +64,7 @@ test("admin can create draft, preview, publish, and see public article", async (
 
   await editor.getByRole("button", { name: "Publish" }).click();
   await expect(editor.getByText("Published")).toBeVisible();
-  await page.goto(`/commentary/${slug}`);
+  await page.goto(`/zh/commentary/${slug}`);
   await expect(page.getByRole("heading", { name: "测试文章" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Markdown 样例" })).toBeVisible();
   await expect(page.getByRole("link", { name: "清晰链接" })).toHaveAttribute("href", "https://example.com");
@@ -98,7 +98,7 @@ test("admin can filter the article list by status category and search", async ({
 });
 
 test("admin can recommend multiple articles without reordering home and cancel one independently", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/zh");
   const homeLinks = page.getByRole("main").locator("article h2 a");
   await expect(homeLinks.first()).toBeVisible();
   const originalOrder = await homeLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href")));
@@ -118,18 +118,18 @@ test("admin can recommend multiple articles without reordering home and cancel o
   await saveSettings.press("Enter");
   await expect(page.getByText("Settings saved")).toBeVisible();
   await expect.poll(async () => {
-    await page.goto("/recommended");
+    await page.goto("/zh/recommended");
     return Promise.all(titles.map((title) => page.getByRole("main").getByRole("link", { name: title, exact: true }).count()));
   }).toEqual([1, 1]);
   await expect(page.locator("nav").getByRole("link", { name: "推荐", exact: true })).toHaveAttribute("aria-current", "page");
-  await page.goto("/");
+  await page.goto("/zh");
   await expect(homeLinks.first()).toBeVisible();
   expect(await homeLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href")))).toEqual(originalOrder);
   await page.goto(`/studio/articles?q=${encodeURIComponent(titles[0])}`);
   await page.getByRole("button", { name: `取消推荐：${titles[0]}`, exact: true }).click();
   await expect(page.getByRole("button", { name: `设为推荐：${titles[0]}`, exact: true })).toBeVisible();
   await expect.poll(async () => {
-    await page.goto("/recommended");
+    await page.goto("/zh/recommended");
     return Promise.all(titles.map((title) => page.getByRole("main").getByRole("link", { name: title, exact: true }).count()));
   }).toEqual([0, 1]);
 });
@@ -152,7 +152,7 @@ test("publishing an existing article saves current editor input first", async ({
   await editor.getByRole("button", { name: "Publish" }).click();
   await expect(editor.getByText("Published")).toBeVisible();
 
-  await page.goto(`/commentary/${slug}`);
+  await page.goto(`/zh/commentary/${slug}`);
   await expect(page.getByText("新正文")).toBeVisible();
   await expect(page.getByText("旧正文")).toHaveCount(0);
 });
@@ -176,6 +176,6 @@ test("admin can unpublish an article back to draft", async ({ page }, testInfo) 
   await editor.getByRole("button", { name: "Unpublish" }).click();
   await expect(editor.getByText("Unpublished")).toBeVisible();
 
-  await page.goto(`/commentary/${slug}`);
+  await page.goto(`/zh/commentary/${slug}`);
   await expect(page.getByRole("heading", { name: "可以撤回的文章" })).toHaveCount(0);
 });

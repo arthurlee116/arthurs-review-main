@@ -16,7 +16,7 @@ async function openNewArticleEditor(page: import("@playwright/test").Page) {
 }
 
 test("life page loads and the public nav links to it", async ({ page }) => {
-  const response = await page.goto("/life");
+  const response = await page.goto("/zh/life");
   expect(response?.ok()).toBe(true);
   const publicNav = page.getByRole("navigation").first();
   await expect(publicNav.getByRole("link", { name: "生活", exact: true })).toBeVisible();
@@ -43,7 +43,7 @@ test("admin publishes a life article and the photo wall links through to it", as
   // The photo wall revalidates asynchronously via the cache.invalidate worker job.
   const wallLink = page.getByRole("link", { name: new RegExp(title) });
   await expect(async () => {
-    await page.goto("/life");
+    await page.goto("/zh/life");
     await expect(wallLink).toBeVisible();
   }).toPass();
   await wallLink.click();
@@ -51,11 +51,11 @@ test("admin publishes a life article and the photo wall links through to it", as
   await expect(page).toHaveURL(new RegExp(`/life/${slug}$`));
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
   await expect(page.getByText("生活正文内容")).toBeVisible();
-  for (const route of ["/", "/recommended", "/archive"]) {
+  for (const route of ["/zh", "/zh/recommended", "/zh/archive"]) {
     await page.goto(route);
     await expect(page.getByRole("main").getByRole("link", { name: title, exact: true })).toHaveCount(0);
   }
-  await page.goto(`/search?q=${encodeURIComponent(title)}`);
+  await page.goto(`/zh/search?q=${encodeURIComponent(title)}`);
   // Search streams its results after the shell; wait without cancelling the request with another navigation.
   await expect(page.getByRole("main").getByRole("link", { name: title, exact: true })).toBeVisible({ timeout: 15_000 });
   await expect.poll(async () => (await (await request.get("/feed.xml")).text()).includes(title)).toBe(true);

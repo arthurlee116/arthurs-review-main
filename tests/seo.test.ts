@@ -33,7 +33,7 @@ describe("SEO and discovery metadata", () => {
   it("generates article metadata from the stored article SEO fields", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
-    const page = await import("@/app/commentary/[slug]/page");
+    const page = await import("@/app/[locale]/commentary/[slug]/page");
     migrate();
 
     const article = createArticle(
@@ -50,19 +50,18 @@ describe("SEO and discovery metadata", () => {
 
     const metadata = await page.generateMetadata({
       params: Promise.resolve({ slug: "real-title" }),
-      searchParams: Promise.resolve({}),
     });
 
     expect(metadata.title).toBe("一篇真正有标题的文章");
     expect(metadata.description).toBe("这是一段专门给搜索和分享使用的描述。");
-    expect(metadata.alternates?.canonical).toBe("https://blog.leesaitool.com/commentary/real-title");
+    expect(metadata.alternates?.canonical).toBe("https://blog.leesaitool.com/zh/commentary/real-title");
     expect(metadata.alternates?.types).toEqual({
-      "application/rss+xml": "https://blog.leesaitool.com/feed.xml",
+      "application/rss+xml": "https://blog.leesaitool.com/zh/feed.xml",
     });
     expect(metadata.openGraph).toMatchObject({
       title: "一篇真正有标题的文章",
       description: "这是一段专门给搜索和分享使用的描述。",
-      url: "https://blog.leesaitool.com/commentary/real-title",
+      url: "https://blog.leesaitool.com/zh/commentary/real-title",
       type: "article",
       images: [
         {
@@ -92,11 +91,11 @@ describe("SEO and discovery metadata", () => {
   });
 
   it("advertises RSS and generates a PNG social card", async () => {
-    const layout = await import("@/app/layout");
+    const layout = await import("@/app/[locale]/layout");
     const og = await import("@/app/og/route");
 
-    expect(layout.metadata.alternates?.types).toEqual({
-      "application/rss+xml": "https://blog.leesaitool.com/feed.xml",
+    expect((await layout.generateMetadata()).alternates?.types).toEqual({
+      "application/rss+xml": "https://blog.leesaitool.com/zh/feed.xml",
     });
     expect(layout.viewport).toEqual({ width: "device-width", initialScale: 1 });
 
@@ -120,14 +119,14 @@ describe("SEO and discovery metadata", () => {
 
     const urls = (await sitemap.default()).map((entry) => entry.url);
 
-    expect(urls).toContain("https://blog.leesaitool.com/archive");
-    expect(urls).toContain("https://blog.leesaitool.com/proofs");
-    expect(urls).toContain("https://blog.leesaitool.com/life");
-    expect(urls).toContain("https://blog.leesaitool.com/recommended");
+    expect(urls).toContain("https://blog.leesaitool.com/zh/archive");
+    expect(urls).toContain("https://blog.leesaitool.com/zh/proofs");
+    expect(urls).toContain("https://blog.leesaitool.com/zh/life");
+    expect(urls).toContain("https://blog.leesaitool.com/zh/recommended");
   });
 
   it("emits site and author JSON-LD from the root layout", async () => {
-    const layout = await import("@/app/layout");
+    const layout = await import("@/app/[locale]/layout");
     const html = renderToStaticMarkup(await layout.default({ children: null }));
     const match = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
     expect(match?.[1]).toBeTruthy();
@@ -138,18 +137,18 @@ describe("SEO and discovery metadata", () => {
       "@graph": [
         {
           "@type": "Person",
-          "@id": "https://blog.leesaitool.com/about#arthur",
+          "@id": "https://blog.leesaitool.com/zh/about#arthur",
           name: "Arthur",
-          url: "https://blog.leesaitool.com/about",
+          url: "https://blog.leesaitool.com/zh/about",
         },
         {
           "@type": "WebSite",
-          "@id": "https://blog.leesaitool.com/#website",
+          "@id": "https://blog.leesaitool.com/zh#website",
           name: "Arthur's Review",
-          url: "https://blog.leesaitool.com/",
+          url: "https://blog.leesaitool.com/zh",
           inLanguage: "zh-CN",
           publisher: {
-            "@id": "https://blog.leesaitool.com/about#arthur",
+            "@id": "https://blog.leesaitool.com/zh/about#arthur",
           },
         },
       ],

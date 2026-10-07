@@ -335,9 +335,19 @@ install_target_configuration() {
   production_compose config --quiet || return
 }
 
+sync_geoip_schedule() {
+  if [[ -f "${APP_DIR}/deploy/geoip.cron" ]]; then
+    install -m 0644 "${APP_DIR}/deploy/geoip.cron" /etc/cron.d/arthurs-review-geoip
+  else
+    rm -f /etc/cron.d/arthurs-review-geoip
+  fi
+}
+
 migrate_target_database() {
   local actual_schema
   production_compose run --rm --no-deps app pnpm db:migrate >/dev/null || return
+  production_compose run --rm --no-deps app pnpm geoip:update || return
+  sync_geoip_schedule || return
   actual_schema="$(sqlite3 "${DATABASE_PATH}" 'select coalesce(max(version), 0) from schema_migrations;')" || return
   [[ "${actual_schema}" == "${EXPECTED_SCHEMA_VERSION}" ]] \
     || fail "Migrated schema ${actual_schema} does not match expected ${EXPECTED_SCHEMA_VERSION}"
@@ -505,6 +515,7 @@ restore_configuration() {
   rm -rf "${APP_DIR}/deploy" "${APP_DIR}/scripts" || return
   tar -xzf "${config_snapshot}" -C "${APP_DIR}" || return
   install -m 0644 "${haproxy_snapshot}" "${APP_DIR}/deploy/haproxy.cfg" || return
+  sync_geoip_schedule
 }
 
 install_recovered_haproxy() {

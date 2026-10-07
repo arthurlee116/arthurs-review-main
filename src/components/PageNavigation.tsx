@@ -1,3 +1,5 @@
+import { dictionary } from "@/lib/i18n/dictionary";
+import { localizedPath, interpolate, type Locale } from "@/lib/i18n/locale";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -17,19 +19,22 @@ export function PageNavigation({
   totalPages,
   params = {},
   label,
+  locale,
 }: {
   basePath: string;
   page: number;
   totalPages: number;
   params?: Record<string, string | undefined>;
   label: string;
+  locale?: Locale;
 }) {
+  const t = dictionary(locale ?? "en");
   if (totalPages <= 1) return null;
   return (
     <nav className="sans mt-8 flex items-center justify-between border-y border-[var(--rule)] py-4 text-sm" aria-label={label}>
-      {page > 1 ? <Link href={pageHref(basePath, page - 1, params)}>Previous</Link> : <span className="text-[var(--muted)]">Previous</span>}
-      <span className="text-[var(--muted)]">Page {page} of {totalPages}</span>
-      {page < totalPages ? <Link href={pageHref(basePath, page + 1, params)}>Next</Link> : <span className="text-[var(--muted)]">Next</span>}
+      {page > 1 ? <Link href={pageHref(locale ? localizedPath(basePath, locale) : basePath, page - 1, params)}>{t.previous}</Link> : <span className="text-[var(--muted)]">{t.previous}</span>}
+      <span className="text-[var(--muted)]">{interpolate(t.pageOf, { page, total: totalPages })}</span>
+      {page < totalPages ? <Link href={pageHref(locale ? localizedPath(basePath, locale) : basePath, page + 1, params)}>{t.next}</Link> : <span className="text-[var(--muted)]">{t.next}</span>}
     </nav>
   );
 }

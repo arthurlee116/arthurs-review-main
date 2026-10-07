@@ -5,7 +5,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ArticlePage } from "@/app/_articlePage";
-import { HomeContent } from "@/app/page";
+import { HomeContent } from "@/app/[locale]/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
@@ -51,9 +51,9 @@ describe("public article pages", () => {
     expect(screen.queryByText(contactNotice)).not.toBeInTheDocument();
     expect(fs.existsSync("src/components/ContactPromptModal.tsx")).toBe(false);
     const footer = screen.getByRole("contentinfo");
-    expect(within(footer).getByRole("link", { name: "Archive" })).toHaveAttribute("href", "/archive");
-    expect(within(footer).getByRole("link", { name: "Proofs" })).toHaveAttribute("href", "/proofs");
-    expect(within(footer).getByRole("link", { name: "RSS" })).toHaveAttribute("href", "/feed.xml");
+    expect(within(footer).getByRole("link", { name: "归档" })).toHaveAttribute("href", "/zh/archive");
+    expect(within(footer).getByRole("link", { name: "发表存证" })).toHaveAttribute("href", "/zh/proofs");
+    expect(within(footer).getByRole("link", { name: "RSS" })).toHaveAttribute("href", "/zh/feed.xml");
     expect(within(footer).getByRole("link", { name: "laoliarthur@outlook.com" })).toHaveAttribute("href", "mailto:laoliarthur@outlook.com");
     expect(within(footer).getByRole("link", { name: "iii7201027@proton.me" })).toHaveAttribute("href", "mailto:iii7201027@proton.me");
     await user.click(within(footer).getByRole("button", { name: "复制微信号 bookspiano" }));
@@ -137,7 +137,7 @@ describe("public article pages", () => {
       "@type": "BlogPosting",
       headline: "真正的页面标题",
       description: "给搜索引擎看的短描述。",
-      url: "https://blog.leesaitool.com/commentary/structured-article",
+      url: "https://blog.leesaitool.com/zh/commentary/structured-article",
       datePublished: published.publishedAt,
       dateModified: published.updatedAt,
       author: {
@@ -147,7 +147,7 @@ describe("public article pages", () => {
       publisher: {
         "@type": "Organization",
         name: "Arthur's Review",
-        url: "https://blog.leesaitool.com/",
+        url: "https://blog.leesaitool.com/zh",
       },
       image: ["https://blog.leesaitool.com/media/2026/05/cover.webp"],
     });
@@ -159,19 +159,19 @@ describe("public article pages", () => {
           "@type": "ListItem",
           position: 1,
           name: "Arthur's Review",
-          item: "https://blog.leesaitool.com/",
+          item: "https://blog.leesaitool.com/zh",
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "时事评论",
-          item: "https://blog.leesaitool.com/commentary",
+          item: "https://blog.leesaitool.com/zh/commentary",
         },
         {
           "@type": "ListItem",
           position: 3,
           name: "真正的页面标题",
-          item: "https://blog.leesaitool.com/commentary/structured-article",
+          item: "https://blog.leesaitool.com/zh/commentary/structured-article",
         },
       ],
     });
@@ -190,7 +190,7 @@ describe("public article pages", () => {
       capture: async () => "https://web.archive.org/web/20260713150000/https://blog.leesaitool.com/commentary/short-note-with-warmth",
     });
 
-    const { container } = render(await ArticlePage({ category: "commentary", slug: article.slug }));
+    const { container } = render(await ArticlePage({ category: "commentary", slug: article.slug, lang: "en" }));
     const summary = screen.getByText("Proof of Publication");
     const details = summary.closest("details");
 

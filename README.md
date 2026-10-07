@@ -87,3 +87,11 @@ scripts/verify-backup.sh /var/www/arthurs-review/backups/arthurs-review-YYYYMMDD
 ```
 
 The VPS keeps 30 days of daily archives. `.github/workflows/backup.yml` also downloads, verifies, and stores the latest archive as a 14-day GitHub Actions artifact so a server loss does not take the only backup with it.
+
+### Public languages
+
+Public pages use `/zh` and `/en`. Unprefixed reader URLs redirect with a manual language cookie taking precedence over the visitor IP (CN/HK/MO/TW use Chinese; other or unknown addresses use English). Explicit language URLs stay in that language. A complete English title and body enable English article display; otherwise the public UI keeps its chosen language and the article falls back to Chinese. Studio and proof downloads retain their existing URLs.
+
+Country lookup uses the local DB-IP Country Lite database at `DATA_DIR/geoip/country.mmdb` (optional `GEOIP_DATABASE_PATH` override). Run `pnpm geoip:update` for local development. Deployment prepares it before starting the app and installs a daily check that fetches each new monthly edition. Downloads require a SHA-512 match and valid MMDB; failures keep the previous database. Attribution appears in the footer. Production accepts the `X-Real-IP` set by Caddy; do not expose the app port directly to the internet.
+
+Public RSS feeds: `/zh/feed.xml`, `/en/feed.xml`; `/feed.xml` remains the legacy Chinese feed with stable item GUIDs. `about` and `rssDescription` are the existing English settings; `aboutZh` and `rssDescriptionZh` provide Chinese text.

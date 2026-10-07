@@ -4,7 +4,7 @@ import path from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { ProofsContent } from "@/app/proofs/page";
+import { ProofsContent } from "@/app/[locale]/proofs/page";
 import { listPublicPublicationProofs } from "@/lib/services/publication-proofs";
 import { articleInput } from "@/test/factories";
 
@@ -64,7 +64,7 @@ describe("public proof archive", () => {
       capture: async () => "https://web.archive.org/web/20260715110000/https://blog.leesaitool.com/commentary/public-proof",
     });
 
-    render(await ProofsContent());
+    render(await ProofsContent({ locale: "en" }));
 
     expect(screen.getByRole("heading", { level: 1, name: "Proofs" })).toBeVisible();
     expect(screen.getByText("1 proof")).toBeVisible();
@@ -73,7 +73,7 @@ describe("public proof archive", () => {
     expect(screen.getByText("0 pending")).toBeVisible();
     expect(screen.getByText("0 failed")).toBeVisible();
     const group = screen.getByRole("region", { name: "公开证明文章" });
-    expect(within(group).getByRole("link", { name: "公开证明文章" })).toHaveAttribute("href", "/commentary/public-proof");
+    expect(within(group).getByRole("link", { name: "公开证明文章" })).toHaveAttribute("href", "/en/commentary/public-proof");
     expect(within(group).getByRole("link", { name: "Source JSON" })).toHaveAttribute("href", `/proofs/${proof!.id}/source`);
     expect(within(group).getByRole("link", { name: "OpenTimestamps" })).toHaveAttribute("href", `/proofs/${proof!.id}/ots`);
     expect(within(group).getByRole("link", { name: "Wayback snapshot" })).toHaveAttribute("href", proof!.waybackUrl);
@@ -119,7 +119,7 @@ describe("public proof archive", () => {
       );
     }
 
-    render(await ProofsContent({ page: 2 }));
+    render(await ProofsContent({ page: 2, locale: "en" }));
 
     expect(screen.getByText("51 proofs")).toBeVisible();
     expect(screen.getByText("51 articles")).toBeVisible();
