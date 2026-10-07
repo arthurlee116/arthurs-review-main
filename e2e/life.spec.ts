@@ -55,10 +55,9 @@ test("admin publishes a life article and the photo wall links through to it", as
     await page.goto(route);
     await expect(page.getByRole("main").getByRole("link", { name: title, exact: true })).toHaveCount(0);
   }
-  await expect.poll(async () => {
-    await page.goto(`/search?q=${encodeURIComponent(title)}`);
-    return page.getByRole("main").getByRole("link", { name: title, exact: true }).count();
-  }).toBe(1);
+  await page.goto(`/search?q=${encodeURIComponent(title)}`);
+  // Search streams its results after the shell; wait without cancelling the request with another navigation.
+  await expect(page.getByRole("main").getByRole("link", { name: title, exact: true })).toBeVisible({ timeout: 15_000 });
   await expect.poll(async () => (await (await request.get("/feed.xml")).text()).includes(title)).toBe(true);
   await page.goto(`/studio/articles?q=${encodeURIComponent(title)}`);
   await expect(page.getByRole("button", { name: `设为推荐：${title}`, exact: true })).toHaveCount(0);
