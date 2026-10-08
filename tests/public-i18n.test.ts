@@ -119,4 +119,19 @@ describe("bilingual article presentation", () => {
     expect((await PUT(new Request("https://example.com/studio/api/settings", { method: "PUT", body: JSON.stringify({ ...old, about: "Updated English" }) }))).status).toBe(200);
     expect(getSettings()).toMatchObject({ aboutZh: "新的中文介绍", rssDescriptionZh: "新的中文 RSS", about: "Updated English" });
   });
+  it("uses Chinese descriptions for legacy and Chinese RSS and English descriptions for English RSS", async () => {
+    await article();
+    const { setSetting } = await import("@/lib/services/settings");
+    setSetting("rssDescriptionZh", "中文订阅介绍");
+    setSetting("rssDescription", "English feed description");
+    const { GET: legacyFeed } = await import("@/app/feed.xml/route");
+    const { GET: localizedFeed } = await import("@/app/[locale]/feed.xml/route");
+    const legacy = await (await legacyFeed()).text();
+    const zh = await (await localizedFeed(new Request("https://example.com/zh/feed.xml"), { params: Promise.resolve({ locale: "zh" }) })).text();
+    const en = await (await localizedFeed(new Request("https://example.com/en/feed.xml"), { params: Promise.resolve({ locale: "en" }) })).text();
+    expect(legacy).toContain("<description>中文订阅介绍</description>");
+    expect(zh).toContain("<description>中文订阅介绍</description>");
+    expect(en).toContain("<description>English feed description</description>");
+    for (const feed of [legacy, zh, en]) expect(feed).toContain("<guid>https://example.com/commentary/bilingual</guid>");
+  });
 });

@@ -28,13 +28,17 @@ test("quick-post publishes a life article from the studio", async ({ page }) => 
   const publishButton = page.getByRole("button", { name: "发布", exact: true });
   await expect(publishButton).toBeEnabled();
   await page.evaluate(() => { document.documentElement.dataset.studioDocument = "initial"; });
+  const createdResponse = page.waitForResponse((response) =>
+    response.url().endsWith("/studio/api/articles") && response.request().method() === "POST",
+  );
   await publishButton.click();
+  const { article: created } = await (await createdResponse).json() as { article: { slug: string } };
 
   await expect(page).toHaveURL(/\/life$/);
   expect(await page.locator("html").getAttribute("data-studio-document")).toBeNull();
 
   // The photo wall revalidates asynchronously via the cache.invalidate worker job.
-  const wallItem = page.locator("main a").first();
+  const wallItem = page.locator(`main a[href="/zh/life/${created.slug}"]`);
   await expect(async () => {
     await page.goto("/zh/life");
     await expect(wallItem).toBeVisible();
