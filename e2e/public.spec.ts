@@ -112,7 +112,8 @@ test("listing caps move the thirteenth article into Archive", async ({ page }) =
 test("article without English body still offers the footer language switch", async ({ page }) => {
   await page.goto("/zh/commentary/short-note");
   await expect(page.locator("main [data-language-switch]")).toHaveCount(0);
-  await expect(page.locator("footer [data-language-switch]")).toBeVisible();
+  // PPR can retain a hidden fallback footer alongside the resolved article.
+  await expect(page.locator("footer:visible [data-language-switch]").getByRole("button", { name: "English", exact: true })).toBeVisible();
 });
 
 test("article feedback stays out of the way and copies the WeChat id", async ({ page, context }) => {

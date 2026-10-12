@@ -91,10 +91,15 @@ test("cover uploads before first publication and recovers a connection failure w
   await expect(page.getByText("Image uploaded", { exact: true })).toBeVisible();
   expect(attempts).toBe(2);
   const replacement = await (await secondUpload).json();
+  const republished = page.waitForResponse((response) => response.url().endsWith(`/studio/api/articles/${article.id}/publish`));
   await page.getByRole("button", { name: "Publish", exact: true }).click();
   await expect(page.getByText("Published", { exact: true })).toBeVisible();
-  await page.goto(`/zh/commentary/${slug}`);
-  await expect(cover).toHaveAttribute("src", replacement.publicPath);
+  expect((await (await republished).json()).article.coverImagePath).toBe(replacement.relativePath);
+  // Public pages refresh after the durable cache-invalidation job runs.
+  await expect.poll(async () => {
+    await page.goto(`/zh/commentary/${slug}`);
+    return cover.getAttribute("src");
+  }, { timeout: 15_000 }).toBe(replacement.publicPath);
 });
 
 test("admin can create draft, preview, publish, and see public article", async ({ page }, testInfo) => {
