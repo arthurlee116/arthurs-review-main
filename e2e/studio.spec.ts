@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import sharp from "sharp";
 
 const complexMarkdown = `## Markdown 样例
 
@@ -37,6 +38,63 @@ async function openNewArticleEditor(page: import("@playwright/test").Page) {
 test("studio requires login", async ({ page }) => {
   await page.goto("/studio");
   await expect(page).toHaveURL(/\/studio\/login/);
+});
+
+test("cover uploads before first publication and recovers a connection failure when editing", async ({ page }, testInfo) => {
+  const slug = `cover-upload-${testInfo.project.name}-${Date.now()}`;
+  const title = "首次发布封面上传";
+  const buffer = await sharp({ create: { width: 2000, height: 1200, channels: 3, background: "#436451" } }).png().toBuffer();
+  await login(page);
+  const editor = await openNewArticleEditor(page);
+  await editor.getByLabel("Chinese title").fill(title);
+  await editor.getByLabel("Slug").fill(slug);
+  await editor.getByRole("textbox", { name: "Chinese body" }).fill("封面上传回归测试正文。");
+
+  let releaseUpload!: () => void;
+  const uploadGate = new Promise<void>((resolve) => { releaseUpload = resolve; });
+  await page.route("**/studio/api/media", async (route) => {
+    await uploadGate;
+    await route.continue();
+  });
+  const firstUpload = page.waitForResponse((response) => response.url().endsWith("/studio/api/media"));
+  await editor.getByLabel("Choose cover image").setInputFiles({ name: "cover.png", mimeType: "image/png", buffer });
+  await expect(editor.getByText("Uploading image...", { exact: true })).toBeVisible();
+  await expect(editor.getByRole("button", { name: "Save draft" })).toBeDisabled();
+  await expect(editor.getByRole("button", { name: "Publish" })).toBeDisabled();
+  releaseUpload();
+  const uploadResponse = await firstUpload;
+  expect(uploadResponse.ok()).toBe(true);
+  const uploaded = await uploadResponse.json();
+  expect(uploaded.originalName).toBe("cover.webp");
+  expect(uploaded.width).toBe(1600);
+  await expect(editor.getByText("Image uploaded", { exact: true })).toBeVisible();
+
+  const savedArticle = page.waitForResponse((response) => response.url().endsWith("/studio/api/articles") && response.request().method() === "POST");
+  await editor.getByRole("button", { name: "Publish" }).click();
+  const { article } = await (await savedArticle).json();
+  await expect(editor.getByText("Published", { exact: true })).toBeVisible();
+  await page.goto(`/zh/commentary/${slug}`);
+  const cover = page.getByRole("img", { name: title, exact: true });
+  await expect(cover).toHaveAttribute("src", uploaded.publicPath);
+  await expect.poll(() => cover.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+
+  await page.unroute("**/studio/api/media");
+  await page.goto(`/studio/articles/${article.id}`);
+  let attempts = 0;
+  await page.route("**/studio/api/media", async (route) => {
+    attempts++;
+    if (attempts === 1) await route.abort("connectionreset");
+    else await route.continue();
+  });
+  const secondUpload = page.waitForResponse((response) => response.url().endsWith("/studio/api/media"));
+  await page.getByLabel("Choose cover image").setInputFiles({ name: "cover.png", mimeType: "image/png", buffer });
+  await expect(page.getByText("Image uploaded", { exact: true })).toBeVisible();
+  expect(attempts).toBe(2);
+  const replacement = await (await secondUpload).json();
+  await page.getByRole("button", { name: "Publish", exact: true }).click();
+  await expect(page.getByText("Published", { exact: true })).toBeVisible();
+  await page.goto(`/zh/commentary/${slug}`);
+  await expect(cover).toHaveAttribute("src", replacement.publicPath);
 });
 
 test("admin can create draft, preview, publish, and see public article", async ({ page }, testInfo) => {

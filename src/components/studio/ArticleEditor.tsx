@@ -64,6 +64,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
   const [form, setForm] = useState<FormState>(() => initial(article));
   const [message, setMessage] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isCoverUploading, setIsCoverUploading] = useState(false);
   const [publishFeedback, setPublishFeedback] = useState<PublishFeedback>("idle");
   const publishFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -127,6 +128,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
   }
 
   async function save() {
+    if (isCoverUploading) return null;
     setMessage("");
     const payload = {
       titleZh: form.titleZh,
@@ -251,7 +253,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
         SEO description
         <input className="border border-[var(--rule)] bg-white p-3" value={form.seoDescription} onChange={(event) => set("seoDescription", event.target.value)} />
       </label>
-      <ImageUploader onUploaded={(relativePath) => set("coverImagePath", relativePath)} />
+      <ImageUploader onUploaded={(relativePath) => set("coverImagePath", relativePath)} onBusyChange={setIsCoverUploading} />
       <TagPicker tags={availableTags} tagIds={form.tagIds} onChange={(tagIds) => set("tagIds", tagIds)} />
       <p className="text-xs text-[var(--muted)]">Required before publishing: Chinese title, valid slug, and Chinese body.</p>
       <MarkdownEditor label="Chinese body" value={form.bodyZh} onChange={(value) => set("bodyZh", value)} />
@@ -260,7 +262,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
       </button>
       <MarkdownEditor label="English body" value={form.bodyEn} onChange={(value) => set("bodyEn", value)} />
       <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={save} className="border border-[var(--rule)] px-4 py-2">
+        <button type="button" onClick={save} disabled={isCoverUploading} className="border border-[var(--rule)] px-4 py-2 disabled:opacity-50">
           Save draft
         </button>
         {form.id ? (
@@ -268,7 +270,7 @@ export function ArticleEditor({ article, availableTags = [] }: { article?: Artic
             Preview
           </a>
         ) : null}
-        <button type="button" onClick={publish} className={publishButtonClass}>
+        <button type="button" onClick={publish} disabled={isCoverUploading} className={`${publishButtonClass} disabled:opacity-50`}>
           Publish
         </button>
         {form.status === "published" ? (

@@ -204,6 +204,59 @@ describe("MarkdownEditor", () => {
 });
 
 describe("ImageUploader", () => {
+  it("recovers from a failed first connection without reselecting the cover", async () => {
+    const onUploaded = vi.fn();
+    const onBusyChange = vi.fn();
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(Response.json({ relativePath: "uploads/retried.webp" }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ImageUploader onUploaded={onUploaded} onBusyChange={onBusyChange} />);
+
+    await userEvent.upload(screen.getByLabelText("Choose cover image"), new File(["image"], "cover.png", { type: "image/png" }));
+
+    expect(await screen.findByText("Image uploaded")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(onUploaded).toHaveBeenCalledOnce();
+    expect(onUploaded).toHaveBeenCalledWith("uploads/retried.webp");
+    expect(onBusyChange.mock.calls).toEqual([[true], [false]]);
+    expect(fetchMock.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("reports repeated timeouts and allows choosing the same file again", async () => {
+    const onUploaded = vi.fn();
+    const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new DOMException("Timed out", "TimeoutError"));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ImageUploader onUploaded={onUploaded} />);
+    const picker = screen.getByLabelText("Choose cover image");
+    const file = new File(["image"], "cover.png", { type: "image/png" });
+    const user = userEvent.setup();
+
+    await user.upload(picker, file);
+    expect(await screen.findByText("Upload connection failed or timed out. Choose the image to retry.")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(picker).toBeEnabled();
+    expect(onUploaded).not.toHaveBeenCalled();
+
+    fetchMock.mockResolvedValueOnce(Response.json({ relativePath: "uploads/reselected.webp" }));
+    await user.upload(picker, file);
+    expect(await screen.findByText("Image uploaded")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("shows non-JSON server failures without a false success or an automatic retry", async () => {
+    const onUploaded = vi.fn();
+    const fetchMock = vi.fn(async () => new Response("Bad gateway", { status: 502 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ImageUploader onUploaded={onUploaded} />);
+
+    await userEvent.upload(screen.getByLabelText("Choose cover image"), new File(["image"], "cover.png", { type: "image/png" }));
+
+    expect(await screen.findByText("Upload failed (502). Choose the image to retry.")).toBeVisible();
+    expect(onUploaded).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("uses the Studio button treatment for cover image uploads", async () => {
     const user = userEvent.setup();
     const onUploaded = vi.fn();
@@ -256,6 +309,29 @@ describe("ImageUploader", () => {
 });
 
 describe("ArticleEditor", () => {
+  it("blocks save and publish until the cover upload finishes, then saves its path", async () => {
+    let finishUpload!: (response: Response) => void;
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockImplementationOnce(() => new Promise<Response>((resolve) => { finishUpload = resolve; }))
+      .mockResolvedValueOnce(Response.json({ article: article({ coverImagePath: "uploads/cover.webp" }) }))
+      .mockResolvedValueOnce(Response.json({ article: article({ status: "published", coverImagePath: "uploads/cover.webp" }) }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ArticleEditor article={article()} />);
+    const user = userEvent.setup();
+    await user.upload(screen.getByLabelText("Choose cover image"), new File(["image"], "cover.png", { type: "image/png" }));
+
+    expect(await screen.findByText("Uploading image...")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Publish" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Publish" }));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await act(async () => { finishUpload(Response.json({ relativePath: "uploads/cover.webp" })); });
+    await user.click(screen.getByRole("button", { name: "Publish" }));
+    expect(await screen.findByText("Published")).toBeVisible();
+    expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body)).coverImagePath).toBe("uploads/cover.webp");
+  });
+
   it("shows and saves the English excerpt field", () => {
     render(<ArticleEditor article={article({ excerptEn: "English excerpt" })} />);
 
