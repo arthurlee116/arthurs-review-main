@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   cacheComponents: true,
   reactCompiler: true,
+  // Send canonical and robots declarations in <head>, without waiting for JS.
+  htmlLimitedBots: /.*/,
   cacheLife: {
     publicContent: {
       stale: 30,
@@ -36,6 +38,18 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      ...[
+        "/feed.xml",
+        "/:locale(zh|en)/feed.xml",
+        "/proofs/:id/:kind(ots|source)",
+        "/healthz",
+        "/version",
+        "/robots.txt",
+        "/sitemap.xml",
+      ].map((source) => ({
+        source,
+        headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }],
+      })),
     ];
   },
   allowedDevOrigins: ["127.0.0.1"],

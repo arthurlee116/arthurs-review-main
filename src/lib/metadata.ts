@@ -19,6 +19,7 @@ export function publicPageMetadata({ title, description, path, imagePath, kicker
   const image = imagePath ? absoluteUrl(uploadPublicPath(imagePath)) : socialImageUrl(title, kicker);
   const text = description || dictionary(locale).siteDescription;
   return { title, description: text,
+    robots: { index: type === "article" && locale === canonicalLocale, follow: true },
     alternates: { canonical: url, languages: { "zh-CN": absoluteUrl(localizedPath(path, "zh")), ...(hasEnglish ? { en: absoluteUrl(localizedPath(path, "en")) } : {}) }, types: { "application/rss+xml": absoluteUrl(localizedPath("/feed.xml", locale)) } },
     openGraph: { title, description: text, url, siteName, type, locale: canonicalLocale === "zh" ? "zh_CN" : "en_GB", images: [{ url: image, alt: title }] },
     twitter: { card: "summary_large_image", title, description: text, images: [{ url: image, alt: title }] },

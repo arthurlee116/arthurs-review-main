@@ -99,10 +99,12 @@ describe("bilingual article presentation", () => {
     const { articleMetadata } = await import("@/lib/metadata");
     const { renderRss } = await import("@/lib/rss");
     expect(articleMetadata(full, "en")).toMatchObject({ title: "English title", alternates: { canonical: "https://example.com/en/commentary/bilingual", languages: { "zh-CN": "https://example.com/zh/commentary/bilingual", en: "https://example.com/en/commentary/bilingual" } } });
+    for (const locale of ["zh", "en"]) expect(articleMetadata(full, locale).robots).toEqual({ index: true, follow: true });
     const fallback = { ...full, titleEn: "", bodyEn: "", bodyEnPath: null };
     const metadata = articleMetadata(fallback, "en");
     expect(metadata.alternates?.canonical).toBe("https://example.com/zh/commentary/bilingual");
     expect(metadata.alternates?.languages).not.toHaveProperty("en");
+    expect(metadata.robots).toEqual({ index: false, follow: true });
     const legacy = renderRss([full], "description");
     const en = renderRss([full, { ...fallback, slug: "fallback" }], "description", "en");
     expect(legacy).toContain("<guid>https://example.com/commentary/bilingual</guid>");
@@ -110,6 +112,8 @@ describe("bilingual article presentation", () => {
     expect(en).toContain("<link>https://example.com/en/commentary/bilingual</link>");
     expect(en).toContain("<title>English title</title>");
     expect(en).toContain("<title>中文标题</title>");
+    expect(en).toContain("<link>https://example.com/zh/commentary/fallback</link>");
+    expect(en).not.toContain("<link>https://example.com/en/commentary/fallback</link>");
   });
   it("preserves Chinese settings omitted by old requests", async () => {
     const { getSettings, setSetting } = await import("@/lib/services/settings");

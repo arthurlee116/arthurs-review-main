@@ -18,8 +18,8 @@ export function renderRss(articles: Article[], description: string, locale?: Loc
     .map((article) => {
       const path = articlePath(article.category, article.slug);
       const guid = absoluteUrl(path);
-      const url = absoluteUrl(locale ? localizedPath(path, locale) : path);
       const display = articleDisplay(article, locale ?? "zh");
+      const url = absoluteUrl(locale ? localizedPath(path, display.locale) : path);
       return `<item><title>${escapeXml(display.title)}</title><link>${url}</link><guid>${guid}</guid><description>${escapeXml(
         display.excerpt,
       )}</description><pubDate>${new Date(article.publishedAt ?? article.updatedAt).toUTCString()}</pubDate></item>`;

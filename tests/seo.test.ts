@@ -54,6 +54,7 @@ describe("SEO and discovery metadata", () => {
 
     expect(metadata.title).toBe("一篇真正有标题的文章");
     expect(metadata.description).toBe("这是一段专门给搜索和分享使用的描述。");
+    expect(metadata.robots).toEqual({ index: true, follow: true });
     expect(metadata.alternates?.canonical).toBe("https://blog.leesaitool.com/zh/commentary/real-title");
     expect(metadata.alternates?.types).toEqual({
       "application/rss+xml": "https://blog.leesaitool.com/zh/feed.xml",
@@ -112,17 +113,34 @@ describe("SEO and discovery metadata", () => {
     expect(splitOgTitle("A deliberately long English headline")).toEqual(["A deliberately long English headline"]);
   });
 
-  it("keeps archive and proof indexes in the sitemap", async () => {
+  it("keeps navigation pages crawlable without indexing them", async () => {
+    const { publicPageMetadata, categoryMetadata } = await import("@/lib/metadata");
+    const layout = await import("@/app/[locale]/layout");
+    for (const path of ["/", "/recommended", "/archive", "/proofs", "/about", "/search"]) {
+      expect(publicPageMetadata({ title: "Navigation", path }).robots).toEqual({ index: false, follow: true });
+    }
+    expect(categoryMetadata("life").robots).toEqual({ index: false, follow: true });
+    expect((await layout.generateMetadata()).robots).toEqual({ index: false, follow: true });
+  });
+
+  it("lists only published articles and their complete translations in the sitemap", async () => {
     const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
     const sitemap = await import("@/app/sitemap");
     migrate();
+    publishArticle(createArticle(articleInput({ slug: "bilingual", titleEn: "English title", bodyEn: "English body" })).id);
+    publishArticle(createArticle(articleInput({ slug: "chinese-only", category: "life" })).id);
+    createArticle(articleInput({ slug: "unpublished" }));
 
-    const urls = (await sitemap.default()).map((entry) => entry.url);
-
-    expect(urls).toContain("https://blog.leesaitool.com/zh/archive");
-    expect(urls).toContain("https://blog.leesaitool.com/zh/proofs");
-    expect(urls).toContain("https://blog.leesaitool.com/zh/life");
-    expect(urls).toContain("https://blog.leesaitool.com/zh/recommended");
+    const entries = await sitemap.default();
+    expect(entries.map((entry) => entry.url).sort()).toEqual([
+      "https://blog.leesaitool.com/en/commentary/bilingual",
+      "https://blog.leesaitool.com/zh/commentary/bilingual",
+      "https://blog.leesaitool.com/zh/life/chinese-only",
+    ]);
+    expect(entries.find((entry) => entry.url.endsWith("/zh/life/chinese-only"))?.alternates?.languages).toEqual({
+      "zh-CN": "https://blog.leesaitool.com/zh/life/chinese-only",
+    });
   });
 
   it("emits site and author JSON-LD from the root layout", async () => {
