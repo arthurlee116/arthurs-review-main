@@ -5,8 +5,9 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   cacheComponents: true,
   reactCompiler: true,
-  // Send canonical and robots declarations in <head>, without waiting for JS.
-  htmlLimitedBots: /.*/,
+  // Preserve Next's default crawler list and add Googlebot. Browsers keep normal
+  // streaming and prefetch behavior; crawlers receive canonical/robots in <head>.
+  htmlLimitedBots: /Googlebot|[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight/i,
   cacheLife: {
     publicContent: {
       stale: 30,

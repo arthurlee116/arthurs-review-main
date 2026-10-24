@@ -180,10 +180,12 @@ test("admin can recommend multiple articles without reordering home and cancel o
   await saveSettings.focus();
   await saveSettings.press("Enter");
   await expect(page.getByText("Settings saved")).toBeVisible();
-  await expect.poll(async () => {
+  // Wait for streamed results before retrying the navigation; counting links
+  // immediately can repeatedly cancel the page before its content arrives.
+  await expect(async () => {
     await page.goto("/zh/recommended");
-    return Promise.all(titles.map((title) => page.getByRole("main").getByRole("link", { name: title, exact: true }).count()));
-  }).toEqual([1, 1]);
+    for (const title of titles) await expect(page.getByRole("main").getByRole("link", { name: title, exact: true })).toBeVisible();
+  }).toPass({ timeout: 15_000 });
   await expect(page.locator("nav").getByRole("link", { name: "推荐", exact: true })).toHaveAttribute("aria-current", "page");
   await page.goto("/zh");
   await expect(homeLinks.first()).toBeVisible();
@@ -191,10 +193,11 @@ test("admin can recommend multiple articles without reordering home and cancel o
   await page.goto(`/studio/articles?q=${encodeURIComponent(titles[0])}`);
   await page.getByRole("button", { name: `取消推荐：${titles[0]}`, exact: true }).click();
   await expect(page.getByRole("button", { name: `设为推荐：${titles[0]}`, exact: true })).toBeVisible();
-  await expect.poll(async () => {
+  await expect(async () => {
     await page.goto("/zh/recommended");
-    return Promise.all(titles.map((title) => page.getByRole("main").getByRole("link", { name: title, exact: true }).count()));
-  }).toEqual([0, 1]);
+    await expect(page.getByRole("main").getByRole("link", { name: titles[1], exact: true })).toBeVisible();
+    await expect(page.getByRole("main").getByRole("link", { name: titles[0], exact: true })).toHaveCount(0);
+  }).toPass({ timeout: 15_000 });
 });
 
 test("publishing an existing article saves current editor input first", async ({ page }, testInfo) => {
