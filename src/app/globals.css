@@ -261,6 +261,15 @@ button {
   margin: 32px 0;
 }
 
+/* CodeMirror mounts client-side, so the server HTML renders this wrapper empty.
+   Reserve the editor's 18rem height here or every studio editor page grows by
+   18rem per editor on hydration, shifting the buttons below out from under the
+   pointer (and out from under Playwright's click point). Keep in sync with the
+   height prop in MarkdownEditor. */
+.markdown-source-editor {
+  min-height: 18rem;
+}
+
 .markdown-source-editor .cm-editor {
   max-width: 100%;
   min-height: 14rem;
