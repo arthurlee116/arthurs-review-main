@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { dictionary } from "@/lib/i18n/dictionary";
 import { localizedPath, type Locale } from "@/lib/i18n/locale";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
-import { FooterWechat } from "@/components/FooterWechat";
 
 export function PublicFooter({ locale = "zh" }: { locale?: Locale }) {
   const t = dictionary(locale);
@@ -19,7 +18,6 @@ export function PublicFooter({ locale = "zh" }: { locale?: Locale }) {
           <a className="sans ml-4 inline-block text-sm font-bold underline decoration-[var(--accent)] decoration-2 underline-offset-4" href="mailto:iii7201027@proton.me">
             iii7201027@proton.me
           </a>
-          <FooterWechat locale={locale} />
         </div>
 
         <nav className="sans grid grid-cols-2 content-start gap-x-8 gap-y-4 text-sm font-bold md:justify-self-end" aria-label={t.footer}>

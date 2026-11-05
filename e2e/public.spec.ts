@@ -116,14 +116,26 @@ test("article without English body still offers the footer language switch", asy
   await expect(page.locator("footer:visible [data-language-switch]").getByRole("button", { name: "English", exact: true })).toBeVisible();
 });
 
-test("article feedback stays out of the way and copies the WeChat id", async ({ page, context }) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseURL).origin });
+test("article feedback stays out of the way and points readers to comments", async ({ page }) => {
   await page.goto("/zh/commentary/short-note");
 
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "读完了？来挑错。" })).toBeVisible();
-  await page.getByRole("button", { name: "复制微信号", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("微信号已复制");
+  await expect(page.getByRole("link", { name: "写评论" })).toHaveAttribute("href", "#comments");
+  await expect(page.getByText(/bookspiano/)).toHaveCount(0);
+});
+
+test("a reader comment is held for review instead of appearing immediately", async ({ page }) => {
+  await page.goto("/zh/commentary/short-note");
+  const comments = page.getByRole("region", { name: /评论/ });
+  const body = `E2E 评论 ${Date.now()}`;
+  await comments.getByLabel("评论内容").fill(body);
+  // The form rejects submissions made faster than a person could type.
+  await page.waitForTimeout(3_200);
+  await comments.getByRole("button", { name: "提交", exact: true }).click();
+  await expect(comments.getByRole("status")).toHaveText("谢谢！评论经 Arthur 审核后显示。");
+  await page.reload();
+  await expect(page.getByText(body)).toHaveCount(0);
 });
 
 test("RSS discovery, Proofs, and the dynamic social card are reachable", async ({ page, request }) => {

@@ -3,13 +3,13 @@ import os from "node:os";
 import path from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ArticlePage } from "@/app/_articlePage";
 import { HomeContent } from "@/app/[locale]/page";
 import { articleInput } from "@/test/factories";
 
 let tmpDir: string;
-const contactNotice = "非常欢迎向我的邮箱（laoliarthur@outlook.com 或 iii7201027@proton.me）或者微信（bookspiano）留言，说说你的想法，给我提意见！";
+const contactNotice = "非常欢迎在文章下方留言评论，或者写信到我的邮箱（laoliarthur@outlook.com 或 iii7201027@proton.me），说说你的想法，给我提意见！";
 
 beforeEach(async () => {
   const storage = new Map<string, string>();
@@ -39,9 +39,6 @@ afterEach(async () => {
 
 describe("public article pages", () => {
   it("shows a non-blocking contact notice without mounting a dialog", async () => {
-    const user = userEvent.setup();
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     const { migrate } = await import("@/lib/db/migrate");
     migrate();
 
@@ -56,15 +53,10 @@ describe("public article pages", () => {
     expect(within(footer).getByRole("link", { name: "RSS" })).toHaveAttribute("href", "/zh/feed.xml");
     expect(within(footer).getByRole("link", { name: "laoliarthur@outlook.com" })).toHaveAttribute("href", "mailto:laoliarthur@outlook.com");
     expect(within(footer).getByRole("link", { name: "iii7201027@proton.me" })).toHaveAttribute("href", "mailto:iii7201027@proton.me");
-    await user.click(within(footer).getByRole("button", { name: "复制微信号 bookspiano" }));
-    expect(writeText).toHaveBeenCalledWith("bookspiano");
-    expect(within(footer).getByRole("status")).toHaveTextContent("微信号已复制");
+    expect(footer.textContent).not.toMatch(/微信|bookspiano/);
   });
 
-  it("offers concrete article feedback by email and copied WeChat id", async () => {
-    const user = userEvent.setup();
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+  it("offers concrete article feedback by email or comment, without WeChat", async () => {
     const { migrate } = await import("@/lib/db/migrate");
     const { createArticle, publishArticle } = await import("@/lib/services/articles");
     migrate();
@@ -78,9 +70,8 @@ describe("public article pages", () => {
       "href",
       expect.stringContaining(encodeURIComponent("关于《欢迎反驳的文章》的反馈")),
     );
-    await user.click(screen.getByRole("button", { name: "复制微信号" }));
-    expect(writeText).toHaveBeenCalledWith("bookspiano");
-    expect(within(screen.getByRole("complementary", { name: "读完了？来挑错。" })).getByRole("status")).toHaveTextContent("微信号已复制");
+    expect(screen.getByRole("link", { name: "写评论" })).toHaveAttribute("href", "#comments");
+    expect(document.body.textContent).not.toMatch(/微信|bookspiano/);
   });
 
   it("shows only approved comments under the article, with an anonymous fallback", async () => {
