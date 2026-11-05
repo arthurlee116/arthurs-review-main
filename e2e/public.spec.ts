@@ -171,7 +171,7 @@ test("production runtime exposes health, immutable version metadata, and product
   expect(await version.json()).toEqual({
     commit: process.env.E2E_EXPECTED_COMMIT ?? "development",
     digest: process.env.E2E_EXPECTED_DIGEST ?? "development",
-    schemaVersion: 12,
+    schemaVersion: 13,
   });
 
   await page.goto("/zh");
