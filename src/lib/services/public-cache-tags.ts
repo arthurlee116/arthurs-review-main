@@ -11,3 +11,7 @@ export function publicArticleTag(category: CategoryId, slug: string) {
 export function publicArticleProofsTag(articleId: number) {
   return `public:proofs:article:${articleId}`;
 }
+
+export function publicArticleCommentsTag(articleId: number) {
+  return `public:comments:article:${articleId}`;
+}

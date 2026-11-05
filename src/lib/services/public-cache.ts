@@ -4,6 +4,7 @@ export {
   PUBLIC_ARTICLE_LIST_TAG,
   PUBLIC_PROOFS_TAG,
   PUBLIC_SETTINGS_TAG,
+  publicArticleCommentsTag,
   publicArticleProofsTag,
   publicArticleTag,
 } from "./public-cache-tags";

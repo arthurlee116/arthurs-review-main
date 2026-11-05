@@ -7,10 +7,12 @@ import { ContactNotice } from "@/components/ContactNotice";
 import { CoverImage, coverImageSizes } from "@/components/CoverImage";
 import { ArticleRenderer } from "@/components/ArticleRenderer";
 import { FeedbackCTA } from "@/components/FeedbackCTA";
+import { CommentsSection } from "@/components/comments/CommentsSection";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { articlePath } from "@/lib/content/urls";
 import { categories, categoryLabel, type CategoryId } from "@/lib/content/categories";
-import { getCachedArticleUrlRedirect, getCachedPublishedArticle, listCachedPublicationProofs } from "@/lib/services/public-content";
+import { getCachedArticleUrlRedirect, getCachedPublishedArticle, listCachedApprovedComments, listCachedPublicationProofs } from "@/lib/services/public-content";
+import { getTurnstileConfig } from "@/lib/env";
 import { articleMetadata } from "@/lib/metadata";
 import { uploadPublicPath } from "@/lib/media/paths";
 import { absoluteUrl } from "@/lib/seo";
@@ -116,6 +118,8 @@ export async function ArticlePage({
     ],
   };
   const proofs = (await listCachedPublicationProofs(article.id)).filter((proof) => proof.otsPath || proof.waybackUrl);
+  const comments = await listCachedApprovedComments(article.id);
+  const turnstileSiteKey = getTurnstileConfig()?.siteKey ?? null;
 
   return (
     <PublicShell locale={locale} mastheadHeadingLevel={2}>
@@ -174,6 +178,9 @@ export async function ArticlePage({
           ) : null}
           <FeedbackCTA locale={locale} articleTitle={title} />
         </article>
+        <div className="reading">
+          <CommentsSection articleId={article.id} comments={comments} locale={locale} turnstileSiteKey={turnstileSiteKey} />
+        </div>
       </main>
     </PublicShell>
   );

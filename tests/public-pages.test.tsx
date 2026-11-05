@@ -80,7 +80,26 @@ describe("public article pages", () => {
     );
     await user.click(screen.getByRole("button", { name: "复制微信号" }));
     expect(writeText).toHaveBeenCalledWith("bookspiano");
-    expect(screen.getByRole("status")).toHaveTextContent("微信号已复制");
+    expect(within(screen.getByRole("complementary", { name: "读完了？来挑错。" })).getByRole("status")).toHaveTextContent("微信号已复制");
+  });
+
+  it("shows only approved comments under the article, with an anonymous fallback", async () => {
+    const { migrate } = await import("@/lib/db/migrate");
+    const { createArticle, publishArticle } = await import("@/lib/services/articles");
+    const { createComment, setCommentStatus } = await import("@/lib/services/comments");
+    migrate();
+    const article = publishArticle(createArticle(articleInput({ slug: "with-comments" })).id);
+    setCommentStatus(createComment({ articleId: article.id, body: "公开的评论", locale: "zh", email: "hidden@example.com" }).id, "approved");
+    createComment({ articleId: article.id, body: "还在审核", locale: "zh", authorName: "等待者" });
+
+    render(await ArticlePage({ category: article.category, slug: article.slug }));
+
+    const section = screen.getByRole("region", { name: /评论/ });
+    expect(within(section).getByText("公开的评论")).toBeInTheDocument();
+    expect(within(section).getByText("匿名")).toBeInTheDocument();
+    expect(within(section).queryByText("还在审核")).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toContain("hidden@example.com");
+    expect(within(section).getByRole("button", { name: "提交" })).toBeEnabled();
   });
 
   it("renders an article cover image when one is configured", async () => {

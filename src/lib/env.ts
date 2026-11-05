@@ -23,6 +23,19 @@ export function getCloudflareWebAnalyticsToken() {
   return CloudflareTokenSchema.parse(process.env.NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN) || null;
 }
 
+const TurnstileEnvSchema = z.object({
+  TURNSTILE_SITE_KEY: z.string().trim().optional(),
+  TURNSTILE_SECRET_KEY: z.string().trim().optional(),
+});
+
+// Both keys or neither: a site key without a secret would render a widget the
+// server never checks, and a secret alone would reject every comment.
+export function getTurnstileConfig() {
+  const env = TurnstileEnvSchema.parse(process.env);
+  if (!env.TURNSTILE_SITE_KEY || !env.TURNSTILE_SECRET_KEY) return null;
+  return { siteKey: env.TURNSTILE_SITE_KEY, secretKey: env.TURNSTILE_SECRET_KEY };
+}
+
 export type AppEnv = z.infer<typeof EnvSchema>;
 
 const commitPattern = /^[0-9a-f]{40}$/;

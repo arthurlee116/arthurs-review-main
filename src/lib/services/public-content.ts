@@ -15,9 +15,11 @@ import {
   PUBLIC_ARTICLE_LIST_TAG,
   PUBLIC_PROOFS_TAG,
   PUBLIC_SETTINGS_TAG,
+  publicArticleCommentsTag,
   publicArticleProofsTag,
   publicArticleTag,
 } from "@/lib/services/public-cache";
+import { listApprovedComments } from "@/lib/services/comments";
 import { listPublicationProofs, listPublicPublicationProofPage } from "@/lib/services/publication-proofs";
 import { getSetting, getSettings, type SettingKey } from "@/lib/services/settings";
 
@@ -67,6 +69,12 @@ export async function listCachedPublicationProofs(articleId: number) {
   cacheLife("publicContent");
   cacheTag(publicArticleProofsTag(articleId));
   return listPublicationProofs(articleId);
+}
+
+export async function listCachedApprovedComments(articleId: number) {
+  cacheLife("publicContent");
+  cacheTag(publicArticleCommentsTag(articleId));
+  return listApprovedComments(articleId);
 }
 
 // Media counts derive from on-disk markdown bodies; caching them with the article
