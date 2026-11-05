@@ -33,6 +33,14 @@ describe("ArticleRenderer", () => {
     expect(container.querySelector(".prose")).toBeInTheDocument();
   });
 
+  it("keeps single newlines as line breaks for poetry and CJK text", () => {
+    const { container } = render(<ArticleRenderer markdown={"**哦，朋友\n背后是洼地**\n前方是山脉"} />);
+
+    const paragraph = container.querySelector("p");
+    expect(paragraph?.querySelectorAll("br")).toHaveLength(2);
+    expect(paragraph?.textContent).toBe("哦，朋友\n背后是洼地\n前方是山脉");
+  });
+
   it("removes unsafe raw HTML", () => {
     const { container } = render(<ArticleRenderer markdown={'<script>alert("x")</script>\n\nSafe'} />);
 

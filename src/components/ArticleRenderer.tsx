@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 
 const sanitizeSchema = {
@@ -19,7 +20,7 @@ export function ArticleRenderer({ markdown }: { markdown: string }) {
   return (
     <div className="prose min-w-0 max-w-full">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[[rehypeSanitize, sanitizeSchema]]}
         components={{
           h1: "h2",
