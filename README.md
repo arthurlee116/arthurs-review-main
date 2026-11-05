@@ -41,15 +41,12 @@ official script downloaded through an accessible connection.
 ## Verification
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm test:e2e
-pnpm build
-docker compose -f deploy/docker-compose.yml config
+pnpm verify          # the gate: lint + unit + pytest + Playwright against locally built production images
+pnpm verify --skip-e2e
+pnpm test:e2e        # Playwright against `next dev` instead of the production image
 ```
 
-`pnpm test:e2e` runs the Playwright suite against a fresh temp `DATA_DIR`, seeded before the dev server starts.
+CI runs no tests. `pnpm verify` (`scripts/verify-local.sh`) is also the `.githooks/pre-push` hook for pushes to `main` (installed by `pnpm install`; bypass with `SKIP_VERIFY=1`). It needs Apple `container` on macOS.
 
 ## Deployment
 
@@ -62,7 +59,7 @@ REMOTE=root@72.60.195.46 ./scripts/deploy.sh
 
 Runtime data is mounted at `/var/www/arthurs-review/data` on the host and `/data` in the app container. Caddy serves `blog.leesaitool.com` with automatic HTTPS.
 
-Pushes to `main` deploy through GitHub Actions. Required repository secrets:
+Pushes to `main` deploy through GitHub Actions (build → push → deploy; no tests, see Verification). Required repository secrets:
 
 - `DEPLOY_SSH_PRIVATE_KEY`: private key allowed to SSH into the VPS
 - `PRODUCTION_ENV`: contents of `deploy/production.env`

@@ -152,6 +152,7 @@ Playwright single test: `pnpm exec playwright test e2e/studio.spec.ts -g "studio
 - `src/app/internal/revalidate/` — worker revalidation endpoint (auth via `WORKER_REVALIDATE_SECRET`).
 - `src/app/proofs/` — OpenTimestamps publication proofs (requires `OTS_CLI_PATH`). Failed proofs land in the `publication_proofs` table; `pnpm proof:replay <id>` re-drives one, `--list` shows unfinished ones.
 - `src/app/feed.xml/` — RSS feed route.
+- Images: `docker/base.Dockerfile` (libvips, runtime libs, pnpm, OTS) and `semantic.Dockerfile` are tagged by content hash (`scripts/image-tags.sh`) and only rebuilt when their inputs change. Keep the self-built libvips: sharp's prebuilt binaries can never decode iPhone HEIC (HEVC is patent-encumbered), and the `Dockerfile` swap fails the build if sharp isn't using it.
 
 ## Deployment
 
