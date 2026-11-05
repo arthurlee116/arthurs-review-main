@@ -26,7 +26,8 @@ export function PublicFooter({ locale = "zh" }: { locale?: Locale }) {
           <Link href={localizedPath("/archive", locale)}>{t.archive}</Link>
           <Link href={localizedPath("/proofs", locale)}>{t.proofs}</Link>
           <Link href={localizedPath("/about", locale)}>{t.about}</Link>
-          <Link href={localizedPath("/feed.xml", locale)}>RSS</Link>
+          {/* Plain <a>: a <Link> prefetches the XML route as RSC on every page view. */}
+          <a href={localizedPath("/feed.xml", locale)}>RSS</a>
           <div className="col-span-2 mt-2" data-language-switch><Suspense fallback={<span>{locale === "zh" ? "中文" : "English"}</span>}><LanguageSwitch locale={locale} /></Suspense></div>
         </nav>
       </div>
