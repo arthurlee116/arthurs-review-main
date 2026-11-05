@@ -15,9 +15,6 @@ listener() {
   ss -H -ltnp "sport = :$1" 2>/dev/null || true
 }
 
-udp_listener() {
-  ss -H -lunp "sport = :$1" 2>/dev/null || true
-}
 
 require_xray() {
   local unit="$1" config="$2" port="$3"
@@ -57,9 +54,10 @@ validate_topology() {
     || fail "Caddy container is not running"
   [[ "$(docker compose -f "${COMPOSE_FILE}" port caddy 443)" == "127.0.0.1:8444" ]] \
     || fail "Caddy 443 must only be published on 127.0.0.1:8444"
-  udp_listener 8443 | grep -q ':8443' || fail "Caddy QUIC is not published on UDP 8443"
-  [[ "$(docker compose -f "${COMPOSE_FILE}" port --protocol udp caddy 443)" == "0.0.0.0:8443" ]] \
-    || fail "Caddy QUIC 443 must be published on public UDP 8443"
+  local quic_mapping
+  quic_mapping="$(docker compose -f "${COMPOSE_FILE}" port --protocol udp caddy 443 2>/dev/null || true)"
+  [[ -z "${quic_mapping}" || "${quic_mapping}" == ":0" ]] \
+    || fail "Caddy QUIC must stay unpublished (found ${quic_mapping}); HTTP/3 is disabled"
   cmp -s /etc/haproxy/haproxy.cfg "${APP_DIR}/deploy/haproxy.cfg" \
     || fail "live HAProxy config differs from the versioned config"
 }
@@ -81,7 +79,6 @@ case "${mode}" in
     systemctl show "${XRAY_9443_UNIT}" haproxy.service \
       -p Id -p LoadState -p ActiveState -p SubState -p FragmentPath
     for port in 80 443 8444 9443; do listener "${port}"; done
-    udp_listener 8443
     ;;
   *)
     echo "Usage: production-topology-preflight.sh [status|fingerprint|verify <sha256> [--expect-topology]]" >&2

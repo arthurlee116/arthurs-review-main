@@ -1,6 +1,8 @@
 {
   servers :443 {
-    protocols h1 h2 h3
+    # No HTTP/3: mainland carriers throttle UDP to this IP (Hysteria owns UDP 443),
+    # and QUIC's userspace CUBIC ignores the kernel's BBR. TCP+BBR measured 5-10x faster.
+    protocols h1 h2
     listener_wrappers {
       proxy_protocol {
         timeout 2s
@@ -25,8 +27,8 @@ blog.leesaitool.com {
     format json
   }
   header {
-    # Public UDP 8443 maps to this server's QUIC port 443.
-    Alt-Svc "h3=\":8443\"; ma=86400"
+    # Flush the h3=":8443" advertisement browsers cached before HTTP/3 was removed.
+    Alt-Svc clear
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
     X-Content-Type-Options nosniff
     Referrer-Policy strict-origin-when-cross-origin
@@ -65,7 +67,7 @@ studio.blog.leesaitool.com {
     format json
   }
   header {
-    Alt-Svc "h3=\":8443\"; ma=86400"
+    Alt-Svc clear
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
     X-Content-Type-Options nosniff
     Referrer-Policy strict-origin-when-cross-origin
