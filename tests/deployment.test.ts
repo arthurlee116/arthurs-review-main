@@ -428,6 +428,7 @@ staging_compose config
   it.each([
     ["no UDP publication", "", 0],
     ["docker's unpublished placeholder", ":0", 0],
+    ["docker's invalid-IP placeholder", "invalid IP:0", 0],
     ["a stale public QUIC mapping", "0.0.0.0:8443", 1],
   ])("checks the live topology with %s", (_label, mapping, status) => {
     const preflight = fs.readFileSync("scripts/production-topology-preflight.sh", "utf8");

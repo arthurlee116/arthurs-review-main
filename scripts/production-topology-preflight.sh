@@ -56,7 +56,9 @@ validate_topology() {
     || fail "Caddy 443 must only be published on 127.0.0.1:8444"
   local quic_mapping
   quic_mapping="$(docker compose -f "${COMPOSE_FILE}" port --protocol udp caddy 443 2>/dev/null || true)"
-  [[ -z "${quic_mapping}" || "${quic_mapping}" == ":0" ]] \
+  # Docker reports an unpublished port variously as nothing, ":0" or "invalid IP:0";
+  # only a non-zero published port means QUIC is still exposed.
+  [[ ! "${quic_mapping##*:}" =~ ^[1-9][0-9]*$ ]] \
     || fail "Caddy QUIC must stay unpublished (found ${quic_mapping}); HTTP/3 is disabled"
   cmp -s /etc/haproxy/haproxy.cfg "${APP_DIR}/deploy/haproxy.cfg" \
     || fail "live HAProxy config differs from the versioned config"
