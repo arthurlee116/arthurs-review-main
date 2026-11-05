@@ -189,7 +189,13 @@ test("admin can recommend multiple articles without reordering home and cancel o
   await expect(page.locator("nav").getByRole("link", { name: "推荐", exact: true })).toHaveAttribute("aria-current", "page");
   await page.goto("/zh");
   await expect(homeLinks.first()).toBeVisible();
-  expect(await homeLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href")))).toEqual(originalOrder);
+  // Articles published by earlier tests can surface here once their async cache
+  // invalidation lands, pushing older ones off the capped list. Recommending must
+  // not reorder anything, so compare the relative order of the shared articles.
+  const currentOrder = await homeLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+  const shared = currentOrder.filter((href) => originalOrder.includes(href));
+  expect(shared.length).toBeGreaterThanOrEqual(titles.length);
+  expect(shared).toEqual(originalOrder.filter((href) => shared.includes(href)));
   await page.goto(`/studio/articles?q=${encodeURIComponent(titles[0])}`);
   await page.getByRole("button", { name: `取消推荐：${titles[0]}`, exact: true }).click();
   await expect(page.getByRole("button", { name: `设为推荐：${titles[0]}`, exact: true })).toBeVisible();
@@ -214,7 +220,15 @@ test("publishing an existing article saves current editor input first", async ({
   await editor.getByRole("button", { name: "Save draft" }).click();
   await expect(editor.getByText("Draft saved")).toBeVisible();
 
-  await editor.getByRole("textbox", { name: "Chinese body" }).fill("新正文");
+  // fill() on CodeMirror under mobile emulation can append instead of replace
+  // (its Android input path misses a programmatic select-all), so clear through
+  // CodeMirror's own keymap and check the editor before publishing.
+  const body = editor.getByRole("textbox", { name: "Chinese body" });
+  await body.click();
+  await body.press("ControlOrMeta+a");
+  await body.press("Delete");
+  await body.pressSequentially("新正文");
+  await expect(body).toHaveText("新正文");
   await editor.getByRole("button", { name: "Publish" }).click();
   await expect(editor.getByText("Published")).toBeVisible();
 

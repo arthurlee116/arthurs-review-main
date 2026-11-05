@@ -7,9 +7,10 @@
 #   4. Playwright against it
 # Flags / env:
 #   --skip-e2e          only step 1 (fast pre-commit style check)
-#   --keep              leave the stack running afterwards (http://127.0.0.1:3100)
+#   --keep              leave the stack running afterwards (http://127.0.0.1:$LOCAL_VERIFY_PORT)
 #   LOCAL_BUILD_DNS     DNS for the builder/containers (default 1.1.1.1; the vmnet
 #                       resolver fails on some hosts, e.g. github.com behind a TUN VPN)
+#   LOCAL_VERIFY_PORT   host port for the stack (default 3200)
 #   LOCAL_BUILDER_CPUS / LOCAL_BUILDER_MEMORY   builder VM size (default 8 / 12g)
 #   PLAYWRIGHT_ARGS     extra args, e.g. PLAYWRIGHT_ARGS='-g studio --project chromium'
 set -Eeuo pipefail
@@ -28,6 +29,8 @@ done
 DNS="${LOCAL_BUILD_DNS:-1.1.1.1}"
 BUILDER_CPUS="${LOCAL_BUILDER_CPUS:-8}"
 BUILDER_MEMORY="${LOCAL_BUILDER_MEMORY:-12g}"
+# Not 3100: `pnpm test:e2e` runs its dev server there, possibly at the same time.
+PORT="${LOCAL_VERIFY_PORT:-3200}"
 REPO="ghcr.io/arthurlee116/arthurs-review-main"
 APP_IMAGE="arthurs-review-local:app"
 PREFIX="arthurs-review-local"
@@ -135,6 +138,11 @@ run_parallel lint lint unit unit pytest pytest_semantic images build_images
 
 step "starting semantic + app + worker"
 remove_stack
+if lsof -nP -iTCP:"${PORT}" -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "Port ${PORT} is already in use; set LOCAL_VERIFY_PORT to a free port." >&2
+  lsof -nP -iTCP:"${PORT}" -sTCP:LISTEN >&2 || true
+  exit 1
+fi
 STACK_STARTED=1
 container volume create "${VOLUME}" >/dev/null
 container run -d --name "${SEMANTIC}" --dns "${DNS}" -m 2g -c 2 \
@@ -161,7 +169,7 @@ semantic_env=(
   -e SEMANTIC_RERANK_MODEL_REVISION=1427fd652930e4ba29e8149678df786c240d8825
   -e SEMANTIC_RERANK_ENABLED=1
 )
-container run -d --name "${APP}" -m 4g -c 4 -p 127.0.0.1:3100:3000 -v "${VOLUME}:/data" \
+container run -d --name "${APP}" -m 4g -c 4 -p "127.0.0.1:${PORT}:3000" -v "${VOLUME}:/data" \
   -e DATA_DIR=/data -e SITE_URL=https://blog.leesaitool.com \
   -e ADMIN_PASSWORD_HASH="${ADMIN_HASH}" -e SESSION_SECRET="${SESSION}" \
   -e LOGIN_RATE_LIMIT_MAX=100 -e WORKER_REVALIDATE_SECRET=e2e-worker-revalidate-secret \
@@ -181,7 +189,7 @@ wait_until() {
 semantic_healthy() {
   container exec "${SEMANTIC}" python -c 'import json,urllib.request; assert json.load(urllib.request.urlopen("http://127.0.0.1:8090/healthz", timeout=3))["ok"]'
 }
-app_healthy() { curl -fsS --noproxy '*' http://127.0.0.1:3100/healthz | grep -q '"ok":true'; }
+app_healthy() { curl -fsS --noproxy '*' "http://127.0.0.1:${PORT}/healthz" | grep -q '"ok":true'; }
 wait_until "semantic /healthz" 180 semantic_healthy
 wait_until "app /healthz" 120 app_healthy
 
@@ -212,7 +220,7 @@ wait_until "cache + semantic indexing jobs" 180 jobs_settled
 step "Playwright"
 # shellcheck disable=SC2086
 NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost \
-PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 \
+PLAYWRIGHT_BASE_URL="http://127.0.0.1:${PORT}" \
 E2E_EXPECTED_SITE_URL=https://blog.leesaitool.com \
 E2E_EXPECTED_COMMIT="${COMMIT}" \
 E2E_EXPECTED_DIGEST="${ZERO_DIGEST}" \
@@ -222,5 +230,5 @@ NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN="${ANALYTICS_TOKEN}" \
   pnpm exec playwright test ${PLAYWRIGHT_ARGS:-}
 
 step "all checks passed"
-[[ "${KEEP}" == 1 ]] && echo "Stack left running at http://127.0.0.1:3100 (scripts/verify-local.sh cleans it up next run)"
+[[ "${KEEP}" == 1 ]] && echo "Stack left running at http://127.0.0.1:${PORT} (scripts/verify-local.sh cleans it up next run)"
 exit 0
