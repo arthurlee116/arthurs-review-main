@@ -5,6 +5,7 @@ async function login(page: import("@playwright/test").Page) {
   await page.getByLabel("Password").fill(process.env.E2E_ADMIN_PASSWORD ?? "admin-password");
   await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/studio\/articles/);
+  await page.waitForLoadState("networkidle"); // native form post = cold load; wait for hydration
 }
 
 async function openNewArticleEditor(page: import("@playwright/test").Page) {
@@ -12,6 +13,7 @@ async function openNewArticleEditor(page: import("@playwright/test").Page) {
   await expect(page).toHaveURL(/\/studio\/articles\/new/);
   const editor = page.getByRole("heading", { name: "New article" }).locator("..");
   await expect(editor).toBeVisible();
+  await page.waitForLoadState("networkidle");
   return editor;
 }
 

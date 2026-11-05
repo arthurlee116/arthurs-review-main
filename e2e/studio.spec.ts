@@ -25,6 +25,9 @@ async function login(page: import("@playwright/test").Page) {
   await page.getByLabel("Password").fill(process.env.E2E_ADMIN_PASSWORD ?? "admin-password");
   await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/studio\/articles/);
+  // Login is a native form post, so this is a cold page load: let React hydrate
+  // before the test starts filling controlled inputs, or hydration wipes them.
+  await page.waitForLoadState("networkidle");
 }
 
 async function openNewArticleEditor(page: import("@playwright/test").Page) {
@@ -32,12 +35,27 @@ async function openNewArticleEditor(page: import("@playwright/test").Page) {
   await expect(page).toHaveURL(/\/studio\/articles\/new/);
   const editor = page.getByRole("heading", { name: "New article" }).locator("..");
   await expect(editor).toBeVisible();
+  await page.waitForLoadState("networkidle");
   return editor;
 }
 
 test("studio requires login", async ({ page }) => {
   await page.goto("/studio");
   await expect(page).toHaveURL(/\/studio\/login/);
+});
+
+test("login is a native form: any username works, a wrong password shows an error", async ({ page }) => {
+  await page.goto("/studio/login");
+  await page.getByLabel("Username").fill("whoever");
+  await page.getByLabel("Password").fill("definitely-wrong");
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page).toHaveURL(/\/studio\/login\?error=invalid/);
+  await expect(page.getByText("Invalid password")).toBeVisible();
+
+  await page.getByLabel("Username").fill("arthur");
+  await page.getByLabel("Password").fill(process.env.E2E_ADMIN_PASSWORD ?? "admin-password");
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page).toHaveURL(/\/studio\/articles/);
 });
 
 test("cover uploads before first publication and recovers a connection failure when editing", async ({ page }, testInfo) => {
