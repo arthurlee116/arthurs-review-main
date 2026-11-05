@@ -558,13 +558,12 @@ validate_topology
   it("bakes the optional analytics token into the tested production image", () => {
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
-    const ci = fs.readFileSync(".github/workflows/ci.yml", "utf8");
+    const verify = fs.readFileSync("scripts/verify-local.sh", "utf8");
     const name = "NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN";
     expect(dockerfile.indexOf(`ARG ${name}=""`)).toBeLessThan(dockerfile.indexOf("RUN pnpm build"));
     expect(dockerfile).toContain(`ENV ${name}=$${name}`);
     expect(workflow).toContain(`${name}=\${{ vars.${name} }}`);
-    expect(workflow).toContain(`${name}: \${{ vars.${name} }}`);
-    expect(ci).toContain(`${name}=00000000000000000000000000000000`);
+    expect(verify).toContain(`${name}=\${ANALYTICS_TOKEN}`);
   });
 
   it("resolves the robots sitemap URL from the runtime environment", () => {
@@ -596,8 +595,13 @@ validate_topology
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
 
-    expect(dockerfile.match(/corepack install --global pnpm@10\.28\.1/g)).toHaveLength(3); // deps, builder, runner (libvips stage needs no pnpm)    expect(dockerfile).toContain("ENV COREPACK_ENABLE_NETWORK=0");
-    expect(workflow).toContain('docker run --rm --network none "$IMAGE_TAG" pnpm --version');
+    const base = fs.readFileSync("docker/base.Dockerfile", "utf8");
+    const runner = dockerfile.slice(dockerfile.indexOf(" AS runner"));
+
+    expect(base.match(/corepack install --global pnpm@10\.28\.1/g)).toHaveLength(1); // runtime target; build extends it
+    expect(dockerfile).not.toContain("corepack install");
+    expect(runner).toContain("ENV COREPACK_ENABLE_NETWORK=0");
+    expect(workflow).not.toContain("pnpm install");
   });
 
   it("uses Node 26 everywhere", () => {
@@ -605,55 +609,94 @@ validate_topology
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
     const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as { engines?: { node?: string } };
 
-    expect(dockerfile.match(/FROM node:26-alpine/g)).toHaveLength(4); // deps, builder, libvips, runner
-    expect(workflow).toContain("node-version: 26");
+    const base = fs.readFileSync("docker/base.Dockerfile", "utf8");
+
+    expect(base.match(/FROM node:26-alpine/g)).toHaveLength(3); // libvips, ots, runtime
+    expect(dockerfile).not.toMatch(/FROM node:/);
+    expect(workflow).not.toContain("node-version");
     expect(packageJson.engines?.node).toBe(">=26 <27");
     expect(fs.readFileSync(".nvmrc", "utf8").trim()).toBe("26");
     expect(fs.readFileSync(".node-version", "utf8").trim()).toBe("26");
   });
 
-  it("builds SHA-tagged app and semantic images, tests both, and only then pushes them", () => {
+  it("builds and pushes a SHA-tagged app image and reuses content-tagged base and semantic images", () => {
     const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
     const dockerfile = fs.readFileSync("Dockerfile", "utf8");
-    const playwright = fs.readFileSync("playwright.config.ts", "utf8");
-    const build = workflow.indexOf("docker/build-push-action@v7");
-    const e2e = workflow.indexOf("pnpm exec playwright test");
-    const push = workflow.indexOf('docker push "$IMAGE_TAG"');
+    const base = fs.readFileSync("docker/base.Dockerfile", "utf8");
+    const semantic = fs.readFileSync("semantic.Dockerfile", "utf8");
+    const tags = fs.readFileSync("scripts/image-tags.sh", "utf8");
 
     expect(workflow).toContain("packages: write");
-    expect(workflow.match(/docker\/build-push-action@v7/g)).toHaveLength(2);
-    expect(workflow).toContain("load: true");
+    expect(workflow).toContain('eval "$(scripts/image-tags.sh)"');
+    expect(workflow).toContain('IMAGE_TAG=${image_repo}:${GITHUB_SHA}');
     expect(workflow).toContain("GIT_COMMIT_SHA=${{ github.sha }}");
-    expect(workflow).toContain("${{ github.sha }}");
-    expect(workflow).toContain(
-      `docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}'`,
-    );
-    expect(workflow).toContain("pnpm exec playwright install --with-deps chromium");
-    expect(workflow).toContain('"$IMAGE_TAG" pnpm jobs:work');
-    expect(workflow).toContain('docker network create "$E2E_NETWORK"');
-    expect(workflow).toContain("SEMANTIC_IMAGE_TAG");
-    expect(workflow).toContain("semantic.Dockerfile");
-    expect(workflow).toContain('docker push "$SEMANTIC_IMAGE_TAG"');
+    expect(workflow).toContain("if: steps.reuse.outputs.base != 'true'");
+    expect(workflow).toContain("if: steps.reuse.outputs.semantic != 'true'");
+    expect(workflow).toContain("cache-to: type=registry");
+    expect(workflow).not.toContain("type=gha");
+    expect(workflow).toContain("steps.build.outputs.digest");
     expect(workflow).toContain("SEMANTIC_IMAGE_DIGEST");
-    expect(workflow).toContain("http://semantic:8090/healthz");
-    expect(workflow).toContain("pending_cache_jobs");
     expect(workflow).toContain("EXPECTED_SCHEMA_VERSION");
-    expect(workflow).toContain("type = ? and status in (?, ?)");
+    expect(workflow).not.toContain("playwright");
     expect(workflow).not.toContain("run: pnpm build");
-    expect(build).toBeGreaterThanOrEqual(0);
-    expect(build).toBeLessThan(e2e);
-    expect(e2e).toBeLessThan(push);
-    expect(dockerfile.match(/FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66/g)).toHaveLength(4);
+    expect(workflow.indexOf("Build and push the app image")).toBeLessThan(workflow.indexOf("./scripts/deploy.sh"));
+    expect(fs.existsSync(".github/workflows/ci.yml")).toBe(false);
+
+    expect(tags).toContain("docker/base.Dockerfile");
+    expect(tags).toContain("semantic/semantic_service");
+    expect(dockerfile).toContain("FROM ${BASE_IMAGE}:base-build-${BASE_TAG} AS deps");
+    expect(dockerfile).toContain("FROM ${BASE_IMAGE}:base-runtime-${BASE_TAG} AS runner");
+    expect(base.match(/FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66/g)).toHaveLength(3);
+    expect(semantic).toContain("LABEL org.opencontainers.image.version=$SEMANTIC_TAG");
+  });
+
+  it("keeps the production image slim and its dependency layer stable", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const base = fs.readFileSync("docker/base.Dockerfile", "utf8");
+    const runtime = base.slice(base.indexOf(" AS runtime"), base.indexOf(" AS build"));
+    const runner = dockerfile.slice(dockerfile.indexOf(" AS runner"));
+    const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as { dependencies: Record<string, string> };
+
+    expect(runtime).not.toMatch(/\bg\+\+|\bmake\b/);
+    expect(dockerfile).toContain("RUN pnpm install --frozen-lockfile --prod");
+    expect(runner).toContain("COPY --from=prod-deps /app/node_modules ./node_modules");
+    expect(runner.indexOf("--from=prod-deps")).toBeLessThan(runner.indexOf("--from=builder /app/.next"));
+    expect(dockerfile).toContain("rm -rf .next/cache");
+    expect(packageJson.dependencies.tsx).toBeDefined(); // jobs:work, db:migrate and seed run through tsx
+  });
+
+  it("swaps sharp's vendored libvips for the HEVC-capable build, whatever version sharp vendors", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+
+    expect(dockerfile).toContain("-name 'libvips-cpp.so.*'");
+    expect(dockerfile).not.toMatch(/libvips-cpp\.so\.8\.\d+\.\d+"/);
+    expect(dockerfile).toContain('"/usr/lib/libvips.so.42"');
+  });
+
+  it("gates pushes to main on the local container-based verification", () => {
+    const hook = fs.readFileSync(".githooks/pre-push", "utf8");
+    const verify = fs.readFileSync("scripts/verify-local.sh", "utf8");
+    const playwright = fs.readFileSync("playwright.config.ts", "utf8");
+
+    expect(hook).toContain("refs/heads/main");
+    expect(hook).toContain("scripts/verify-local.sh");
+    expect(verify).toContain("pnpm lint");
+    expect(verify).toContain("pnpm test");
+    expect(verify).toContain("pytest");
+    expect(verify).toContain("container build");
+    expect(verify).toContain("pnpm exec playwright test");
+    expect(verify).toContain("container exec -d \"${APP}\" pnpm jobs:work");
     expect(playwright).toContain("process.env.PLAYWRIGHT_BASE_URL");
     expect(playwright).toContain("webServer: externalBaseURL ? undefined");
     expect(playwright).toContain("workers: 1");
+    expect(playwright).toContain("retries: 1");
   });
 
   it("installs Corepack explicitly because Node 26 no longer bundles it", () => {
-    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const base = fs.readFileSync("docker/base.Dockerfile", "utf8");
 
-    expect(dockerfile.match(/npm install --global corepack@0\.35\.0/g)).toHaveLength(3);
-    expect(dockerfile.match(/corepack enable/g)).toHaveLength(3);
+    expect(base.match(/npm install --global corepack@0\.35\.0/g)).toHaveLength(1);
+    expect(base.match(/corepack enable/g)).toHaveLength(1);
   });
 
   it("sets production security headers and removes framework branding", () => {
@@ -800,26 +843,6 @@ validate_topology
     expect(remoteRelease).toContain('"commit":"${DEPLOY_COMMIT_SHA}"');
     expect(remoteRelease).toContain('"digest":"${IMAGE_DIGEST}"');
     expect(remoteRelease).toContain('"schemaVersion":${EXPECTED_SCHEMA_VERSION}');
-  });
-
-  it("runs feature-branch CI without production deployment permissions", () => {
-    const workflow = fs.readFileSync(".github/workflows/ci.yml", "utf8");
-
-    expect(workflow).toContain("pull_request:");
-    expect(workflow).toContain("branches-ignore:");
-    expect(workflow).toContain("pnpm lint");
-    expect(workflow).toContain("pnpm test");
-    expect(workflow).toContain('"./semantic[test]"');
-    expect(workflow).toContain("python -m pytest semantic/tests");
-    expect(workflow).not.toContain("unittest discover");
-    expect(workflow.match(/docker\/build-push-action@v7/g)).toHaveLength(2);
-    expect(workflow).toContain("semantic.Dockerfile");
-    expect(workflow).toContain('"http://127.0.0.1:8090/embed"');
-    expect(workflow).toContain('"dimension": 384');
-    expect(workflow).toContain("pnpm exec playwright test");
-    expect(workflow).not.toContain("packages: write");
-    expect(workflow).not.toContain("scripts/deploy.sh");
-    expect(workflow).not.toContain("DEPLOY_SSH_PRIVATE_KEY");
   });
 
   it("can recover the legacy app-only deployment without depending on legacy helper scripts", () => {

@@ -18,3 +18,20 @@ deploy/production.env
 *.db
 *.tsbuildinfo
 /*.png
+# Not needed in any image; excluded so test/doc edits don't bust the `COPY . .` build layer.
+.github
+.claude
+.commandcode
+.code-review-graph
+.superpowers
+graphify-out
+docs
+tests
+e2e
+docker
+semantic/tests
+semantic/.venv
+semantic/*.egg-info
+**/__pycache__
+*.md
+!README.md

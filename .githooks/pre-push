@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# CI runs no tests, so pushes to main are gated here. Escape hatches:
+#   SKIP_VERIFY=1 git push      or      git push --no-verify
+set -euo pipefail
+[[ "${SKIP_VERIFY:-0}" == 1 ]] && exit 0
+
+pushes_main=0
+while read -r _local_ref local_sha remote_ref _remote_sha; do
+  [[ "${remote_ref}" == refs/heads/main && "${local_sha}" != 0000000000000000000000000000000000000000 ]] && pushes_main=1
+done
+[[ "${pushes_main}" == 1 ]] || exit 0
+
+if ! git diff --quiet HEAD --; then
+  echo "pre-push: uncommitted changes would be tested instead of the pushed commit." >&2
+  echo "Commit or stash them, or push with SKIP_VERIFY=1." >&2
+  exit 1
+fi
+exec "$(git rev-parse --show-toplevel)/scripts/verify-local.sh"

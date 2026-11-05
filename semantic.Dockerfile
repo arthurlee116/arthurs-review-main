@@ -23,8 +23,10 @@ COPY semantic/semantic_service ./semantic_service
 RUN pip install --no-cache-dir .
 
 RUN useradd --create-home --uid 10001 semantic
-ARG GIT_COMMIT_SHA=development
-LABEL org.opencontainers.image.revision=$GIT_COMMIT_SHA
+# Tagged by content hash (scripts/image-tags.sh) and reused across app releases,
+# so it carries that hash rather than a commit.
+ARG SEMANTIC_TAG=development
+LABEL org.opencontainers.image.version=$SEMANTIC_TAG
 LABEL org.opencontainers.image.source="https://github.com/arthurlee116/arthurs-review-main"
 USER semantic
 

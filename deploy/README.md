@@ -38,7 +38,7 @@ The client certificate is valid for 825 days. Rotate before expiry by creating a
 
 ## Immutable releases and rollback
 
-CI builds the application image once, runs Playwright against that image, pushes it, and resolves its `sha256:` digest. `scripts/deploy.sh` stages only `deploy/` and `scripts/`; the VPS never receives application source and never builds the app. Both app and worker use the same `APP_IMAGE` digest from `deploy/.env`.
+CI runs no tests: the pre-push hook (`scripts/verify-local.sh`) runs lint, unit tests, pytest and Playwright against the production images built locally with Apple `container`. CI builds the application image once on top of the content-tagged base image (`docker/base.Dockerfile`, rebuilt only when that file changes), pushes it, and deploys its `sha256:` digest. The semantic image is likewise reused until `semantic/` changes. `scripts/deploy.sh` stages only `deploy/` and `scripts/`; the VPS never receives application source and never builds the app. Both app and worker use the same `APP_IMAGE` digest from `deploy/.env`.
 
 `scripts/remote-release.sh` holds `/var/lock/arthurs-review-maintenance.lock` for the whole transaction. It pulls with the job-scoped registry token from stdin, logs out immediately, checks the OCI revision label, snapshots SQLite and the active configuration, runs migrations exactly once, then verifies internal and public `/healthz` and exact `/version` metadata before starting the worker.
 

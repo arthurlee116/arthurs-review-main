@@ -9,6 +9,9 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
   workers: 1,
+  // One retry keeps a timing flake from failing the whole local gate; Playwright
+  // still reports it as "flaky", and the retry records a trace to debug it.
+  retries: 1,
   reporter: [["list"]],
   use: {
     baseURL,

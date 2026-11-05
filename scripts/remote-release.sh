@@ -153,8 +153,9 @@ pull_target_image() {
   docker logout ghcr.io >/dev/null || logout_status=$?
   [[ "${pull_status}" == "0" ]] || return "${pull_status}"
   [[ "${logout_status}" == "0" ]] || return "${logout_status}"
-  verify_image_revision "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}" || return
-  verify_image_revision "${SEMANTIC_IMAGE}" "${DEPLOY_COMMIT_SHA}"
+  # The semantic image is reused across commits (content-hash tag); its digest pin
+  # is the integrity check, so only the app image must carry this commit.
+  verify_image_revision "${APP_IMAGE}" "${DEPLOY_COMMIT_SHA}"
 }
 
 pull_recorded_image() {
@@ -167,8 +168,7 @@ pull_recorded_image() {
   docker logout ghcr.io >/dev/null || logout_status=$?
   [[ "${pull_status}" == "0" ]] || return "${pull_status}"
   [[ "${logout_status}" == "0" ]] || return "${logout_status}"
-  verify_image_revision "${image}" "${commit}" || return
-  if [[ -n "${semantic_image}" ]]; then verify_image_revision "${semantic_image}" "${commit}"; fi
+  verify_image_revision "${image}" "${commit}"
 }
 
 load_release_file() {

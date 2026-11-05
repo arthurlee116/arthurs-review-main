@@ -84,6 +84,7 @@ pnpm typecheck      # tsc --noEmit (alias for lint:ts)
 pnpm test           # vitest unit tests (jsdom, @/ alias, globals)
 pnpm test:watch     # vitest watch
 pnpm test:e2e       # playwright e2e (starts its own dev server + worker)
+pnpm verify         # full local gate: lint/unit/pytest + production images + Playwright
 pnpm jobs:work      # durable jobs worker
 pnpm db:migrate     # run migrations
 pnpm seed           # seed the database
@@ -99,7 +100,7 @@ pnpm search:benchmark:stress # generate a stress corpus
 
 ### Verification order
 
-`pnpm lint` → `pnpm test` → `pnpm build`. CI also runs `python -m pytest semantic/tests`.
+`pnpm lint` → `pnpm test` → `pnpm build`. **CI runs no tests** — `pnpm verify` (`scripts/verify-local.sh`, also the `.githooks/pre-push` gate for `main`) runs lint + vitest + `pytest semantic/tests` in parallel with Apple `container` image builds, then starts semantic + app + worker from the production image and runs Playwright against it. `--skip-e2e` for the fast half, `--keep` to leave the stack up, `SKIP_VERIFY=1 git push` to bypass. The worker runs inside the app container because each Apple container is its own VM and SQLite locking does not work across VMs.
 
 ### Changes land with their check attached
 
