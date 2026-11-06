@@ -6,6 +6,8 @@ STAGING_DIR="${STAGING_DIR:-}"
 STATE_DIR="${STATE_DIR:-/var/lib/arthurs-review}"
 DATA_DIR="${PRODUCTION_DATA_DIR:-/var/www/arthurs-review/data}"
 DATABASE_PATH="${DATABASE_PATH:-${DATA_DIR}/arthurs-review.sqlite3}"
+# The app image runs as `node`; /data must belong to it. Older root images still work on it.
+APP_UID="${APP_UID:-1000}"
 MAINTENANCE_LOCK_FILE="${MAINTENANCE_LOCK_FILE:-/var/lock/arthurs-review-maintenance.lock}"
 MAINTENANCE_LOCK_WAIT_SECONDS="${MAINTENANCE_LOCK_WAIT_SECONDS:-1800}"
 PUBLIC_URL="${PUBLIC_URL:-https://blog.leesaitool.com}"
@@ -345,6 +347,7 @@ sync_geoip_schedule() {
 
 migrate_target_database() {
   local actual_schema
+  chown -R "${APP_UID}:${APP_UID}" "${DATA_DIR}" || return
   production_compose run --rm --no-deps app pnpm db:migrate >/dev/null || return
   production_compose run --rm --no-deps app pnpm geoip:update || return
   sync_geoip_schedule || return
@@ -503,7 +506,7 @@ restore_database() {
   local snapshot="$1" temporary
   [[ -f "${snapshot}" ]] || { fail "Rollback database snapshot is missing"; return; }
   temporary="${DATABASE_PATH}.rollback.$$"
-  install -m 0644 "${snapshot}" "${temporary}" || return
+  install -m 0644 -o "${APP_UID}" -g "${APP_UID}" "${snapshot}" "${temporary}" || return
   rm -f "${DATABASE_PATH}-wal" "${DATABASE_PATH}-shm" || return
   mv -f "${temporary}" "${DATABASE_PATH}" || return
 }

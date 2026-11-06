@@ -49,6 +49,9 @@ RUN apk add --no-cache python3 py3-pip make g++ \
   && /opt/opentimestamps/bin/pip install --no-cache-dir opentimestamps-client==0.7.2
 
 FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66 AS runtime
+# Keep pnpm outside /root: the app runs as the unprivileged `node` user, and with
+# COREPACK_ENABLE_NETWORK=0 a cache it cannot read means pnpm cannot start at all.
+ENV COREPACK_HOME=/usr/local/share/corepack
 # No compilers here: native modules are built in the `build` target and copied in.
 RUN apk add --no-cache python3 ffmpeg \
       glib libjpeg-turbo libpng libwebp libwebpmux libwebpdemux cgif libexif lcms2 fftw tiff highway expat librsvg \

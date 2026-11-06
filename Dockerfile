@@ -53,10 +53,13 @@ COPY package.json pnpm-lock.yaml next.config.ts tsconfig.json ./
 COPY public ./public
 COPY scripts ./scripts
 COPY src ./src
-COPY --from=builder /app/.next ./.next
+# The app runs as `node` (uid 1000, from the base image). Everything under /app stays
+# root-owned and read-only except .next, where Next.js writes ISR and image caches.
+COPY --from=builder --chown=node:node /app/.next ./.next
 ARG GIT_COMMIT_SHA=development
 ENV BUILD_COMMIT_SHA=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.revision=$GIT_COMMIT_SHA
 LABEL org.opencontainers.image.source="https://github.com/arthurlee116/arthurs-review-main"
 EXPOSE 3000
+USER node
 CMD ["pnpm", "start"]

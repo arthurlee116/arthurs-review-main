@@ -156,6 +156,7 @@ production_compose() { printf '%s\\n' "$*"; }
 sqlite3() { printf '12\\n'; }
 install() { printf 'install:%s\\n' "$*"; }
 rm() { printf 'remove:%s\\n' "$*"; }
+chown() { printf 'chown:%s\\n' "$*"; }
 migrate_target_database
 APP_DIR=/missing-old-release
 sync_geoip_schedule
@@ -285,6 +286,25 @@ staging_compose config
     expect(remoteRelease).toContain('mkdir -p "$(dirname "${MAINTENANCE_LOCK_FILE}")"');
     expect(remoteRelease).not.toContain('install -d -m 0700 "$(dirname "${MAINTENANCE_LOCK_FILE}")"');
     expect(restore.indexOf("exec flock")).toBeLessThan(restore.indexOf('${SCRIPT_DIR}/verify-backup.sh'));
+  });
+
+  it("runs the app image as an unprivileged user that owns only its data", () => {
+    const dockerfile = fs.readFileSync("Dockerfile", "utf8");
+    const base = fs.readFileSync("docker/base.Dockerfile", "utf8");
+    const remoteRelease = fs.readFileSync("scripts/remote-release.sh", "utf8");
+    const verify = fs.readFileSync("scripts/verify-local.sh", "utf8");
+    const restore = fs.readFileSync("scripts/restore-backup.sh", "utf8");
+
+    const runner = dockerfile.slice(dockerfile.lastIndexOf("FROM "));
+    expect(runner).toMatch(/^USER node$/m);
+    expect(runner.indexOf("USER node")).toBeLessThan(runner.indexOf("CMD"));
+    expect(runner).toContain("COPY --from=builder --chown=node:node /app/.next ./.next");
+    const runtime = base.slice(base.indexOf("AS runtime"));
+    expect(runtime.indexOf("COREPACK_HOME=/usr/local/share/corepack")).toBeLessThan(runtime.indexOf("corepack install"));
+    expect(remoteRelease.indexOf('chown -R "${APP_UID}:${APP_UID}" "${DATA_DIR}"')).toBeLessThan(remoteRelease.indexOf("pnpm db:migrate"));
+    expect(remoteRelease).toContain('install -m 0644 -o "${APP_UID}" -g "${APP_UID}"');
+    expect(verify.indexOf("chown node:node /data")).toBeLessThan(verify.indexOf("pnpm seed"));
+    expect(restore).toContain('DRILL_USER=(--user "$(id -u):$(id -g)"');
   });
 
   it("runs monthly restore drills only against an isolated backup copy", () => {
@@ -656,7 +676,7 @@ validate_topology
     expect(runtime).not.toMatch(/\bg\+\+|\bmake\b/);
     expect(dockerfile).toContain("RUN pnpm install --frozen-lockfile --prod");
     expect(runner).toContain("COPY --from=prod-deps /app/node_modules ./node_modules");
-    expect(runner.indexOf("--from=prod-deps")).toBeLessThan(runner.indexOf("--from=builder /app/.next"));
+    expect(runner.indexOf("--from=prod-deps")).toBeLessThan(runner.indexOf("--from=builder --chown=node:node /app/.next"));
     expect(dockerfile).toContain("rm -rf .next/cache");
     expect(packageJson.dependencies.tsx).toBeDefined(); // jobs:work, db:migrate and seed run through tsx
   });

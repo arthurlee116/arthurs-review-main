@@ -114,13 +114,16 @@ else
   [[ "${EXPECTED_SCHEMA}" =~ ^[0-9]+$ ]] || { echo "Restore drill requires an expected schema version." >&2; exit 1; }
 
   docker pull "${IMAGE}" >/dev/null
-  docker run --rm --network none \
+  # Run as whoever owns the restored files, so the image's non-root default user
+  # never needs a chown here and the caller can still delete the target afterwards.
+  DRILL_USER=(--user "$(id -u):$(id -g)" -e HOME=/tmp)
+  docker run --rm --network none "${DRILL_USER[@]}" \
     -e DATA_DIR=/data \
     -v "${TARGET_REAL}:/data" \
     "${IMAGE}" pnpm db:migrate >/dev/null
 
   DRILL_CONTAINER="arthurs-review-restore-drill-${GITHUB_RUN_ID:-$$}-${RANDOM}"
-  docker run -d --name "${DRILL_CONTAINER}" --network none \
+  docker run -d --name "${DRILL_CONTAINER}" --network none "${DRILL_USER[@]}" \
     -e DATA_DIR=/data \
     -e SITE_URL=https://blog.leesaitool.com \
     -e ADMIN_PASSWORD_HASH='scrypt$16384$8$1$ZHJpbGwtc2FsdC0xMjM0NTY3OA==$9zhZGvqilAcQdYQeN2H3cAQSUTb1xdrJ5nV2NwSLiFmM24H7v5fB1pFLo2tUfKj0vN+oJfG53XJguVjWfvVU3A==' \

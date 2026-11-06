@@ -145,6 +145,8 @@ if lsof -nP -iTCP:"${PORT}" -sTCP:LISTEN >/dev/null 2>&1; then
 fi
 STACK_STARTED=1
 container volume create "${VOLUME}" >/dev/null
+# New volumes are root-owned; the image runs as `node`.
+container run --rm --user root -v "${VOLUME}:/data" "${APP_IMAGE}" chown node:node /data >/dev/null
 container run -d --name "${SEMANTIC}" --dns "${DNS}" -m 2g -c 2 \
   -e SEMANTIC_RERANK_ENABLED=1 "${REPO}-semantic:${SEMANTIC_TAG}" >/dev/null
 
