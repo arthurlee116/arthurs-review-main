@@ -118,6 +118,20 @@ describe("public comment endpoint", () => {
     expect((await POST(submission({ articleId: article.id, body: "别人" }, { "x-real-ip": "198.51.100.1" }))).status).toBe(202);
   });
 
+  it("ignores forgeable address headers when rate limiting", async () => {
+    const { POST } = await import("@/app/api/comments/route");
+    const article = await publishedArticle();
+    for (let index = 0; index < 6; index += 1) {
+      const response = await POST(
+        submission(
+          { articleId: article.id, body: `轮换 ${index}` },
+          { "cf-connecting-ip": `192.0.2.${index}`, "x-forwarded-for": `198.51.100.${index}` },
+        ),
+      );
+      expect(response.status).toBe(index < 5 ? 202 : 429);
+    }
+  });
+
   it("reports an invalid email and empty bodies", async () => {
     const { POST } = await import("@/app/api/comments/route");
     const article = await publishedArticle();

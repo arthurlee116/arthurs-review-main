@@ -15,13 +15,11 @@ const SubmissionSchema = z.object({
   turnstileToken: z.unknown().optional(),
 });
 
+// Caddy overwrites X-Real-IP with the PROXY-protocol peer on every request, so it is
+// the only address header a client cannot forge. Never read CF-Connecting-IP or the
+// first X-Forwarded-For hop: nothing upstream sets or strips them.
 function clientIp(request: Request) {
-  return (
-    request.headers.get("cf-connecting-ip") ||
-    request.headers.get("x-real-ip") ||
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "local"
-  );
+  return request.headers.get("x-real-ip")?.trim() || "local";
 }
 
 export async function POST(request: Request) {
