@@ -221,6 +221,7 @@ staging_compose config
     expect(backup).toContain("verify-backup.sh");
     expect(bootstrap).toContain("sqlite3");
     expect(fs.existsSync("scripts/verify-backup.sh")).toBe(true);
+    expect(fs.readFileSync("scripts/verify-backup.sh", "utf8")).toContain("tar --no-same-owner -xzf");
     expect(fs.existsSync(".github/workflows/backup.yml")).toBe(true);
 
     const workflow = fs.readFileSync(".github/workflows/backup.yml", "utf8");

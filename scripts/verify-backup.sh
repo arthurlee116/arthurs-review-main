@@ -25,7 +25,9 @@ fi
 
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "${WORK_DIR}"' EXIT
-tar -xzf "${ARCHIVE}" -C "${WORK_DIR}"
+# Root (the VPS cron) would otherwise restore the archived owner (the app's
+# uid 1000) and trip the ownership check below; the verifier owns what it extracts.
+tar --no-same-owner -xzf "${ARCHIVE}" -C "${WORK_DIR}"
 
 for required in arthurs-review.sqlite3 markdown uploads proofs MANIFEST.sha256; do
   [[ -e "${WORK_DIR}/${required}" ]] || { echo "Backup is missing ${required}" >&2; exit 1; }
